@@ -6,10 +6,11 @@
 <title>CMMS – Quản lý Bảo trì Cơ điện</title>
 <style>
 :root {
-  --blue: #1e40af; --blue-light: #3b82f6; --blue-bg: #eff6ff;
+  --blue: #1e40af; --blue-light: #3b82f6; --blue-bg: #eff6ff; --blue-dark: #1d3fa5;
   --green: #16a34a; --green-bg: #f0fdf4;
   --red: #dc2626; --red-bg: #fef2f2;
   --yellow: #d97706; --yellow-bg: #fffbeb;
+  --orange: #e8710a; --orange-light: #fef3e2;
   --gray: #64748b; --gray-bg: #f8fafc; --border: #e2e8f0;
   --text: #0f172a; --text2: #475569;
   --sidebar-w: 220px;
@@ -186,7 +187,71 @@ tr:hover td { background: var(--blue-bg); }
   /* Modal: slide up from bottom */
   .modal-overlay { padding-top: 0; align-items: flex-end; }
   .modal { width: 100%; max-width: 100%; border-radius: 14px 14px 0 0; max-height: 92vh; }
+
+  /* Touch-friendly tap targets */
+  .btn { min-height: 42px; }
+  .btn-sm { min-height: 36px; padding: 7px 14px; }
+  .form-group input, .form-group select, .form-group textarea { min-height: 48px; font-size: 16px; padding: 12px 14px; }
+  .filter-bar input, .filter-bar select { min-height: 44px; font-size: 16px; }
+
+  /* Bottom nav spacing */
+  .bottom-nav { display: flex; }
+  .page-body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 12px); }
 }
+
+/* ─── Checklist Module ──────────────────────────────────────── */
+.cl-tabs { display:flex; background:#fff; border-bottom:2px solid var(--border); overflow-x:auto; -webkit-overflow-scrolling:touch; margin:-24px -28px 16px; }
+.cl-tab { flex:1; min-width:80px; padding:12px 8px; text-align:center; font-size:13px; font-weight:600; color:var(--gray); border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+.cl-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.cl-tab span { font-size:18px; display:block; margin-bottom:3px; }
+.cl-summary-bar { background:#fff; border-radius:12px; border:1px solid var(--border); padding:14px 16px; margin-bottom:16px; display:flex; gap:8px; justify-content:space-around; }
+.sum-item { text-align:center; }
+.sum-num { font-size:24px; font-weight:800; }
+.sum-label { font-size:11px; color:var(--gray); margin-top:2px; }
+.sum-ok .sum-num { color:var(--green); }
+.sum-caution .sum-num { color:var(--orange); }
+.sum-fail .sum-num { color:var(--red); }
+.sum-total .sum-num { color:var(--blue); }
+.checklist-card { background:#fff; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+.checklist-card .card-header { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); background:var(--gray-bg); }
+.checklist-card .card-header h3 { font-size:14px; font-weight:700; color:var(--text); }
+.checklist-card .card-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+.progress-ring { font-size:13px; font-weight:700; color:var(--blue); }
+.checklist-item { padding:12px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:flex-start; gap:10px; }
+.checklist-item:last-child { border-bottom:none; }
+.item-label { flex:1; font-size:14px; line-height:1.4; padding-top:2px; }
+.item-unit { font-size:12px; color:var(--gray); }
+.status-group { display:flex; gap:4px; flex-shrink:0; }
+.status-btn { padding:5px 10px; border-radius:20px; border:1.5px solid var(--border); background:#fff; font-size:12px; font-weight:600; color:var(--gray); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+.status-btn:hover { border-color:var(--blue-light); color:var(--blue); }
+.status-btn.ok.selected { background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.status-btn.caution.selected { background:var(--yellow-bg); border-color:var(--yellow); color:var(--yellow); }
+.status-btn.fail.selected { background:var(--red-bg); border-color:var(--red); color:var(--red); }
+.item-input { width:72px; padding:5px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; text-align:right; outline:none; }
+.item-input:focus { border-color:var(--blue-light); }
+.cl-section-divider { padding:7px 16px; background:var(--gray-bg); border-bottom:1px solid #f1f5f9; font-size:11px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; }
+.cl-history-item { background:#fff; border-radius:10px; border:1px solid var(--border); padding:14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+.cl-history-item:hover { border-color:var(--blue-light); }
+.cl-history-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.cl-history-date { font-weight:700; font-size:14px; }
+.cl-history-stats { display:flex; gap:6px; }
+.stat-badge { font-size:11px; padding:3px 8px; border-radius:20px; font-weight:600; }
+.stat-ok { background:var(--green-bg); color:var(--green); }
+.stat-caution { background:var(--yellow-bg); color:var(--yellow); }
+.stat-fail { background:var(--red-bg); color:var(--red); }
+.cl-history-employee { font-size:13px; color:var(--gray); margin-bottom:6px; }
+.cl-history-equip { display:flex; gap:6px; flex-wrap:wrap; }
+.equip-badge { font-size:11px; padding:2px 8px; border-radius:20px; background:var(--blue-bg); color:var(--blue); font-weight:600; }
+.detail-section { margin-bottom:16px; }
+.detail-section h4 { font-size:12px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.detail-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
+.detail-item:last-child { border-bottom:none; }
+.detail-item .di-label { flex:1; color:var(--text2); }
+.detail-status { font-size:12px; padding:3px 10px; border-radius:20px; font-weight:600; }
+.ds-ok { background:var(--green-bg); color:var(--green); }
+.ds-caution { background:var(--yellow-bg); color:var(--yellow); }
+.ds-fail { background:var(--red-bg); color:var(--red); }
+.ds-na { background:var(--gray-bg); color:var(--gray); }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -218,6 +283,28 @@ tr:hover td { background: var(--blue-bg); }
   .table-wrap table td:has(> .empty-state) { display: block; }
   .table-wrap table td:has(> .empty-state)::before { display: none; }
 }
+
+/* ─── Bottom Navigation (mobile only) ───────────────────── */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+}
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 8px 4px; cursor: pointer;
+  color: var(--gray); transition: color .15s;
+  -webkit-tap-highlight-color: transparent; min-height: 56px;
+  user-select: none;
+}
+.bnav-item.active { color: var(--blue); }
+.bnav-item.active .bnav-icon { transform: scale(1.15); }
+.bnav-icon { font-size: 20px; line-height: 1; transition: transform .15s; }
+.bnav-label { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: 0.2px; }
+
+/* Stat card icon */
+.stat-icon { font-size: 22px; line-height: 1; margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -283,6 +370,12 @@ tr:hover td { background: var(--blue-bg); }
     </div>
     <div class="page-body" id="page-body"></div>
   </div>
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
+    <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
+    <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
+    <div class="bnav-item" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
+  </nav>
 </div>
 
 <!-- MODAL -->
@@ -359,11 +452,14 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
   });
-  const titles = { dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị', users: 'Quản lý Người dùng' };
+  document.querySelectorAll('.bnav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
+  });
+  const titles = { dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị', users: 'Quản lý Người dùng', scan: 'Quét QR' };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = { workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>', assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>', users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>' };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
-  const renders = { dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets, users: renderUsers };
+  const renders = { dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets, users: renderUsers, scan: renderScan };
   (renders[page] || (() => {}))();
   
   // Close sidebar on mobile after navigation
@@ -399,12 +495,12 @@ async function renderDashboard() {
   const s = r.data;
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card stat-blue"><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
-      <div class="stat-card stat-blue"><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
-      <div class="stat-card stat-yellow"><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
-      <div class="stat-card stat-green"><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
-      <div class="stat-card stat-red"><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
-      <div class="stat-card stat-red"><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+      <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
+      <div class="stat-card stat-blue"><div class="stat-icon">📋</div><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
+      <div class="stat-card stat-yellow"><div class="stat-icon">⚙️</div><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
+      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
     </div>
     <div class="card">
       <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
@@ -694,6 +790,16 @@ async function deleteUser(id, name) {
   const r = await api('DELETE', `/api/users/${id}`);
   if (!r.ok) return toast(r.error, 'error');
   toast('Đã xóa tài khoản', 'success'); renderUsers();
+}
+
+// ─── SCAN ────────────────────────────────────────────────────
+function renderScan() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="empty-state" style="padding-top:60px">
+      <div class="icon">📷</div>
+      <p style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Quét mã QR thiết bị</p>
+      <p>Tính năng đang phát triển</p>
+    </div>`;
 }
 
 // ─── Init ────────────────────────────────────────────────────
