@@ -36,11 +36,12 @@ cmms-webapp/
 - [ ] **Work Orders** – Tạo, giao, theo dõi lệnh công việc
 - [ ] **Assets** – Danh sách thiết bị, thông tin kỹ thuật
 - [ ] **Dashboard** – Tổng quan số liệu realtime
+- [ ] **Checklist** – Nhật ký vận hành & Checklist (Tích hợp từ file rời)
 
 ### Phase 2
 - [ ] **PM Scheduling** – Lịch bảo trì định kỳ, nhắc nhở
 - [ ] **Inventory** – Quản lý vật tư, phụ tùng
-- [ ] **Checklist** – Checklist kiểm tra theo ca/thiết bị
+- [ ] **Checklist** – Checklist kiểm tra theo ca/thiết bị (Đang triển khai)
 - [ ] **Reports** – Báo cáo xuất CSV/PDF
 
 ### Phase 3
@@ -60,14 +61,19 @@ cmms-webapp/
 
 ---
 
-## Cách nhận task từ xa (GitHub Issues Workflow)
+## 🤖 Quy trình Dual-Agent Tối Ưu Token (Issue-Based Workflow)
 
-Chủ project tạo GitHub Issue từ bất kỳ đâu (điện thoại, máy khác):
-- Tiêu đề: `[TASK] Mô tả ngắn gọn`
-- Nội dung: Chi tiết yêu cầu, acceptance criteria
-- Label: `claude-todo`
+**Mục tiêu:** Giảm thiểu việc cả 2 AI phải đọc lại toàn bộ context (hàng chục ngàn token) mỗi lần chạy.
 
-Claude sẽ tự động nhận, implement và tạo PR.
+1. **Architect (Antigravity):**
+   - Đọc, phân tích hệ thống lớn.
+   - Viết kế hoạch tổng thể vào `brain/roadmap.md` và `task.md`.
+   - **Giao việc:** Tạo GitHub Issue, tóm tắt *cực kỳ ngắn gọn* (Chỉ nêu: File cần sửa, Logic cần viết). Gắn nhãn `claude-todo`.
+
+2. **Builder (Claude Code):**
+   - **Không cần đọc file lớn:** Chạy ngầm thông qua `claude-worker.ps1` (Tự động quét mỗi 30 phút).
+   - Lấy nội dung trực tiếp từ GitHub Issue. Chỉ mở và sửa đúng các file được Architect chỉ định.
+   - Test, Commit, Push và tự động Đóng Issue.
 
 ---
 
