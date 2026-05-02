@@ -163,12 +163,12 @@ app.get('/api/assets/:id', requireAuth(), (req, res) => {
 });
 
 app.post('/api/assets', requireAuth(['admin', 'manager']), (req, res) => {
-  const { name, code, category, location, manufacturer, model, serialNumber, installDate, notes } = req.body;
+  const { name, code, category, location, manufacturer, model, serialNumber, installDate, notes, status } = req.body;
   if (!name || !category || !location) return res.json({ ok: 0, error: 'Thiếu thông tin bắt buộc' });
   const db = loadDB();
   const id = `A${String(db.nextId.asset).padStart(4, '0')}`;
   db.nextId.asset++;
-  const asset = { id, name, code: code || id, category, location, manufacturer, model, serialNumber, installDate, notes, status: 'active', createdAt: now(), updatedAt: now() };
+  const asset = { id, name, code: code || id, category, location, manufacturer, model, serialNumber, installDate, notes, status: status || 'active', createdAt: now(), updatedAt: now() };
   db.assets.push(asset);
   saveDB(db);
   res.json({ ok: 1, data: asset });

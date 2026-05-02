@@ -140,10 +140,31 @@ tr:hover td { background: var(--blue-bg); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 @media (max-width: 768px) {
-  .sidebar { width: 60px; }
-  .sidebar-logo p, .nav-section-title, .nav-item span, .sidebar-user-name, .sidebar-user-role { display: none; }
-  .main { margin-left: 60px; }
+  :root { --sidebar-w: 240px; }
+  .sidebar { 
+    left: calc(-1 * var(--sidebar-w)); 
+    transition: left .3s ease; 
+    box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+  }
+  .sidebar.open { left: 0; }
+  .main { margin-left: 0; }
+  .topbar { padding: 0 16px; }
+  .topbar-title { font-size: 15px; }
+  .page-body { padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-value { font-size: 24px; }
   .form-row { grid-template-columns: 1fr; }
+  .modal { width: 95%; max-height: 90vh; }
+  .table-wrap { margin: 0 -16px; padding: 0 16px; }
+  
+  /* Sidebar toggle show */
+  #sidebar-toggle { display: flex !important; }
+  
+  /* Sidebar overlay when open */
+  .sidebar-overlay-bg { 
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; 
+  }
+  .sidebar-overlay-bg.show { display: block; }
 }
 </style>
 </head>
@@ -199,9 +220,13 @@ tr:hover td { background: var(--blue-bg); }
     </div>
   </div>
 
+  <div class="sidebar-overlay-bg" onclick="toggleSidebar()"></div>
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div style="display:flex; align-items:center; gap:12px">
+        <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none; padding:4px 8px; font-size:18px" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+      </div>
       <div class="topbar-actions" id="topbar-actions"></div>
     </div>
     <div class="page-body" id="page-body"></div>
@@ -284,10 +309,21 @@ function navigate(page) {
   });
   const titles = { dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị', users: 'Quản lý Người dùng' };
   document.getElementById('page-title').textContent = titles[page] || page;
-  const actions = { workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo lệnh mới</button>', assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm thiết bị</button>', users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm user</button>' };
+  const actions = { workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>', assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>', users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>' };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = { dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets, users: renderUsers };
   (renders[page] || (() => {}))();
+  
+  // Close sidebar on mobile after navigation
+  if (window.innerWidth <= 768) {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.querySelector('.sidebar-overlay-bg').classList.remove('show');
+  }
+}
+
+function toggleSidebar() {
+  const isOpen = document.querySelector('.sidebar').classList.toggle('open');
+  document.querySelector('.sidebar-overlay-bg').classList.toggle('show', isOpen);
 }
 
 // ─── Modal ───────────────────────────────────────────────────
