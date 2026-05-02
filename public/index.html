@@ -139,32 +139,84 @@ tr:hover td { background: var(--blue-bg); }
 .toast-item.error { background: var(--red); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+/* ─── Responsive ─────────────────────────────────────────────── */
+.table-wrap { -webkit-overflow-scrolling: touch; }
+
 @media (max-width: 768px) {
-  :root { --sidebar-w: 240px; }
-  .sidebar { 
-    left: calc(-1 * var(--sidebar-w)); 
-    transition: left .3s ease; 
-    box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+  :root { --sidebar-w: 260px; }
+  .sidebar {
+    left: calc(-1 * var(--sidebar-w));
+    transition: left .25s ease;
+    box-shadow: none;
+    z-index: 300;
   }
-  .sidebar.open { left: 0; }
-  .main { margin-left: 0; }
-  .topbar { padding: 0 16px; }
-  .topbar-title { font-size: 15px; }
-  .page-body { padding: 16px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .stat-value { font-size: 24px; }
-  .form-row { grid-template-columns: 1fr; }
-  .modal { width: 95%; max-height: 90vh; }
-  .table-wrap { margin: 0 -16px; padding: 0 16px; }
-  
-  /* Sidebar toggle show */
-  #sidebar-toggle { display: flex !important; }
-  
-  /* Sidebar overlay when open */
-  .sidebar-overlay-bg { 
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; 
+  .sidebar.open { left: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.35); }
+  .sidebar-overlay-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290;
   }
   .sidebar-overlay-bg.show { display: block; }
+  #sidebar-toggle { display: flex !important; }
+
+  .main { margin-left: 0; }
+  .topbar { padding: 0 12px; height: 52px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-actions .btn { font-size: 12px; padding: 6px 12px; }
+  .page-body { padding: 12px; }
+
+  /* Login */
+  .login-box { width: 92%; padding: 28px 20px; }
+
+  /* Stats */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { padding: 14px 16px; }
+  .stat-value { font-size: 24px; }
+
+  /* Cards */
+  .card { padding: 14px 16px; margin-bottom: 14px; }
+
+  /* Forms */
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .filter-bar { flex-direction: column; gap: 8px; }
+  .filter-bar input, .filter-bar select { width: 100%; }
+
+  /* Tables: horizontal scroll */
+  .table-wrap { overflow-x: auto; margin: 0 -16px; padding: 0; }
+  table { min-width: 540px; }
+
+  /* Modal: slide up from bottom */
+  .modal-overlay { padding-top: 0; align-items: flex-end; }
+  .modal { width: 100%; max-width: 100%; border-radius: 14px 14px 0 0; max-height: 92vh; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-value { font-size: 22px; }
+
+  /* Card-view tables */
+  .table-wrap { margin: 0; overflow-x: visible; }
+  .table-wrap table { min-width: 0; }
+  .table-wrap table thead { display: none; }
+  .table-wrap table tr {
+    display: block; background: white;
+    border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .table-wrap table tr:hover td { background: transparent; }
+  .table-wrap table td {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px;
+  }
+  .table-wrap table td:last-child { border-bottom: none; }
+  .table-wrap table td::before {
+    content: attr(data-label);
+    font-size: 10px; font-weight: 700; color: var(--gray);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    min-width: 72px; padding-top: 2px; flex-shrink: 0;
+  }
+  .table-wrap table td[data-label=""] { justify-content: flex-end; }
+  .table-wrap table td[data-label=""]::before { display: none; }
+  .table-wrap table td:has(> .empty-state) { display: block; }
+  .table-wrap table td:has(> .empty-state)::before { display: none; }
 }
 </style>
 </head>
@@ -361,7 +413,7 @@ async function renderDashboard() {
   const wr = await api('GET', '/api/work-orders?status=open&priority=high');
   const list = wr.data || [];
   document.getElementById('dashboard-wo').innerHTML = list.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td><code>${w.id}</code></td><td>${w.title}</td><td>${w.assetId || '—'}</td><td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td data-label="Mã"><code>${w.id}</code></td><td data-label="Tiêu đề">${w.title}</td><td data-label="Thiết bị">${w.assetId || '—'}</td><td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
     : '<div class="empty-state"><div class="icon">✅</div><p>Không có lệnh ưu tiên cao nào</p></div>';
 }
 
@@ -397,14 +449,14 @@ async function filterWO() {
   const typeLabel = { corrective: 'Sửa chữa', preventive: 'Phòng ngừa', inspection: 'Kiểm tra', emergency: '🚨 Khẩn cấp' };
   tbody.innerHTML = list.length ? list.map(w => `
     <tr>
-      <td><code style="font-size:12px">${w.id}</code></td>
-      <td style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
-      <td>${typeLabel[w.type] || w.type}</td>
-      <td><span class="badge badge-${w.priority}">${w.priority}</span></td>
-      <td><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
-      <td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
-      <td>${w.assignedTo || '—'}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+      <td data-label="Mã"><code style="font-size:12px">${w.id}</code></td>
+      <td data-label="Tiêu đề" style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
+      <td data-label="Loại">${typeLabel[w.type] || w.type}</td>
+      <td data-label="Ưu tiên"><span class="badge badge-${w.priority}">${w.priority}</span></td>
+      <td data-label="Trạng thái"><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+      <td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
+      <td data-label="Phụ trách">${w.assignedTo || '—'}</td>
+      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
     </tr>`).join('') : '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Chưa có lệnh công việc nào</p></div></td></tr>';
 }
 
@@ -517,13 +569,13 @@ async function filterAssets() {
   if (!tbody) return;
   tbody.innerHTML = list.length ? list.map(a => `
     <tr>
-      <td><code style="font-size:12px">${a.id}</code></td>
-      <td style="font-weight:600">${a.name}</td>
-      <td>${a.category}</td>
-      <td>${a.location}</td>
-      <td style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
-      <td><span class="badge badge-${a.status}">${a.status}</span></td>
-      <td style="display:flex;gap:6px">
+      <td data-label="Mã"><code style="font-size:12px">${a.id}</code></td>
+      <td data-label="Tên thiết bị" style="font-weight:600">${a.name}</td>
+      <td data-label="Danh mục">${a.category}</td>
+      <td data-label="Vị trí">${a.location}</td>
+      <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
+      <td data-label="Trạng thái"><span class="badge badge-${a.status}">${a.status}</span></td>
+      <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
         ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
       </td>
@@ -605,10 +657,10 @@ async function renderUsers() {
       <div class="table-wrap"><table>
         <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Ngày tạo</th><th></th></tr></thead>
         <tbody>${list.map(u => `<tr>
-          <td><code>${u.username}</code></td><td>${u.name}</td>
-          <td>${roleLabel[u.role] || u.role}</td>
-          <td>${fmtDateShort(u.createdAt)}</td>
-          <td>${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
+          <td data-label="Tài khoản"><code>${u.username}</code></td><td data-label="Họ tên">${u.name}</td>
+          <td data-label="Vai trò">${roleLabel[u.role] || u.role}</td>
+          <td data-label="Ngày tạo">${fmtDateShort(u.createdAt)}</td>
+          <td data-label="">${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
