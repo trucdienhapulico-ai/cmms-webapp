@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMMS – Quản lý Bảo trì Cơ điện</title>
+<style>
+:root {
+  --blue: #1e40af; --blue-light: #3b82f6; --blue-bg: #eff6ff;
+  --green: #16a34a; --green-bg: #f0fdf4;
+  --red: #dc2626; --red-bg: #fef2f2;
+  --yellow: #d97706; --yellow-bg: #fffbeb;
+  --gray: #64748b; --gray-bg: #f8fafc; --border: #e2e8f0;
+  --text: #0f172a; --text2: #475569;
+  --sidebar-w: 220px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-bg); color: var(--text); font-size: 14px; }
+
+/* Login */
+#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e3a8a 0%, #0891b2 100%); }
+.login-box { background: white; border-radius: 16px; padding: 40px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.login-logo { text-align: center; margin-bottom: 28px; }
+.login-logo h1 { font-size: 22px; font-weight: 800; color: var(--blue); }
+.login-logo p { font-size: 12px; color: var(--gray); margin-top: 4px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; transition: border-color .2s; outline: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue-light); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover { background: #1d3fa5; }
+.btn-success { background: var(--green); color: white; }
+.btn-danger { background: var(--red); color: white; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--gray-bg); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-full { width: 100%; justify-content: center; }
+.error-msg { color: var(--red); font-size: 12px; margin-top: 8px; }
+
+/* App layout */
+#app { display: none; min-height: 100vh; }
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w);
+  background: #0f172a; color: white; overflow-y: auto; z-index: 100;
+}
+.sidebar-logo { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar-logo h1 { font-size: 16px; font-weight: 800; color: white; }
+.sidebar-logo p { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+.sidebar-user { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar-user-name { font-size: 13px; font-weight: 600; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,0.5); }
+.nav-section { padding: 12px 0 4px; }
+.nav-section-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); padding: 0 16px 6px; letter-spacing: 0.8px; text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; font-size: 13px; color: rgba(255,255,255,0.65); transition: all .15s; }
+.nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+.nav-item.active { background: var(--blue); color: white; }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-logout { margin: 8px 12px; }
+
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.topbar { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 18px; font-weight: 700; }
+.topbar-actions { display: flex; gap: 8px; }
+.page-body { padding: 24px 28px; }
+
+/* Cards */
+.card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
+.stat-label { font-size: 11px; color: var(--gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 32px; font-weight: 800; margin-top: 6px; }
+.stat-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
+.stat-red .stat-value { color: var(--red); }
+.stat-blue .stat-value { color: var(--blue); }
+.stat-green .stat-value { color: var(--green); }
+.stat-yellow .stat-value { color: var(--yellow); }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--blue-bg); }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-open { background: #dbeafe; color: #1e40af; }
+.badge-in-progress { background: #fef3c7; color: #92400e; }
+.badge-done { background: var(--green-bg); color: var(--green); }
+.badge-cancelled { background: #f1f5f9; color: var(--gray); }
+.badge-high { background: #fee2e2; color: var(--red); }
+.badge-medium { background: #fef3c7; color: var(--yellow); }
+.badge-low { background: #f0fdf4; color: var(--green); }
+.badge-active { background: var(--green-bg); color: var(--green); }
+.badge-inactive { background: #f1f5f9; color: var(--gray); }
+
+/* Filters */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-bar input, .filter-bar select { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+.filter-bar input:focus, .filter-bar select:focus { border-color: var(--blue-light); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-start; justify-content: center; padding-top: 60px; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: 14px; width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.modal-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 700; }
+.modal-close { cursor: pointer; font-size: 20px; color: var(--gray); background: none; border: none; }
+.modal-body { padding: 20px 24px; }
+.modal-footer { padding: 0 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group textarea { height: 80px; resize: vertical; }
+
+/* History */
+.history-list { list-style: none; }
+.history-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.history-item:last-child { border-bottom: none; }
+.history-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-light); margin-top: 4px; flex-shrink: 0; }
+.history-by { font-weight: 700; }
+.history-at { color: var(--gray); }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--gray); }
+.empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* Toast */
+#toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; }
+.toast-item { background: #0f172a; color: white; padding: 12px 18px; border-radius: 10px; margin-top: 8px; font-size: 13px; animation: slideIn .3s ease; }
+.toast-item.success { background: var(--green); }
+.toast-item.error { background: var(--red); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo p, .nav-section-title, .nav-item span, .sidebar-user-name, .sidebar-user-role { display: none; }
+  .main { margin-left: 60px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>🔧 CMMS</h1>
+      <p>Hệ thống Quản lý Bảo trì Cơ điện</p>
+    </div>
+    <div class="form-group">
+      <label>Tên đăng nhập</label>
+      <input type="text" id="login-username" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="login-error" class="error-msg"></div>
+    <br>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Đăng nhập</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h1>🔧 CMMS</h1>
+      <p>Bảo trì Cơ điện</p>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-name" id="sidebar-name"></div>
+      <div class="sidebar-user-role" id="sidebar-role"></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Tổng quan</div>
+      <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Vận hành</div>
+      <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
+      <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
+    </div>
+    <div class="nav-section" id="admin-menu" style="display:none">
+      <div class="nav-section-title">Quản trị</div>
+      <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
+    </div>
+    <div class="nav-logout">
+      <button class="btn btn-ghost btn-full btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)">Đăng xuất</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </div>
+    <div class="page-body" id="page-body"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────
+let currentUser = null;
+let currentPage = 'dashboard';
+
+// ─── API ────────────────────────────────────────────────────
+async function api(method, url, body) {
+  const res = await fetch(url, {
+    method, credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+// ─── Toast ──────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ─── Auth ────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const r = await api('POST', '/api/login', { username, password });
+  if (r.ok) {
+    currentUser = r.data;
+    showApp();
+  } else {
+    document.getElementById('login-error').textContent = r.error;
+  }
+}
+document.getElementById('login-password').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+
+async function doLogout() {
+  await api('POST', '/api/logout');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('sidebar-name').textContent = currentUser.name;
+  document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
+  if (['admin', 'manager'].includes(currentUser.role)) document.getElementById('admin-menu').style.display = 'block';
+  navigate('dashboard');
+}
+
+// ─── Navigation ──────────────────────────────────────────────
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
+  });
+  const titles = { dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị', users: 'Quản lý Người dùng' };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  const actions = { workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo lệnh mới</button>', assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm thiết bị</button>', users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm user</button>' };
+  document.getElementById('topbar-actions').innerHTML = actions[page] || '';
+  const renders = { dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets, users: renderUsers };
+  (renders[page] || (() => {}))();
+}
+
+// ─── Modal ───────────────────────────────────────────────────
+function openModal(title, body, footer) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-footer').innerHTML = footer || '';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// ─── Helpers ─────────────────────────────────────────────────
+function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function fmtDateShort(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+function isOverdue(dueDate, status) { return dueDate && status !== 'done' && new Date(dueDate) < new Date(); }
+
+// ─── DASHBOARD ───────────────────────────────────────────────
+async function renderDashboard() {
+  const r = await api('GET', '/api/stats');
+  const s = r.data;
+  document.getElementById('page-body').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card stat-blue"><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
+      <div class="stat-card stat-blue"><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
+      <div class="stat-card stat-yellow"><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
+      <div class="stat-card stat-green"><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
+      <div class="stat-card stat-red"><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
+      <div class="stat-card stat-red"><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
+      <div id="dashboard-wo"></div>
+    </div>`;
+  const wr = await api('GET', '/api/work-orders?status=open&priority=high');
+  const list = wr.data || [];
+  document.getElementById('dashboard-wo').innerHTML = list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td><code>${w.id}</code></td><td>${w.title}</td><td>${w.assetId || '—'}</td><td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
+    : '<div class="empty-state"><div class="icon">✅</div><p>Không có lệnh ưu tiên cao nào</p></div>';
+}
+
+// ─── WORK ORDERS ─────────────────────────────────────────────
+async function renderWorkOrders() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="filter-bar">
+      <input id="wo-q" placeholder="🔍 Tìm kiếm..." oninput="filterWO()">
+      <select id="wo-status" onchange="filterWO()"><option value="">Tất cả trạng thái</option><option>open</option><option>in-progress</option><option>done</option><option>cancelled</option></select>
+      <select id="wo-priority" onchange="filterWO()"><option value="">Tất cả ưu tiên</option><option>high</option><option>medium</option><option>low</option></select>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Loại</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày hạn</th><th>Người phụ trách</th><th></th></tr></thead>
+        <tbody id="wo-tbody"></tbody>
+      </table></div>
+    </div>`;
+  filterWO();
+}
+
+async function filterWO() {
+  const q = document.getElementById('wo-q')?.value || '';
+  const status = document.getElementById('wo-status')?.value || '';
+  const priority = document.getElementById('wo-priority')?.value || '';
+  let url = '/api/work-orders?';
+  if (q) url += `q=${encodeURIComponent(q)}&`;
+  if (status) url += `status=${status}&`;
+  if (priority) url += `priority=${priority}&`;
+  const r = await api('GET', url);
+  const list = r.data || [];
+  const tbody = document.getElementById('wo-tbody');
+  if (!tbody) return;
+  const typeLabel = { corrective: 'Sửa chữa', preventive: 'Phòng ngừa', inspection: 'Kiểm tra', emergency: '🚨 Khẩn cấp' };
+  tbody.innerHTML = list.length ? list.map(w => `
+    <tr>
+      <td><code style="font-size:12px">${w.id}</code></td>
+      <td style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
+      <td>${typeLabel[w.type] || w.type}</td>
+      <td><span class="badge badge-${w.priority}">${w.priority}</span></td>
+      <td><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+      <td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
+      <td>${w.assignedTo || '—'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+    </tr>`).join('') : '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Chưa có lệnh công việc nào</p></div></td></tr>';
+}
+
+async function viewWO(id) {
+  const r = await api('GET', `/api/work-orders/${id}`);
+  const w = r.data;
+  const canEdit = ['admin', 'manager', 'operator'].includes(currentUser.role);
+  openModal(`${w.id} — ${w.title}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">TRẠNG THÁI</div><span class="badge badge-${w.status}">${w.status}</span></div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">ƯU TIÊN</div><span class="badge badge-${w.priority}">${w.priority}</span></div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">THIẾT BỊ</div>${w.assetId || '—'}</div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">NGƯỜI PHỤ TRÁCH</div>${w.assignedTo || '—'}</div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">NGÀY HẠN</div><span style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</span></div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">TẠO LÚC</div>${fmtDate(w.createdAt)}</div>
+    </div>
+    ${w.description ? `<div style="font-size:12px;color:var(--text2);background:var(--gray-bg);padding:12px;border-radius:8px;margin-bottom:16px;white-space:pre-wrap">${w.description}</div>` : ''}
+    <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px">LỊCH SỬ</div>
+    <ul class="history-list">${(w.history || []).map(h => `<li class="history-item"><div class="history-dot"></div><div><span class="history-by">${h.by}</span> — ${h.action} ${h.note ? `<em>"${h.note}"</em>` : ''}<br><span class="history-at">${fmtDate(h.at)}</span></div></li>`).join('')}</ul>
+    ${canEdit ? `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+      <div class="form-group"><label>Cập nhật trạng thái</label>
+        <select id="wo-new-status"><option value="">— không đổi —</option><option>open</option><option>in-progress</option><option>done</option><option>cancelled</option></select></div>
+      <div class="form-group"><label>Ghi chú</label><textarea id="wo-note" placeholder="Ghi chú về thay đổi..."></textarea></div>
+    </div>` : ''}`,
+    canEdit ? `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button><button class="btn btn-primary" onclick="updateWO('${id}')">Lưu thay đổi</button>` : `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
+  );
+}
+
+async function updateWO(id) {
+  const status = document.getElementById('wo-new-status')?.value;
+  const note = document.getElementById('wo-note')?.value;
+  const body = {};
+  if (status) { body.status = status; body.statusNote = note; }
+  if (note && !status) { await api('POST', `/api/work-orders/${id}/comment`, { text: note }); }
+  else if (Object.keys(body).length) { await api('PUT', `/api/work-orders/${id}`, body); }
+  closeModal();
+  toast('Đã cập nhật lệnh công việc', 'success');
+  renderWorkOrders();
+}
+
+function showWOForm(wo = {}) {
+  openModal(wo.id ? 'Sửa lệnh công việc' : 'Tạo lệnh công việc mới', `
+    <div class="form-group"><label>Tiêu đề *</label><input id="wo-title" value="${wo.title || ''}" placeholder="Mô tả ngắn công việc cần làm"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Loại</label><select id="wo-type">
+        <option value="corrective" ${wo.type === 'corrective' ? 'selected' : ''}>Sửa chữa</option>
+        <option value="preventive" ${wo.type === 'preventive' ? 'selected' : ''}>Phòng ngừa</option>
+        <option value="inspection" ${wo.type === 'inspection' ? 'selected' : ''}>Kiểm tra</option>
+        <option value="emergency" ${wo.type === 'emergency' ? 'selected' : ''}>Khẩn cấp</option>
+      </select></div>
+      <div class="form-group"><label>Ưu tiên *</label><select id="wo-priority-sel">
+        <option value="low" ${wo.priority === 'low' ? 'selected' : ''}>Thấp</option>
+        <option value="medium" ${(!wo.priority || wo.priority === 'medium') ? 'selected' : ''}>Trung bình</option>
+        <option value="high" ${wo.priority === 'high' ? 'selected' : ''}>Cao</option>
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Mã thiết bị</label><input id="wo-assetId" value="${wo.assetId || ''}" placeholder="VD: A0001"></div>
+      <div class="form-group"><label>Người phụ trách</label><input id="wo-assigned" value="${wo.assignedTo || ''}" placeholder="Tên kỹ thuật viên"></div>
+    </div>
+    <div class="form-group"><label>Ngày hạn</label><input type="date" id="wo-due" value="${wo.dueDate ? wo.dueDate.split('T')[0] : ''}"></div>
+    <div class="form-group"><label>Mô tả chi tiết</label><textarea id="wo-desc" placeholder="Triệu chứng, yêu cầu kỹ thuật...">${wo.description || ''}</textarea></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveWO('${wo.id || ''}')">Lưu</button>`
+  );
+}
+
+async function saveWO(id) {
+  const body = {
+    title: document.getElementById('wo-title').value.trim(),
+    type: document.getElementById('wo-type').value,
+    priority: document.getElementById('wo-priority-sel').value,
+    assetId: document.getElementById('wo-assetId').value.trim(),
+    assignedTo: document.getElementById('wo-assigned').value.trim(),
+    dueDate: document.getElementById('wo-due').value || null,
+    description: document.getElementById('wo-desc').value.trim()
+  };
+  if (!body.title) return toast('Vui lòng nhập tiêu đề', 'error');
+  const r = id ? await api('PUT', `/api/work-orders/${id}`, body) : await api('POST', '/api/work-orders', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật' : 'Tạo lệnh thành công!', 'success');
+  renderWorkOrders();
+}
+
+// ─── ASSETS ──────────────────────────────────────────────────
+async function renderAssets() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="filter-bar">
+      <input id="asset-q" placeholder="🔍 Tìm thiết bị..." oninput="filterAssets()">
+      <select id="asset-status" onchange="filterAssets()"><option value="">Tất cả</option><option>active</option><option>inactive</option><option>maintenance</option></select>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mã</th><th>Tên thiết bị</th><th>Danh mục</th><th>Vị trí</th><th>Hãng / Model</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody id="asset-tbody"></tbody>
+      </table></div>
+    </div>`;
+  filterAssets();
+}
+
+async function filterAssets() {
+  const q = document.getElementById('asset-q')?.value || '';
+  const status = document.getElementById('asset-status')?.value || '';
+  let url = '/api/assets?';
+  if (q) url += `q=${encodeURIComponent(q)}&`;
+  if (status) url += `status=${status}&`;
+  const r = await api('GET', url);
+  const list = r.data || [];
+  const tbody = document.getElementById('asset-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = list.length ? list.map(a => `
+    <tr>
+      <td><code style="font-size:12px">${a.id}</code></td>
+      <td style="font-weight:600">${a.name}</td>
+      <td>${a.category}</td>
+      <td>${a.location}</td>
+      <td style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
+      <td><span class="badge badge-${a.status}">${a.status}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
+        ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+      </td>
+    </tr>`).join('') : '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
+}
+
+async function viewAsset(id) {
+  const r = await api('GET', `/api/assets/${id}`);
+  const a = r.data;
+  openModal(`${a.id} — ${a.name}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      ${[['Mã thiết bị', a.code || a.id], ['Danh mục', a.category], ['Vị trí', a.location], ['Trạng thái', `<span class="badge badge-${a.status}">${a.status}</span>`], ['Hãng SX', a.manufacturer || '—'], ['Model', a.model || '—'], ['Số series', a.serialNumber || '—'], ['Ngày lắp đặt', fmtDateShort(a.installDate)]].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
+    </div>
+    ${a.notes ? `<div style="margin-top:16px;font-size:12px;background:var(--gray-bg);padding:12px;border-radius:8px">${a.notes}</div>` : ''}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-primary" onclick="closeModal();showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}`
+  );
+}
+
+function showAssetForm(asset = {}) {
+  openModal(asset.id ? 'Sửa thiết bị' : 'Thêm thiết bị mới', `
+    <div class="form-group"><label>Tên thiết bị *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Máy bơm nước B1"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${asset.code || ''}" placeholder="Tự động nếu bỏ trống"></div>
+      <div class="form-group"><label>Danh mục *</label><select id="a-cat">
+        ${['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'].map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="form-group"><label>Vị trí *</label><input id="a-loc" value="${asset.location || ''}" placeholder="VD: Tầng hầm B1, Phòng kỹ thuật"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Hãng sản xuất</label><input id="a-brand" value="${asset.manufacturer || ''}"></div>
+      <div class="form-group"><label>Model</label><input id="a-model" value="${asset.model || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Số series</label><input id="a-serial" value="${asset.serialNumber || ''}"></div>
+      <div class="form-group"><label>Ngày lắp đặt</label><input type="date" id="a-install" value="${asset.installDate ? asset.installDate.split('T')[0] : ''}"></div>
+    </div>
+    <div class="form-group"><label>Trạng thái</label><select id="a-status">
+      <option value="active" ${(!asset.status || asset.status === 'active') ? 'selected' : ''}>Đang hoạt động</option>
+      <option value="inactive" ${asset.status === 'inactive' ? 'selected' : ''}>Tạm dừng</option>
+      <option value="maintenance" ${asset.status === 'maintenance' ? 'selected' : ''}>Đang bảo trì</option>
+    </select></div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="a-notes">${asset.notes || ''}</textarea></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveAsset('${asset.id || ''}')">Lưu</button>`
+  );
+}
+
+async function saveAsset(id) {
+  const body = {
+    name: document.getElementById('a-name').value.trim(),
+    code: document.getElementById('a-code').value.trim(),
+    category: document.getElementById('a-cat').value,
+    location: document.getElementById('a-loc').value.trim(),
+    manufacturer: document.getElementById('a-brand').value.trim(),
+    model: document.getElementById('a-model').value.trim(),
+    serialNumber: document.getElementById('a-serial').value.trim(),
+    installDate: document.getElementById('a-install').value || null,
+    status: document.getElementById('a-status').value,
+    notes: document.getElementById('a-notes').value.trim()
+  };
+  if (!body.name || !body.location) return toast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+  const r = id ? await api('PUT', `/api/assets/${id}`, body) : await api('POST', '/api/assets', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật thiết bị' : 'Thêm thiết bị thành công!', 'success');
+  renderAssets();
+}
+
+// ─── USERS ───────────────────────────────────────────────────
+async function renderUsers() {
+  if (!['admin', 'manager'].includes(currentUser.role)) {
+    document.getElementById('page-body').innerHTML = '<div class="empty-state"><div class="icon">🔒</div><p>Không có quyền truy cập</p></div>';
+    return;
+  }
+  const r = await api('GET', '/api/users');
+  const list = r.data || [];
+  const roleLabel = { admin: '🔴 Admin', manager: '🟡 Manager', operator: '🔵 Operator', viewer: '⚪ Viewer' };
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Ngày tạo</th><th></th></tr></thead>
+        <tbody>${list.map(u => `<tr>
+          <td><code>${u.username}</code></td><td>${u.name}</td>
+          <td>${roleLabel[u.role] || u.role}</td>
+          <td>${fmtDateShort(u.createdAt)}</td>
+          <td>${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
+function showUserForm() {
+  openModal('Thêm người dùng', `
+    <div class="form-group"><label>Tên đăng nhập *</label><input id="u-username" placeholder="khongdauvietkhongdau"></div>
+    <div class="form-group"><label>Họ tên *</label><input id="u-name" placeholder="Nguyễn Văn A"></div>
+    <div class="form-group"><label>Mật khẩu *</label><input type="password" id="u-pass" placeholder="Tối thiểu 6 ký tự"></div>
+    <div class="form-group"><label>Vai trò</label><select id="u-role">
+      <option value="operator">Operator – Kỹ thuật viên</option>
+      <option value="viewer">Viewer – Chỉ xem</option>
+      <option value="manager">Manager – Quản lý</option>
+      <option value="admin">Admin – Toàn quyền</option>
+    </select></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveUser()">Tạo</button>`
+  );
+}
+
+async function saveUser() {
+  const body = { username: document.getElementById('u-username').value.trim(), name: document.getElementById('u-name').value.trim(), password: document.getElementById('u-pass').value, role: document.getElementById('u-role').value };
+  if (!body.username || !body.name || !body.password) return toast('Thiếu thông tin', 'error');
+  const r = await api('POST', '/api/users', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Tạo tài khoản thành công!', 'success'); renderUsers();
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`Xóa tài khoản "${name}"?`)) return;
+  const r = await api('DELETE', `/api/users/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa tài khoản', 'success'); renderUsers();
+}
+
+// ─── Init ────────────────────────────────────────────────────
+(async () => {
+  const r = await api('GET', '/api/me');
+  if (r.ok) { currentUser = r.data; showApp(); }
+})();
+</script>
+</body>
+</html>
