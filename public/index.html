@@ -197,6 +197,8 @@ tr:hover td { background: var(--blue-bg); }
   /* Bottom nav spacing */
   .bottom-nav { display: flex; }
   .page-body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 12px); }
+  /* Toast above bottom nav */
+  #toast { bottom: 76px; right: 16px; }
 }
 
 /* ─── Checklist Module ──────────────────────────────────────── */
@@ -278,10 +280,14 @@ tr:hover td { background: var(--blue-bg); }
     text-transform: uppercase; letter-spacing: 0.5px;
     min-width: 72px; padding-top: 2px; flex-shrink: 0;
   }
-  .table-wrap table td[data-label=""] { justify-content: flex-end; }
+  .table-wrap table td[data-label=""] { justify-content: flex-start; gap: 8px; background: var(--gray-bg); padding: 10px 14px; }
+  .table-wrap table td[data-label=""] .btn { flex: 1; justify-content: center; }
   .table-wrap table td[data-label=""]::before { display: none; }
   .table-wrap table td:has(> .empty-state) { display: block; }
   .table-wrap table td:has(> .empty-state)::before { display: none; }
+  /* Title row emphasis */
+  .table-wrap table td[data-label="Tiêu đề"],
+  .table-wrap table td[data-label="Tên thiết bị"] { border-bottom: 2px solid var(--border); padding: 12px 14px; }
 }
 
 /* ─── Bottom Navigation (mobile only) ───────────────────── */
