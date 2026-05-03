@@ -73,6 +73,49 @@ Khi số lượng task trong `brain/tasks_queue/` **còn ≤ 1 file `.txt`**, ag
 3. Tạo 3 file `.txt` **cực kỳ chi tiết** (ghi rõ file cần sửa, logic cần thêm, API endpoints) và thả vào `brain/tasks_queue/`.
 4. Mục đích: Đảm bảo pipeline không bao giờ cạn, worker luôn có việc chạy liên tục.
 
+## 🤝 Multi-Agent Protocol (Claude + Copilot)
+
+Hệ thống hỗ trợ hai agent AI phối hợp song song, mỗi agent nhận việc qua **header khác nhau** trong file task.
+
+### Task Prefixes (Tiền tố Bắt buộc)
+
+| Header trong file `.txt` | Agent xử lý | Script lắng nghe |
+|---|---|---|
+| `[TASK INSTRUCTION FOR CLAUDE]` | Claude Code CLI | `.\claude-worker.ps1` |
+| `[TASK INSTRUCTION FOR COPILOT]` | GitHub Copilot | `.\copilot-worker.ps1` |
+
+> **Lưu ý:** `claude-worker.ps1` chạy **tự động hoàn toàn**. `copilot-worker.ps1` hiển thị task và gợi ý lệnh `gh copilot suggest`, nhưng **yêu cầu xác nhận thủ công** do Copilot không tự áp dụng thay đổi.
+
+### Khi nào dùng Claude vs. Copilot?
+
+| Loại công việc | Nên dùng |
+|---|---|
+| Kiến trúc hệ thống, multi-file edits, logic phức tạp | **Claude Code** |
+| Unit tests, boilerplate, documentation, refactor nhỏ | **GitHub Copilot** |
+| Debug lỗi cụ thể trong 1 file | **GitHub Copilot** |
+| API mới, module mới, tích hợp service ngoài | **Claude Code** |
+
+### Setup Copilot lần đầu
+
+```powershell
+.\setup-copilot.ps1
+```
+
+Script sẽ tự động cài `gh extension install github/gh-copilot` và kiểm tra xác thực.
+
+### Ví dụ file task cho Copilot
+
+```
+[TASK INSTRUCTION FOR COPILOT]
+Target: Viết unit test cho hàm calculateOverdueDays
+File: public/js/workorders.js
+
+Hãy gợi ý unit test cho hàm calculateOverdueDays(dueDate) bằng Jest.
+Bao gồm: trường hợp quá hạn, đúng hạn, và ngày tương lai.
+```
+
+---
+
 ## 🗺️ Quy ước Cập nhật Giao diện (Dành cho Cả Architect & Builder)
 Hệ thống có một chức năng nội bộ mang tên **Sơ đồ UI / Góp ý (UI Map)** được code sẵn tại hàm `renderUIMap()` trong file `public/index.html`.
 Bất cứ khi nào bạn thay đổi cấu trúc giao diện, thêm màn hình mới, thêm tính năng hoặc di chuyển vị trí các nút:

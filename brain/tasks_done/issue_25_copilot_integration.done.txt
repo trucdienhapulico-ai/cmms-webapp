@@ -1,0 +1,36 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Setup GitHub Copilot Worker and Multi-Agent Workflow
+Priority: Medium
+Issue: #25
+
+## Context
+- We have `claude-worker.ps1` for Claude Code.
+- We want a similar mechanism for GitHub Copilot.
+- Antigravity will now be able to generate tasks labeled `copilot-todo`.
+
+## Step-by-Step Instructions
+
+### Step 1: Create copilot-worker.ps1
+1. Read `claude-worker.ps1` and copy the core loop (checking for .txt in `brain/tasks_queue`).
+2. Modify the worker to look for a specific header in the task file: `[TASK INSTRUCTION FOR COPILOT]`.
+3. Since `gh copilot` is non-autonomous, the worker should:
+   - Print the task clearly to the terminal.
+   - Run `gh copilot suggest "..."` for the main instruction.
+   - Wait for manual intervention or just prepare the prompt for the user to copy into Copilot Chat.
+   - *Alternative*: If the user has a specific autonomous tool for Copilot, plug it in here.
+
+### Step 2: Update WORKFLOW.md
+1. Add a section: "Multi-Agent Protocol".
+2. Define Task Prefixes:
+   - `[TASK INSTRUCTION FOR CLAUDE]` -> Picked up by `claude-worker.ps1`.
+   - `[TASK INSTRUCTION FOR COPILOT]` -> Picked up by `copilot-worker.ps1`.
+3. Guidance on which agent to use:
+   - **Claude**: Deep architecture, multi-file edits, complex logic.
+   - **Copilot**: Unit tests, boilerplate, documentation, small refactors.
+
+### Step 3: Create a helper setup-copilot.ps1
+- Script to: `gh extension install github/gh-copilot`.
+- Verify authentication: `gh auth status`.
+
+### Step 4: Finish
+- Commit, Push, Close Issue #25.
