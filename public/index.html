@@ -467,12 +467,14 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
       <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
       <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
+      <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
       <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
       <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
     </div>
     <div class="nav-section" id="admin-menu" style="display:none">
       <div class="nav-section-title">Quản trị</div>
       <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
+      <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Hỗ trợ</div>
@@ -490,7 +492,15 @@ tr:hover td { background: var(--blue-bg); }
         <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none; padding:4px 8px; font-size:18px" onclick="toggleSidebar()">☰</button>
         <div class="topbar-title" id="page-title">Dashboard</div>
       </div>
-      <div class="topbar-actions" id="topbar-actions"></div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <div id="notif-bell" style="display:none; position:relative; cursor:pointer" onclick="toggleNotifPanel()">
+          <span style="font-size:20px">🔔</span>
+          <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">0</span>
+        </div>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </div>
+    </div>
+    <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:320px;max-height:420px;overflow-y:auto;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:300;padding:12px"></div>
     </div>
     <div class="page-body" id="page-body"></div>
   </div>
@@ -570,7 +580,13 @@ function showApp() {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sidebar-name').textContent = currentUser.name;
   document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
-  if (['admin', 'manager'].includes(currentUser.role)) document.getElementById('admin-menu').style.display = 'block';
+  if (['admin', 'manager'].includes(currentUser.role)) {
+    document.getElementById('admin-menu').style.display = 'block';
+    // Show notification bell
+    document.getElementById('notif-bell').style.display = 'block';
+    loadNotifBell();
+    setInterval(loadNotifBell, 60000); // refresh every 60s
+  }
   if (pendingAssetId) {
     const id = pendingAssetId;
     pendingAssetId = null;
@@ -599,20 +615,23 @@ function navigate(page, param = null) {
     dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
     users: 'Quản lý Người dùng', scan: 'Quét QR',
     assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
-    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý'
+    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
+    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
     workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>',
     assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
     users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
+    inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
     assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>'
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
     dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets,
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
-    mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap
+    mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
+    inventory: renderInventory, tenantportal: renderTenantPortal
   };
   (renders[page] || (() => {}))();
 
@@ -1933,6 +1952,262 @@ async function deleteTemplate(id) {
   if (!r.ok) return toast(r.error, 'error');
   toast('Đã xóa template', 'success');
   renderPMTemplates();
+}
+
+// ─── NOTIFICATIONS BELL ──────────────────────────────────────
+async function loadNotifBell() {
+  if (!['admin','manager'].includes(currentUser?.role)) return;
+  const r = await api('GET', '/api/notifications');
+  if (!r.ok) return;
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  if (r.unread > 0) {
+    badge.textContent = r.unread > 9 ? '9+' : r.unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none') {
+    renderNotifPanel();
+    panel.style.display = 'block';
+    document.addEventListener('click', closeNotifPanelOutside, { once: true });
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function closeNotifPanelOutside(e) {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && !panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+}
+
+async function renderNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  panel.innerHTML = '<div style="color:var(--gray);font-size:12px">Đang tải...</div>';
+  const r = await api('GET', '/api/notifications');
+  const list = r.data || [];
+  const typeIcon = { low_stock: '📦', overdue_wo: '⏰', tenant_request: '🏠' };
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:700;font-size:14px">🔔 Thông báo</div>
+      <button class="btn btn-ghost btn-sm" onclick="markAllRead()" style="font-size:11px">Đánh dấu đã đọc</button>
+    </div>
+    ${!list.length ? '<div class="empty-state" style="padding:24px"><p>Chưa có thông báo</p></div>' :
+      list.map(n => `
+        <div style="padding:10px 0;border-bottom:1px solid #f1f5f9;opacity:${n.read?0.5:1}">
+          <div style="font-size:12px;font-weight:600">${typeIcon[n.type]||'🔔'} ${n.title}</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">${n.body}</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:3px">${fmtDate(n.createdAt)}</div>
+        </div>`).join('')}
+  `;
+}
+
+async function markAllRead() {
+  await api('POST', '/api/notifications/mark-read');
+  document.getElementById('notif-badge').style.display = 'none';
+  renderNotifPanel();
+}
+
+// ─── INVENTORY ────────────────────────────────────────────────
+async function renderInventory() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="filter-bar">
+      <input id="inv-search" placeholder="🔍 Tìm tên / SKU..." oninput="filterInventory()">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="inv-lowstock" onchange="filterInventory()"> Chỉ vật tư sắp hết
+      </label>
+    </div>
+    <div id="inv-list"></div>`;
+  filterInventory();
+}
+
+async function filterInventory() {
+  const search = document.getElementById('inv-search')?.value || '';
+  const lowStock = document.getElementById('inv-lowstock')?.checked ? '1' : '';
+  let url = '/api/inventory';
+  const params = [];
+  if (search) params.push(`search=${encodeURIComponent(search)}`);
+  if (lowStock) params.push('lowStock=1');
+  if (params.length) url += '?' + params.join('&');
+
+  const r = await api('GET', url);
+  const list = r.data || [];
+  const container = document.getElementById('inv-list');
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>Kho trống. Hãy thêm vật tư đầu tiên!</p></div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tên vật tư</th><th>SKU</th><th>Đơn vị</th><th>Tồn kho</th><th>Tối thiểu</th><th>Vị trí</th><th></th></tr></thead>
+        <tbody>${list.map(item => {
+          const low = item.qty <= (item.minQty || 0) && item.minQty > 0;
+          return `<tr>
+            <td data-label="Tên vật tư" style="font-weight:600">${item.name}${low ? ' <span class="badge badge-high" style="font-size:10px">⚠ Sắp hết</span>' : ''}</td>
+            <td data-label="SKU"><code style="font-size:11px">${item.sku || '—'}</code></td>
+            <td data-label="Đơn vị">${item.unit}</td>
+            <td data-label="Tồn kho" style="font-weight:700;color:${low?'var(--red)':'var(--green)'}">${item.qty}</td>
+            <td data-label="Tối thiểu">${item.minQty || 0}</td>
+            <td data-label="Vị trí">${item.location || '—'}</td>
+            <td data-label="">
+              <button class="btn btn-ghost btn-sm" onclick="showInventoryTx('${item.id}','${item.name}')">Nhập/Xuất</button>
+              ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showInventoryForm(${JSON.stringify(item).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+function showInventoryForm(data = {}) {
+  openModal(data.id ? 'Sửa Vật tư' : 'Thêm Vật tư vào Kho', `
+    <div class="form-row">
+      <div class="form-group"><label>Tên vật tư *</label><input id="inv-name" value="${data.name||''}" placeholder="VD: Bóng đèn LED 20W"></div>
+      <div class="form-group"><label>Mã SKU</label><input id="inv-sku" value="${data.sku||''}" placeholder="VD: LED-20W-001"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Đơn vị tính</label><input id="inv-unit" value="${data.unit||'cái'}" placeholder="cái, lít, cuộn..."></div>
+      <div class="form-group"><label>Tồn kho hiện tại</label><input type="number" id="inv-qty" value="${data.qty||0}" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Mức tối thiểu (cảnh báo)</label><input type="number" id="inv-minqty" value="${data.minQty||0}" min="0"></div>
+      <div class="form-group"><label>Vị trí kho</label><input id="inv-loc" value="${data.location||''}" placeholder="VD: Kho B, kệ 3"></div>
+    </div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="inv-notes">${data.notes||''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteInventory('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveInventory('${data.id||''}')">Lưu</button>`);
+}
+
+async function saveInventory(id) {
+  const body = {
+    name: document.getElementById('inv-name').value.trim(),
+    sku: document.getElementById('inv-sku').value.trim(),
+    unit: document.getElementById('inv-unit').value.trim() || 'cái',
+    qty: Number(document.getElementById('inv-qty').value),
+    minQty: Number(document.getElementById('inv-minqty').value),
+    location: document.getElementById('inv-loc').value.trim(),
+    notes: document.getElementById('inv-notes').value.trim()
+  };
+  if (!body.name) return toast('Vui lòng nhập tên vật tư', 'error');
+  const r = id ? await api('PUT', `/api/inventory/${id}`, body) : await api('POST', '/api/inventory', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast(id ? 'Đã cập nhật' : 'Thêm vật tư thành công!', 'success'); filterInventory();
+}
+
+async function deleteInventory(id) {
+  if (!confirm('Xóa vật tư này?')) return;
+  const r = await api('DELETE', `/api/inventory/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Đã xóa', 'success'); filterInventory();
+}
+
+async function showInventoryTx(id, name) {
+  const r = await api('GET', `/api/inventory/${id}/transactions`);
+  const txList = r.data || [];
+  openModal(`📦 Nhập/Xuất kho: ${name}`, `
+    <div class="form-row" style="margin-bottom:16px">
+      <div class="form-group">
+        <label>Loại giao dịch</label>
+        <select id="tx-type">
+          <option value="in">📥 Nhập kho</option>
+          <option value="out">📤 Xuất kho</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Số lượng *</label><input type="number" id="tx-qty" min="1" value="1"></div>
+    </div>
+    <div class="form-group"><label>Ghi chú</label><input id="tx-note" placeholder="Lý do nhập/xuất..."></div>
+    <hr style="margin:16px 0;border-color:var(--border)">
+    <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px">Lịch sử giao dịch gần nhất</div>
+    <div style="max-height:200px;overflow-y:auto">
+      ${txList.length ? txList.map(t => `
+        <div style="padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;display:flex;justify-content:space-between">
+          <span>${t.type==='in'?'📥':'📤'} ${t.qty} ${t.note ? '· '+t.note : ''}</span>
+          <span style="color:${t.type==='in'?'var(--green)':'var(--red)'};font-weight:700">${t.type==='in'?'+':'-'}${t.qty} → ${t.balanceAfter}</span>
+        </div>`).join('') : '<div style="color:var(--gray);padding:8px">Chưa có giao dịch</div>'}
+    </div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+      <button class="btn btn-primary" onclick="submitInventoryTx('${id}')">Xác nhận</button>`);
+}
+
+async function submitInventoryTx(id) {
+  const type = document.getElementById('tx-type').value;
+  const qty = Number(document.getElementById('tx-qty').value);
+  const note = document.getElementById('tx-note').value.trim();
+  if (!qty || qty < 1) return toast('Số lượng phải lớn hơn 0', 'error');
+  const r = await api('POST', `/api/inventory/${id}/transaction`, { type, qty, note });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(`${type==='in'?'Nhập':'Xuất'} kho thành công! Tồn kho mới: ${r.data.item.qty}`, 'success');
+  filterInventory();
+  loadNotifBell();
+}
+
+// ─── TENANT PORTAL (Admin View) ──────────────────────────────
+async function renderTenantPortal() {
+  const r = await api('GET', '/api/tenant-requests');
+  const list = r.data || [];
+  const statusLabel = { pending: '🟡 Chờ duyệt', approved: '🟢 Đã tạo WO', rejected: '🔴 Từ chối' };
+  const urgLabel = { urgent: '🔴 Khẩn cấp', normal: '🟡 Bình thường', low: '🟢 Không gấp' };
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px;background:var(--blue-bg);border-color:var(--blue-light)">
+      <div style="font-size:13px;color:var(--blue-dark)">
+        🏠 <strong>Tenant Portal</strong> – Link báo sự cố dành cho cư dân:
+        <a href="/tenant" target="_blank" style="color:var(--blue);font-weight:700;margin-left:8px">${window.location.origin}/tenant ↗</a>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      ${!list.length ? '<div class="empty-state" style="padding:32px"><div class="icon">🏠</div><p>Chưa có yêu cầu nào từ cư dân</p></div>' : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mã</th><th>Cư dân</th><th>Căn hộ</th><th>Danh mục</th><th>Mô tả</th><th>Mức độ</th><th>Trạng thái</th><th>Ngày gửi</th><th></th></tr></thead>
+        <tbody>${list.map(tr => `<tr>
+          <td data-label="Mã"><code style="font-size:11px">${tr.id}</code></td>
+          <td data-label="Cư dân"><strong>${tr.name}</strong><br><span style="font-size:11px;color:var(--gray)">${tr.phone||''}</span></td>
+          <td data-label="Căn hộ">${tr.unit||'—'}</td>
+          <td data-label="Danh mục">${tr.category}</td>
+          <td data-label="Mô tả" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tr.description}</td>
+          <td data-label="Mức độ">${urgLabel[tr.urgency]||tr.urgency}</td>
+          <td data-label="Trạng thái">${statusLabel[tr.status]||tr.status}${tr.workOrderId?`<br><code style="font-size:10px">${tr.workOrderId}</code>`:''}</td>
+          <td data-label="Ngày gửi">${fmtDateShort(tr.createdAt)}</td>
+          <td data-label="">
+            ${tr.status === 'pending' ? `
+              <button class="btn btn-success btn-sm" onclick="approveTenantReq('${tr.id}')">✅ Tạo WO</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectTenantReq('${tr.id}')">Từ chối</button>
+            ` : ''}
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+
+async function approveTenantReq(id) {
+  if (!confirm('Tạo Work Order từ yêu cầu này?')) return;
+  const r = await api('PUT', `/api/tenant-requests/${id}/approve`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast(`✅ Đã tạo ${r.data.workOrder.id}`, 'success');
+  renderTenantPortal();
+}
+
+async function rejectTenantReq(id) {
+  if (!confirm('Từ chối yêu cầu này?')) return;
+  const r = await api('PUT', `/api/tenant-requests/${id}/reject`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã từ chối yêu cầu', 'success');
+  renderTenantPortal();
 }
 
 // ─── Init ────────────────────────────────────────────────────

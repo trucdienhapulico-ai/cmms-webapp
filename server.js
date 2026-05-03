@@ -56,6 +56,10 @@ function loadDB() {
   if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
   if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
   if (!db.pmSchedules) { db.pmSchedules = []; saveDB(db); }
+  if (!db.inventory) { db.inventory = []; saveDB(db); }
+  if (!db.inventoryTx) { db.inventoryTx = []; saveDB(db); }
+  if (!db.notifications) { db.notifications = []; saveDB(db); }
+  if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
   return db;
 }
 function saveDB(db) {
@@ -75,6 +79,10 @@ function initDB() {
     checklistTemplates: getDefaultTemplates(),
     maintenanceLogs: [],
     pmSchedules: [],
+    inventory: [],
+    inventoryTx: [],
+    notifications: [],
+    tenantRequests: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -658,6 +666,201 @@ app.post('/api/pm-schedules/:id/generate-wo', requireAuth(['admin', 'manager']),
   res.json({ ok: 1, data: { workOrder: wo, schedule } });
 });
 
+// ─── INVENTORY ───────────────────────────────────────────────
+app.get('/api/inventory', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { search, lowStock } = req.query;
+  let list = db.inventory || [];
+  if (search) list = list.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || (i.sku||'').toLowerCase().includes(search.toLowerCase()));
+  if (lowStock === '1') list = list.filter(i => i.qty <= (i.minQty || 0));
+  list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.post('/api/inventory', requireAuth(['admin', 'manager']), (req, res) => {
+  const { name, sku, unit, qty, minQty, location, notes } = req.body;
+  if (!name) return res.json({ ok: 0, error: 'Thieu ten vat tu' });
+  const db = loadDB();
+  if ((db.inventory||[]).find(i => i.sku && i.sku === sku)) return res.json({ ok: 0, error: 'Ma SKU da ton tai' });
+  const item = {
+    id: `INV-${Date.now()}`, name, sku: sku||'', unit: unit||'cai',
+    qty: Number(qty)||0, minQty: Number(minQty)||0,
+    location: location||'', notes: notes||'',
+    createdBy: req.session.username, createdAt: now(), updatedAt: now()
+  };
+  if (!db.inventory) db.inventory = [];
+  db.inventory.push(item);
+  saveDB(db);
+  res.json({ ok: 1, data: item });
+});
+
+app.put('/api/inventory/:id', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const item = (db.inventory||[]).find(i => i.id === req.params.id);
+  if (!item) return res.json({ ok: 0, error: 'Khong tim thay vat tu' });
+  ['name','sku','unit','location','notes'].forEach(f => { if (req.body[f] !== undefined) item[f] = req.body[f]; });
+  ['qty','minQty'].forEach(f => { if (req.body[f] !== undefined) item[f] = Number(req.body[f]); });
+  item.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: item });
+});
+
+app.delete('/api/inventory/:id', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const idx = (db.inventory||[]).findIndex(i => i.id === req.params.id);
+  if (idx === -1) return res.json({ ok: 0, error: 'Khong tim thay' });
+  db.inventory.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+// Stock transactions (in/out)
+app.get('/api/inventory/:id/transactions', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const list = (db.inventoryTx||[]).filter(t => t.itemId === req.params.id)
+    .sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,50);
+  res.json({ ok: 1, data: list });
+});
+
+app.post('/api/inventory/:id/transaction', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const item = (db.inventory||[]).find(i => i.id === req.params.id);
+  if (!item) return res.json({ ok: 0, error: 'Khong tim thay vat tu' });
+  const { type, qty, note, workOrderId } = req.body; // type: 'in'|'out'
+  if (!type || !qty) return res.json({ ok: 0, error: 'Thieu loai giao dich hoac so luong' });
+  const delta = type === 'in' ? Math.abs(Number(qty)) : -Math.abs(Number(qty));
+  if (item.qty + delta < 0) return res.json({ ok: 0, error: 'So luong ton kho khong du' });
+  item.qty += delta;
+  item.updatedAt = now();
+  const tx = {
+    id: `TX-${Date.now()}`, itemId: item.id, itemName: item.name,
+    type, qty: Math.abs(Number(qty)), delta, balanceAfter: item.qty,
+    note: note||'', workOrderId: workOrderId||null,
+    by: req.session.username, createdAt: now()
+  };
+  if (!db.inventoryTx) db.inventoryTx = [];
+  db.inventoryTx.unshift(tx);
+  if (db.inventoryTx.length > 2000) db.inventoryTx = db.inventoryTx.slice(0, 2000);
+  // Auto-create low-stock notification
+  if (item.qty <= (item.minQty||0) && item.minQty > 0) {
+    if (!db.notifications) db.notifications = [];
+    db.notifications.unshift({
+      id: `NOTIF-${Date.now()}`, type: 'low_stock', read: false,
+      title: `Vat tu sap het: ${item.name}`,
+      body: `Con lai ${item.qty} ${item.unit}, muc toi thieu: ${item.minQty}`,
+      refId: item.id, refType: 'inventory', createdAt: now()
+    });
+  }
+  saveDB(db);
+  res.json({ ok: 1, data: { tx, item } });
+});
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────
+app.get('/api/notifications', requireAuth(['admin','manager']), (req, res) => {
+  const db = loadDB();
+  const list = (db.notifications||[]).slice(0, 30);
+  const unread = list.filter(n => !n.read).length;
+  res.json({ ok: 1, data: list, unread });
+});
+
+app.post('/api/notifications/mark-read', requireAuth(['admin','manager']), (req, res) => {
+  const db = loadDB();
+  (db.notifications||[]).forEach(n => n.read = true);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+// Auto-notify overdue WOs (called on /api/stats fetch)
+function checkOverdueNotifications(db) {
+  const today = now().split('T')[0];
+  const existing = new Set((db.notifications||[]).filter(n=>n.type==='overdue_wo').map(n=>n.refId));
+  (db.workOrders||[]).forEach(wo => {
+    if (wo.status === 'done' || wo.status === 'cancelled') return;
+    if (!wo.dueDate || wo.dueDate >= today) return;
+    if (existing.has(wo.id)) return;
+    if (!db.notifications) db.notifications = [];
+    db.notifications.unshift({
+      id: `NOTIF-${Date.now()}-${wo.id}`, type: 'overdue_wo', read: false,
+      title: `Lenh cong viec qua han: ${wo.title}`,
+      body: `Ma: ${wo.id} - Han: ${wo.dueDate}`,
+      refId: wo.id, refType: 'workOrder', createdAt: now()
+    });
+  });
+  if (db.notifications && db.notifications.length > 200) db.notifications = db.notifications.slice(0,200);
+}
+
+// ─── TENANT PORTAL ────────────────────────────────────────────
+app.get('/tenant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tenant.html')));
+
+app.post('/api/tenant-requests', (req, res) => {
+  const { name, phone, unit: tenantUnit, category, description, urgency } = req.body;
+  if (!name || !description) return res.json({ ok: 0, error: 'Vui long nhap ten va mo ta su co' });
+  const db = loadDB();
+  const token = crypto.randomBytes(8).toString('hex');
+  const request = {
+    id: `TR-${Date.now()}`, token, name, phone: phone||'', unit: tenantUnit||'',
+    category: category||'Khac', description, urgency: urgency||'normal',
+    status: 'pending', workOrderId: null,
+    createdAt: now(), updatedAt: now()
+  };
+  if (!db.tenantRequests) db.tenantRequests = [];
+  db.tenantRequests.unshift(request);
+  // Auto create notification for managers
+  if (!db.notifications) db.notifications = [];
+  db.notifications.unshift({
+    id: `NOTIF-${Date.now()}`, type: 'tenant_request', read: false,
+    title: `Yeu cau moi tu cu dan: ${name}`,
+    body: `[${request.category}] ${description.slice(0,80)}`,
+    refId: request.id, refType: 'tenantRequest', createdAt: now()
+  });
+  saveDB(db);
+  res.json({ ok: 1, data: { id: request.id, token } });
+});
+
+app.get('/api/tenant-requests/track/:token', (req, res) => {
+  const db = loadDB();
+  const req2 = (db.tenantRequests||[]).find(r => r.token === req.params.token);
+  if (!req2) return res.json({ ok: 0, error: 'Khong tim thay yeu cau' });
+  res.json({ ok: 1, data: { id: req2.id, status: req2.status, category: req2.category, description: req2.description, createdAt: req2.createdAt, workOrderId: req2.workOrderId } });
+});
+
+app.get('/api/tenant-requests', requireAuth(['admin','manager']), (req, res) => {
+  const db = loadDB();
+  const list = (db.tenantRequests||[]).slice(0, 100);
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.put('/api/tenant-requests/:id/approve', requireAuth(['admin','manager']), (req, res) => {
+  const db = loadDB();
+  const tr = (db.tenantRequests||[]).find(r => r.id === req.params.id);
+  if (!tr) return res.json({ ok: 0, error: 'Khong tim thay yeu cau' });
+  const woId = `WO-${String(db.nextId.workOrder).padStart(4,'0')}`;
+  db.nextId.workOrder++;
+  const wo = {
+    id: woId, title: `[Tenant] ${tr.category} - Can ho ${tr.unit||'?'}`,
+    description: `${tr.description}\n\nYeu cau tu: ${tr.name} - ${tr.phone||''}`,
+    priority: tr.urgency === 'urgent' ? 'high' : 'medium',
+    status: 'open', type: 'corrective',
+    createdBy: 'tenant-portal', tenantRequestId: tr.id,
+    createdAt: now(), updatedAt: now(),
+    history: [{ action: 'created from tenant request', by: req.session.username, at: now() }]
+  };
+  db.workOrders.push(wo);
+  tr.status = 'approved'; tr.workOrderId = woId; tr.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: { workOrder: wo, tenantRequest: tr } });
+});
+
+app.put('/api/tenant-requests/:id/reject', requireAuth(['admin','manager']), (req, res) => {
+  const db = loadDB();
+  const tr = (db.tenantRequests||[]).find(r => r.id === req.params.id);
+  if (!tr) return res.json({ ok: 0, error: 'Khong tim thay' });
+  tr.status = 'rejected'; tr.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+// ─── Stats (inject overdue check) ─────────────────────────────
 // ─── Health check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: 1, uptime: process.uptime() }));
 
