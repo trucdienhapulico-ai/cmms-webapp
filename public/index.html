@@ -468,6 +468,8 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
       <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
       <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
+      <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
+      <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
       <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
       <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
       <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
@@ -619,7 +621,8 @@ function navigate(page, param = null) {
     assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
     pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
     inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
-    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)'
+    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)',
+    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
@@ -628,7 +631,9 @@ function navigate(page, param = null) {
     users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
     inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
     assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>',
-    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>'
+    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>',
+    vendors: '<button class="btn btn-primary btn-sm" onclick="showVendorForm()">+ Thêm NCC</button>',
+    purchaseorders: '<button class="btn btn-primary btn-sm" onclick="showPOForm()">+ Tạo đơn mua</button>'
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
@@ -636,7 +641,8 @@ function navigate(page, param = null) {
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
     mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
     inventory: renderInventory, tenantportal: renderTenantPortal,
-    shifts: renderShifts, auditlog: renderAuditLog
+    shifts: renderShifts, auditlog: renderAuditLog,
+    vendors: renderVendors, purchaseorders: renderPO
   };
   (renders[page] || (() => {}))();
 
@@ -1019,6 +1025,18 @@ function renderUIMap() {
               <td data-label="Thành phần">Form Nhập/Xuất kho</td>
               <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Tx]'); toast('Đã copy mã: [UI-Inv-Tx]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Tx] 📋</button></td>
               <td data-label="Mô tả">Cửa sổ giao dịch nhập/xuất kho kèm lịch sử giao dịch</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Mua hàng - Nhà cung cấp</td>
+              <td data-label="Thành phần">Bảng danh sách & Form NCC</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Vendors]'); toast('Đã copy mã: [UI-Inv-Vendors]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Vendors] 📋</button></td>
+              <td data-label="Mô tả">Trang quản lý nhà cung cấp: danh sách, thêm/sửa/xóa NCC</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Mua hàng - Đơn mua hàng</td>
+              <td data-label="Thành phần">Bảng PO & Form tạo đơn</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-PO]'); toast('Đã copy mã: [UI-Inv-PO]')" style="font-family: monospace; font-size: 11px">[UI-Inv-PO] 📋</button></td>
+              <td data-label="Mô tả">Trang đơn mua hàng (PO): tạo đơn, theo dõi trạng thái, tự động cập nhật tồn kho khi nhận hàng</td>
             </tr>
             <tr>
               <td data-label="Khu vực">Tenant Portal (Admin)</td>
@@ -2496,6 +2514,204 @@ async function submitInventoryTx(id) {
   toast(`${type==='in'?'Nhập':'Xuất'} kho thành công! Tồn kho mới: ${r.data.item.qty}`, 'success');
   filterInventory();
   loadNotifBell();
+}
+
+// ─── VENDORS ─────────────────────────────────────────────────
+async function renderVendors() {
+  const r = await api('GET', '/api/vendors');
+  const list = r.data || [];
+  document.getElementById('page-body').innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="icon">🏢</div><p>Chưa có nhà cung cấp. Nhấn "+ Thêm NCC" để bắt đầu!</p></div>`
+    : `<div class="card" style="padding:0"><div class="table-wrap"><table>
+        <thead><tr><th>Tên NCC</th><th>Liên hệ</th><th>Điện thoại</th><th>Email</th><th>Địa chỉ</th><th></th></tr></thead>
+        <tbody>${list.map(v => `<tr>
+          <td data-label="Tên NCC" style="font-weight:600">${v.name}</td>
+          <td data-label="Liên hệ">${v.contact || '—'}</td>
+          <td data-label="Điện thoại">${v.phone || '—'}</td>
+          <td data-label="Email">${v.email || '—'}</td>
+          <td data-label="Địa chỉ">${v.address || '—'}</td>
+          <td data-label="">
+            ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showVendorForm(${JSON.stringify(v).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div></div>`;
+}
+
+function showVendorForm(data = {}) {
+  openModal(data.id ? 'Sửa Nhà cung cấp' : 'Thêm Nhà cung cấp', `
+    <div class="form-row">
+      <div class="form-group"><label>Tên NCC *</label><input id="vnd-name" value="${data.name||''}" placeholder="VD: Công ty TNHH ABC"></div>
+      <div class="form-group"><label>Người liên hệ</label><input id="vnd-contact" value="${data.contact||''}" placeholder="Tên người liên hệ"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Điện thoại</label><input id="vnd-phone" value="${data.phone||''}" placeholder="0912..."></div>
+      <div class="form-group"><label>Email</label><input id="vnd-email" value="${data.email||''}" placeholder="abc@company.com"></div>
+    </div>
+    <div class="form-group"><label>Địa chỉ</label><input id="vnd-address" value="${data.address||''}" placeholder="Địa chỉ công ty"></div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="vnd-notes">${data.notes||''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteVendor('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveVendor('${data.id||''}')">Lưu</button>`);
+}
+
+async function saveVendor(id) {
+  const body = {
+    name: document.getElementById('vnd-name').value.trim(),
+    contact: document.getElementById('vnd-contact').value.trim(),
+    phone: document.getElementById('vnd-phone').value.trim(),
+    email: document.getElementById('vnd-email').value.trim(),
+    address: document.getElementById('vnd-address').value.trim(),
+    notes: document.getElementById('vnd-notes').value.trim()
+  };
+  if (!body.name) return toast('Vui lòng nhập tên nhà cung cấp', 'error');
+  const r = id ? await api('PUT', `/api/vendors/${id}`, body) : await api('POST', '/api/vendors', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast(id ? 'Đã cập nhật' : 'Thêm nhà cung cấp thành công!', 'success'); renderVendors();
+}
+
+async function deleteVendor(id) {
+  if (!confirm('Xóa nhà cung cấp này?')) return;
+  const r = await api('DELETE', `/api/vendors/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Đã xóa', 'success'); renderVendors();
+}
+
+// ─── PURCHASE ORDERS ─────────────────────────────────────────
+const PO_STATUS = { draft: '📝 Nháp', sent: '📤 Đã gửi', received: '✅ Đã nhận', cancelled: '❌ Đã hủy' };
+const PO_STATUS_COLOR = { draft: 'var(--gray)', sent: 'var(--blue)', received: 'var(--green)', cancelled: 'var(--red)' };
+
+async function renderPO() {
+  const r = await api('GET', '/api/purchase-orders');
+  const list = r.data || [];
+  document.getElementById('page-body').innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="icon">🛒</div><p>Chưa có đơn mua hàng. Nhấn "+ Tạo đơn mua" để bắt đầu!</p></div>`
+    : `<div class="card" style="padding:0"><div class="table-wrap"><table>
+        <thead><tr><th>Mã PO</th><th>Nhà cung cấp</th><th>Số mặt hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th></th></tr></thead>
+        <tbody>${list.map(po => `<tr>
+          <td data-label="Mã PO"><code style="font-size:11px">${po.id}</code></td>
+          <td data-label="Nhà cung cấp" style="font-weight:600">${po.vendorName}</td>
+          <td data-label="Số mặt hàng">${(po.items||[]).length} mặt hàng</td>
+          <td data-label="Tổng tiền" style="font-weight:700">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td>
+          <td data-label="Trạng thái"><span style="color:${PO_STATUS_COLOR[po.status]||'inherit'};font-weight:600">${PO_STATUS[po.status]||po.status}</span></td>
+          <td data-label="Ngày tạo">${fmtDateShort(po.createdAt)}</td>
+          <td data-label="">
+            <button class="btn btn-ghost btn-sm" onclick="showPODetail(${JSON.stringify(po).replace(/"/g,'&quot;')})">Xem</button>
+            ${['admin','manager'].includes(currentUser.role) && po.status !== 'received' && po.status !== 'cancelled' ? `<button class="btn btn-ghost btn-sm" onclick="showPOStatusMenu('${po.id}','${po.status}')">Cập nhật</button>` : ''}
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div></div>`;
+}
+
+function showPODetail(po) {
+  const itemRows = (po.items || []).map(i =>
+    `<tr><td>${i.name}</td><td><code style="font-size:11px">${i.sku||'—'}</code></td><td>${i.qty} ${i.unit}</td><td>${(i.unitPrice||0).toLocaleString('vi-VN')}đ</td><td style="font-weight:700">${((i.qty||0)*(i.unitPrice||0)).toLocaleString('vi-VN')}đ</td></tr>`
+  ).join('');
+  openModal(`📋 Chi tiết PO: ${po.id}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
+      <div><strong>Nhà cung cấp:</strong><br>${po.vendorName}</div>
+      <div><strong>Trạng thái:</strong><br><span style="color:${PO_STATUS_COLOR[po.status]};font-weight:600">${PO_STATUS[po.status]||po.status}</span></div>
+      <div><strong>Ngày tạo:</strong><br>${fmtDateShort(po.createdAt)}</div>
+      <div><strong>Ngày nhận dự kiến:</strong><br>${po.expectedDate ? fmtDateShort(po.expectedDate) : '—'}</div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tên hàng</th><th>SKU</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+      <tfoot><tr><td colspan="4" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td><td style="font-weight:700;color:var(--blue)">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td></tr></tfoot>
+    </table></div>
+    ${po.notes ? `<div style="margin-top:12px;font-size:13px"><strong>Ghi chú:</strong> ${po.notes}</div>` : ''}
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`);
+}
+
+function showPOStatusMenu(id, currentStatus) {
+  const nextStatuses = { draft: ['sent', 'cancelled'], sent: ['received', 'cancelled'], received: [], cancelled: [] };
+  const options = (nextStatuses[currentStatus] || []).map(s =>
+    `<button class="btn btn-primary btn-sm" style="margin:4px" onclick="updatePOStatus('${id}','${s}')">${PO_STATUS[s]}</button>`
+  ).join('');
+  openModal('Cập nhật trạng thái PO', `
+    <p style="font-size:13px;margin-bottom:12px">Trạng thái hiện tại: <strong style="color:${PO_STATUS_COLOR[currentStatus]}">${PO_STATUS[currentStatus]}</strong></p>
+    <p style="font-size:13px;margin-bottom:12px">Chuyển sang:</p>
+    <div>${options || '<p style="color:var(--gray)">Không có trạng thái tiếp theo khả dụng.</p>'}</div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>`);
+}
+
+async function updatePOStatus(id, status) {
+  const r = await api('PUT', `/api/purchase-orders/${id}/status`, { status });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  const msg = status === 'received' ? 'Đã nhận hàng và cập nhật tồn kho!' : 'Đã cập nhật trạng thái PO';
+  toast(msg, 'success');
+  renderPO();
+  if (status === 'received') loadNotifBell();
+}
+
+let _poItems = [];
+async function showPOForm() {
+  const rv = await api('GET', '/api/vendors');
+  const vendors = rv.data || [];
+  _poItems = [];
+  openModal('Tạo Đơn mua hàng (PO)', `
+    <div class="form-row">
+      <div class="form-group"><label>Nhà cung cấp *</label>
+        <select id="po-vendor">
+          <option value="">-- Chọn NCC --</option>
+          ${vendors.map(v => `<option value="${v.id}" data-name="${v.name}">${v.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>Ngày nhận dự kiến</label><input type="date" id="po-expected"></div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Danh sách hàng cần mua:</div>
+    <div id="po-items-list"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addPOItem()">+ Thêm mặt hàng</button>
+    <div class="form-group" style="margin-top:12px"><label>Ghi chú</label><textarea id="po-notes" placeholder="Ghi chú đơn hàng..."></textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="savePO()">Tạo đơn</button>`);
+  addPOItem();
+}
+
+function addPOItem() {
+  _poItems.push({ id: Date.now() });
+  renderPOItems();
+}
+
+function removePOItem(id) {
+  _poItems = _poItems.filter(i => i.id !== id);
+  renderPOItems();
+}
+
+function renderPOItems() {
+  const el = document.getElementById('po-items-list');
+  if (!el) return;
+  el.innerHTML = _poItems.map(item => `
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px" id="poi-${item.id}">
+      <div><input placeholder="Tên hàng *" id="poi-name-${item.id}" style="width:100%"></div>
+      <div><input placeholder="SKU" id="poi-sku-${item.id}" style="width:100%"></div>
+      <div><input type="number" placeholder="SL *" id="poi-qty-${item.id}" min="1" value="1" style="width:100%"></div>
+      <div><input type="number" placeholder="Đơn giá" id="poi-price-${item.id}" min="0" value="0" style="width:100%"></div>
+      <div><button class="btn btn-danger btn-sm" onclick="removePOItem(${item.id})">✕</button></div>
+    </div>`).join('');
+}
+
+async function savePO() {
+  const vendorEl = document.getElementById('po-vendor');
+  const vendorId = vendorEl.value;
+  const vendorName = vendorEl.options[vendorEl.selectedIndex]?.getAttribute('data-name') || '';
+  if (!vendorId) return toast('Vui lòng chọn nhà cung cấp', 'error');
+  const items = _poItems.map(item => ({
+    name: (document.getElementById(`poi-name-${item.id}`)?.value || '').trim(),
+    sku: (document.getElementById(`poi-sku-${item.id}`)?.value || '').trim(),
+    qty: Number(document.getElementById(`poi-qty-${item.id}`)?.value) || 1,
+    unit: 'cái',
+    unitPrice: Number(document.getElementById(`poi-price-${item.id}`)?.value) || 0
+  })).filter(i => i.name);
+  if (!items.length) return toast('Vui lòng thêm ít nhất 1 mặt hàng', 'error');
+  const body = {
+    vendorId, vendorName, items,
+    notes: document.getElementById('po-notes').value.trim(),
+    expectedDate: document.getElementById('po-expected').value || null
+  };
+  const r = await api('POST', '/api/purchase-orders', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Tạo đơn mua hàng thành công!', 'success'); renderPO();
 }
 
 // ─── TENANT PORTAL (Admin View) ──────────────────────────────

@@ -62,6 +62,8 @@ function loadDB() {
   if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
   if (!db.shifts) { db.shifts = []; saveDB(db); }
   if (!db.auditLogs) { db.auditLogs = []; saveDB(db); }
+  if (!db.vendors) { db.vendors = []; saveDB(db); }
+  if (!db.purchaseOrders) { db.purchaseOrders = []; saveDB(db); }
   return db;
 }
 function saveDB(db) {
@@ -87,6 +89,8 @@ function initDB() {
     tenantRequests: [],
     shifts: [],
     auditLogs: [],
+    vendors: [],
+    purchaseOrders: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -849,6 +853,114 @@ app.post('/api/inventory/:id/transaction', requireAuth(), (req, res) => {
   saveDB(db);
   logAudit(req, type, 'inventory', item.id, `${type === 'in' ? '+' : '-'}${Math.abs(Number(qty))} ${item.unit} ${item.name}`);
   res.json({ ok: 1, data: { tx, item } });
+});
+
+// ─── VENDORS ─────────────────────────────────────────────────
+app.get('/api/vendors', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const list = [...(db.vendors || [])].sort((a, b) => a.name.localeCompare(b.name));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.post('/api/vendors', requireAuth(['admin', 'manager']), (req, res) => {
+  const { name, contact, phone, email, address, notes } = req.body;
+  if (!name) return res.json({ ok: 0, error: 'Thiếu tên nhà cung cấp' });
+  const db = loadDB();
+  const vendor = {
+    id: `VND-${Date.now()}`, name, contact: contact || '', phone: phone || '',
+    email: email || '', address: address || '', notes: notes || '',
+    createdBy: req.session.username, createdAt: now(), updatedAt: now()
+  };
+  db.vendors.push(vendor);
+  saveDB(db);
+  logAudit(req, 'create', 'vendor', vendor.id, vendor.name);
+  res.json({ ok: 1, data: vendor });
+});
+
+app.put('/api/vendors/:id', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const vendor = (db.vendors || []).find(v => v.id === req.params.id);
+  if (!vendor) return res.json({ ok: 0, error: 'Không tìm thấy nhà cung cấp' });
+  ['name', 'contact', 'phone', 'email', 'address', 'notes'].forEach(f => {
+    if (req.body[f] !== undefined) vendor[f] = req.body[f];
+  });
+  vendor.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: vendor });
+});
+
+app.delete('/api/vendors/:id', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const idx = (db.vendors || []).findIndex(v => v.id === req.params.id);
+  if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy' });
+  db.vendors.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+// ─── PURCHASE ORDERS ─────────────────────────────────────────
+app.get('/api/purchase-orders', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { status } = req.query;
+  let list = db.purchaseOrders || [];
+  if (status) list = list.filter(po => po.status === status);
+  list = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.post('/api/purchase-orders', requireAuth(['admin', 'manager']), (req, res) => {
+  const { vendorId, vendorName, items, notes, expectedDate } = req.body;
+  if (!vendorId || !items || !items.length) return res.json({ ok: 0, error: 'Thiếu nhà cung cấp hoặc danh sách hàng' });
+  const db = loadDB();
+  const totalAmount = items.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.unitPrice) || 0), 0);
+  const po = {
+    id: `PO-${Date.now()}`, vendorId, vendorName: vendorName || vendorId,
+    items: items.map(i => ({ name: i.name, sku: i.sku || '', qty: Number(i.qty) || 1, unit: i.unit || 'cái', unitPrice: Number(i.unitPrice) || 0 })),
+    totalAmount, notes: notes || '', status: 'draft',
+    expectedDate: expectedDate || null,
+    createdBy: req.session.username, createdAt: now(), updatedAt: now()
+  };
+  db.purchaseOrders.push(po);
+  saveDB(db);
+  logAudit(req, 'create', 'purchaseOrder', po.id, `${po.vendorName} - ${po.totalAmount.toLocaleString()}đ`);
+  res.json({ ok: 1, data: po });
+});
+
+app.put('/api/purchase-orders/:id/status', requireAuth(['admin', 'manager']), (req, res) => {
+  const { status } = req.body;
+  const validStatuses = ['draft', 'sent', 'received', 'cancelled'];
+  if (!validStatuses.includes(status)) return res.json({ ok: 0, error: 'Trạng thái không hợp lệ' });
+  const db = loadDB();
+  const po = (db.purchaseOrders || []).find(p => p.id === req.params.id);
+  if (!po) return res.json({ ok: 0, error: 'Không tìm thấy đơn mua hàng' });
+  po.status = status;
+  po.updatedAt = now();
+  if (status === 'received') {
+    po.receivedAt = now();
+    po.receivedBy = req.session.username;
+    // Update inventory stock by matching SKU or Name
+    (po.items || []).forEach(item => {
+      const invItem = (db.inventory || []).find(i =>
+        (item.sku && i.sku && i.sku.toLowerCase() === item.sku.toLowerCase()) ||
+        i.name.toLowerCase() === item.name.toLowerCase()
+      );
+      if (invItem) {
+        invItem.qty += Number(item.qty) || 0;
+        invItem.updatedAt = now();
+        if (!db.inventoryTx) db.inventoryTx = [];
+        db.inventoryTx.unshift({
+          id: `TX-${Date.now()}-${invItem.id}`, itemId: invItem.id, itemName: invItem.name,
+          type: 'in', qty: Number(item.qty), delta: Number(item.qty), balanceAfter: invItem.qty,
+          note: `Nhập từ PO: ${po.id}`, workOrderId: null,
+          by: req.session.username, createdAt: now()
+        });
+      }
+    });
+    if (db.inventoryTx && db.inventoryTx.length > 2000) db.inventoryTx = db.inventoryTx.slice(0, 2000);
+  }
+  saveDB(db);
+  logAudit(req, 'update_status', 'purchaseOrder', po.id, `${po.vendorName} → ${status}`);
+  res.json({ ok: 1, data: po });
 });
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────

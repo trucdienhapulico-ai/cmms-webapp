@@ -36,7 +36,7 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
 - [x] **HR & Scheduling**:
     - Quản lý lịch trực ca, workload của kỹ thuật viên (Tab 4.15) (Issue #20).
     - Theo dõi giờ công thực tế qua Check-in/out.
-- [ ] **Advanced Inventory**:
+- [x] **Advanced Inventory**:
     - Purchase Orders (PO) và quy trình phê duyệt mua hàng (Issue #22).
     - Quản lý nhà cung cấp (Vendor) và đánh giá chất lượng.
 - [x] **System Integration (Part 1)**:
