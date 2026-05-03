@@ -1,0 +1,103 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Implement HR & Scheduling module - Shift management and technician workload
+Priority: Medium
+Issue: #20
+
+## Context
+- Backend file: server.js (add new routes before health check endpoint)
+- Frontend file: public/index.html (add renderShifts() function, update sidebar nav and navigate())
+- Existing user data: /api/users endpoint returns list of users with id, username, name, role
+
+## Step-by-Step Instructions
+
+### Step 1: Add DB schema in server.js
+
+In `loadDB()` function, add:
+```javascript
+if (!db.shifts) { db.shifts = []; saveDB(db); }
+```
+
+In `initDB()` function, add `shifts: []` to the db object.
+
+### Step 2: Create Shift API routes in server.js (before health check)
+
+```javascript
+// GET /api/shifts?from=YYYY-MM-DD&to=YYYY-MM-DD&userId=xxx
+// Returns shifts filtered by date range and/or user
+app.get('/api/shifts', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { from, to, userId } = req.query;
+  let list = db.shifts || [];
+  if (from) list = list.filter(s => s.date >= from);
+  if (to) list = list.filter(s => s.date <= to);
+  if (userId) list = list.filter(s => s.userId === userId);
+  list = [...list].sort((a,b) => a.date.localeCompare(b.date));
+  res.json({ ok: 1, data: list });
+});
+
+// POST /api/shifts - Create shift (admin/manager)
+// Body: { userId, userName, date, shiftType, startTime, endTime, notes }
+// shiftType: 'morning' | 'afternoon' | 'night'
+
+// PUT /api/shifts/:id - Update shift
+
+// DELETE /api/shifts/:id - Delete shift (admin)
+
+// POST /api/shifts/:id/check-in - Operator checks in
+// Set checkInAt = now(), status = 'checked-in'
+
+// POST /api/shifts/:id/check-out - Operator checks out
+// Set checkOutAt = now(), status = 'checked-out'
+
+// GET /api/shifts/workload?month=YYYY-MM - Workload stats per user
+// Return: [{ userId, userName, totalShifts, totalHours, activeWOs, completedWOs }]
+// totalHours calculated from checkIn/checkOut or from shiftType defaults (8h each)
+// activeWOs = WOs assigned to this user with status != done
+// completedWOs = WOs assigned to this user with status = done
+```
+
+### Step 3: Frontend - Sidebar & Navigation (public/index.html)
+
+In sidebar (VAN HANH section), add before Nhật ký Bảo trì:
+```html
+<div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
+```
+
+In `navigate()` function:
+- titles: add `shifts: 'Lịch trực & Workload'`
+- actions: add `shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>'`
+- renders: add `shifts: renderShifts`
+
+### Step 4: Frontend - renderShifts() function
+
+Create with 2 tabs:
+- Tab "📆 Lịch trực tuần": 
+  - Navigation: ← Tuần trước | Tuần X (01/05 - 07/05) | Tuần sau →
+  - Grid 7 columns (T2-CN), rows for 3 ca (Sáng 6-14h, Chiều 14-22h, Đêm 22-6h)
+  - Each cell shows: avatar/name of assigned technician, badge green=checked-in, gray=scheduled
+  - Click cell → showShiftForm({ date, shiftType }) pre-filled
+  - Operator sees their own shifts with Check-in/Check-out buttons
+  
+- Tab "📊 Workload":
+  - Call GET /api/shifts/workload?month=current
+  - Table: Tên KTV | Số ca | Giờ công | WO đang làm | WO xong
+  - Row with totalHours > 160 → highlight red background
+  - Row with totalHours < 80 → highlight amber (underutilized)
+
+### Step 5: showShiftForm() Modal
+
+Fields:
+- Chọn KTV (select from /api/users, filter role=operator)
+- Ngày (date input)
+- Loại ca (select: Sáng/Chiều/Đêm)
+- Ghi chú (textarea)
+
+### Step 6: Update renderUIMap()
+- [UI-Shifts-Calendar] - Lịch trực tuần (grid 7 ngày x 3 ca)
+- [UI-Shifts-Workload] - Bảng thống kê workload KTV
+- [UI-Shifts-Form] - Form tạo/sửa ca trực
+
+### Step 7: Roadmap & Finish
+- In brain/roadmap.md: change `- [ ] **HR & Scheduling**` to `- [x]`
+- Commit: "feat: HR & Scheduling - Shift management and workload (Closes #20)"
+- Push and run `gh issue close 20`

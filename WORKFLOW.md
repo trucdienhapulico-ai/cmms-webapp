@@ -66,6 +66,13 @@ brain/
 - **Cho Antigravity tự làm**: USER yêu cầu trực tiếp. Antigravity tự đổi đuôi file tương ứng.
 - **Hẹn giờ**: Chạy `.\schedule-worker.ps1` để đặt alarm cho Claude Code thức dậy vào giờ chỉ định.
 
+### 🔄 Quy ước Bổ sung Hàng đợi (Pipeline Replenishment)
+Khi số lượng task trong `brain/tasks_queue/` **còn ≤ 1 file `.txt`**, agent đang làm việc (Antigravity hoặc Claude Code) **PHẢI**:
+1. Đọc `brain/roadmap.md` để xác định 3 hạng mục tiếp theo chưa làm.
+2. Tạo GitHub Issue tương ứng (gắn nhãn `claude-todo`).
+3. Tạo 3 file `.txt` **cực kỳ chi tiết** (ghi rõ file cần sửa, logic cần thêm, API endpoints) và thả vào `brain/tasks_queue/`.
+4. Mục đích: Đảm bảo pipeline không bao giờ cạn, worker luôn có việc chạy liên tục.
+
 ## 🗺️ Quy ước Cập nhật Giao diện (Dành cho Cả Architect & Builder)
 Hệ thống có một chức năng nội bộ mang tên **Sơ đồ UI / Góp ý (UI Map)** được code sẵn tại hàm `renderUIMap()` trong file `public/index.html`.
 Bất cứ khi nào bạn thay đổi cấu trúc giao diện, thêm màn hình mới, thêm tính năng hoặc di chuyển vị trí các nút:

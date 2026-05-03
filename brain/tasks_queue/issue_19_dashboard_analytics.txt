@@ -1,0 +1,63 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Implement Advanced Dashboard & Analytics with KPI metrics
+Priority: High
+Issue: #19
+
+## Context
+- Backend file: server.js (has existing /api/stats endpoint around line 200-300)
+- Frontend file: public/index.html (renderDashboard() function around line 782)
+- DB file: data/db.json (has workOrders, maintenanceLogs, pmSchedules, inventoryTx arrays)
+
+## Step-by-Step Instructions
+
+### Step 1: Expand /api/stats endpoint in server.js
+Find the existing `GET /api/stats` route and add these calculations:
+
+```javascript
+// MTTR = Average time from WO creation to completion (in hours)
+const doneWOs = db.workOrders.filter(w => w.status === 'done' && w.createdAt && w.updatedAt);
+const mttr = doneWOs.length ? doneWOs.reduce((sum, w) => {
+  return sum + (new Date(w.updatedAt) - new Date(w.createdAt)) / 3600000;
+}, 0) / doneWOs.length : 0;
+
+// MTBF = Mean Time Between Failures (days) - from maintenance logs with failures
+const failLogs = (db.maintenanceLogs || []).filter(l => (l.results||[]).some(r => r.status === 'fail'));
+// Calculate average days between consecutive failures
+const mtbf = failLogs.length > 1 ? /* calc days between sorted fail dates */ : 0;
+
+// PM Compliance = (PMs executed on time / Total active PMs) * 100
+const activePMs = (db.pmSchedules||[]).filter(p => p.status === 'active');
+const compliantPMs = activePMs.filter(p => p.generatedCount > 0);
+const pmCompliance = activePMs.length ? (compliantPMs.length / activePMs.length * 100) : 100;
+
+// Overdue Rate = (Overdue WOs / Total open WOs) * 100
+const overdueRate = ...;
+
+// Trending data: last 6 months { month, woCreated, woDone, failures }
+const trending = []; // Group by YYYY-MM
+```
+
+Add these to the stats response: `kpi: { mttr, mtbf, pmCompliance, overdueRate }, trending: [...]`
+
+### Step 2: Update renderDashboard() in public/index.html
+After the existing stat cards, add a new row:
+- KPI Card: MTTR (show in hours, green if < 24h, amber if < 72h, red if > 72h)
+- KPI Card: MTBF (show in days, red if < 7d, amber if < 30d, green if > 30d)
+- KPI Card: PM Compliance (%, green > 90%, amber > 70%, red < 70%)
+- KPI Card: WO Overdue Rate (%, green < 5%, amber < 15%, red > 15%)
+
+Add a simple SVG/Canvas bar chart below showing trending data (6 months).
+Use CSS variables for colors. Do NOT add external chart libraries.
+
+### Step 3: Update renderUIMap()
+Add two new entries:
+- [UI-Dash-KPI] - KPI Cards (MTTR, MTBF, PM Compliance, Overdue Rate)
+- [UI-Dash-Charts] - Trending charts (6-month bar/line chart)
+
+### Step 4: Update roadmap
+In brain/roadmap.md, change `- [ ] **Advanced Dashboard & Analytics**` to `- [x]`
+
+### Step 5: Finish
+Run: `gh issue close 19`
+Commit message: "feat: Advanced Dashboard with KPI analytics (Closes #19)"
+Push to remote.
