@@ -879,6 +879,17 @@ async function renderDashboard() {
   const r = await api('GET', '/api/stats');
   const s = r.data;
   const pm = s.pm || {};
+  const kpi = s.kpi || {};
+  const trending = s.trending || [];
+  const mttrC = kpi.mttr < 24 ? 'var(--green)' : kpi.mttr < 72 ? '#f59e0b' : 'var(--red)';
+  const mtbfC = kpi.mtbf > 30 ? 'var(--green)' : kpi.mtbf > 7 ? '#f59e0b' : 'var(--red)';
+  const pmcC = kpi.pmCompliance >= 90 ? 'var(--green)' : kpi.pmCompliance >= 70 ? '#f59e0b' : 'var(--red)';
+  const odrC = kpi.overdueRate < 5 ? 'var(--green)' : kpi.overdueRate < 15 ? '#f59e0b' : 'var(--red)';
+  const mx = Math.max(...trending.map(t => Math.max(t.woCreated, t.woDone, t.failures)), 1);
+  const bars = trending.map((t, i) => {
+    const x = i * 16.5 + 2;
+    return `<rect x="${x}%" y="${100 - t.woCreated/mx*100}%" width="4%" height="${t.woCreated/mx*100}%" fill="#3b82f6" rx="2" opacity="0.7"/><rect x="${x+4.5}%" y="${100 - t.woDone/mx*100}%" width="4%" height="${t.woDone/mx*100}%" fill="#16a34a" rx="2" opacity="0.7"/><rect x="${x+9}%" y="${100 - t.failures/mx*100}%" width="4%" height="${t.failures/mx*100}%" fill="#dc2626" rx="2" opacity="0.7"/><text x="${x+6}%" y="99%" text-anchor="middle" style="font-size:8px;fill:#64748b">${(t.label||t.month).split(' ')[0]}</text>`;
+  }).join('');
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
@@ -887,8 +898,30 @@ async function renderDashboard() {
       <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
-      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">Lịch PM đang hoạt động</div><div class="stat-value">${pm.total || 0}</div><div class="stat-sub">${pm.dueToday || 0} đến hạn hôm nay</div></div>
-      <div class="stat-card ${(pm.overdue || 0) > 0 ? 'stat-red' : 'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue || 0}</div><div class="stat-sub">Cần tạo WO</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM hoạt động</div><div class="stat-value">${pm.total||0}</div><div class="stat-sub">${pm.dueToday||0} đến hạn hôm nay</div></div>
+      <div class="stat-card ${(pm.overdue||0)>0?'stat-red':'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue||0}</div><div class="stat-sub">Cần tạo WO</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📊 Chỉ số KPI Bảo trì</div>
+      <div class="stats-grid" style="margin-top:12px">
+        <div class="stat-card" style="border-left:4px solid ${mttrC}"><div class="stat-icon">⏱️</div><div class="stat-label">MTTR</div><div class="stat-value" style="color:${mttrC}">${kpi.mttr}h</div><div class="stat-sub">TB thời gian sửa</div></div>
+        <div class="stat-card" style="border-left:4px solid ${mtbfC}"><div class="stat-icon">🔧</div><div class="stat-label">MTBF</div><div class="stat-value" style="color:${mtbfC}">${kpi.mtbf}d</div><div class="stat-sub">TB giữa 2 lần hỏng</div></div>
+        <div class="stat-card" style="border-left:4px solid ${pmcC}"><div class="stat-icon">✅</div><div class="stat-label">PM Compliance</div><div class="stat-value" style="color:${pmcC}">${kpi.pmCompliance}%</div><div class="stat-sub">Tỷ lệ PM đúng hạn</div></div>
+        <div class="stat-card" style="border-left:4px solid ${odrC}"><div class="stat-icon">⚠️</div><div class="stat-label">Overdue Rate</div><div class="stat-value" style="color:${odrC}">${kpi.overdueRate}%</div><div class="stat-sub">Tỷ lệ WO quá hạn</div></div>
+      </div>
+    </div>
+    ${(s.lowStockCount>0||s.pendingTenantReqs>0)?`<div class="stats-grid" style="margin-bottom:16px">
+      ${s.lowStockCount>0?`<div class="stat-card stat-red" style="cursor:pointer" onclick="navigate('inventory')"><div class="stat-icon">📦</div><div class="stat-label">Vật tư sắp hết</div><div class="stat-value">${s.lowStockCount}</div><div class="stat-sub">Cần đặt hàng</div></div>`:''}
+      ${s.pendingTenantReqs>0?`<div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigate('tenantportal')"><div class="stat-icon">🏠</div><div class="stat-label">Yêu cầu cư dân</div><div class="stat-value">${s.pendingTenantReqs}</div><div class="stat-sub">Chờ duyệt</div></div>`:''}
+    </div>`:''}
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📈 Xu hướng 6 tháng</div>
+      <div style="display:flex;gap:16px;margin:8px 0;font-size:12px">
+        <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Tạo</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Xong</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:3px;vertical-align:middle;margin-right:4px"></span>Sự cố</span>
+      </div>
+      <div style="width:100%;overflow-x:auto"><svg viewBox="0 0 100 50" preserveAspectRatio="none" style="width:100%;height:160px;border-bottom:1px solid var(--border)">${bars}</svg></div>
     </div>
     <div class="card">
       <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>

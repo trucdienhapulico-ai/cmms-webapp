@@ -378,9 +378,62 @@ app.delete('/api/work-orders/:id', requireAuth(['admin']), (req, res) => {
 // ─── Dashboard Stats ──────────────────────────────────────────
 app.get('/api/stats', requireAuth(), (req, res) => {
   const db = loadDB();
+  // Inject overdue notifications check
+  checkOverdueNotifications(db);
+  saveDB(db);
   const wo = db.workOrders;
   const todayStr = now().split('T')[0];
   const pm = db.pmSchedules || [];
+
+  // ─── KPI Calculations ─────────────────────────────
+  // MTTR (hours): average time from WO creation to completion
+  const doneWOs = wo.filter(w => w.status === 'done' && w.createdAt && w.updatedAt);
+  const mttr = doneWOs.length ? Math.round(doneWOs.reduce((sum, w) => {
+    return sum + (new Date(w.updatedAt) - new Date(w.createdAt)) / 3600000;
+  }, 0) / doneWOs.length * 10) / 10 : 0;
+
+  // MTBF (days): mean time between failure logs
+  const failLogs = (db.maintenanceLogs || [])
+    .filter(l => (l.results || []).some(r => r.status === 'fail'))
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  let mtbf = 0;
+  if (failLogs.length > 1) {
+    let totalDays = 0;
+    for (let i = 1; i < failLogs.length; i++) {
+      totalDays += (new Date(failLogs[i].createdAt) - new Date(failLogs[i - 1].createdAt)) / 86400000;
+    }
+    mtbf = Math.round(totalDays / (failLogs.length - 1) * 10) / 10;
+  }
+
+  // PM Compliance (%): PMs that generated WOs on time
+  const activePMs = pm.filter(p => p.status === 'active');
+  const compliantPMs = activePMs.filter(p => p.generatedCount > 0);
+  const pmCompliance = activePMs.length ? Math.round(compliantPMs.length / activePMs.length * 100) : 100;
+
+  // WO Overdue Rate (%): overdue WOs vs total open
+  const openWOs = wo.filter(w => w.status !== 'done' && w.status !== 'cancelled');
+  const overdueWOs = openWOs.filter(w => w.dueDate && w.dueDate < todayStr);
+  const overdueRate = openWOs.length ? Math.round(overdueWOs.length / openWOs.length * 100) : 0;
+
+  // Low stock count
+  const lowStockCount = (db.inventory || []).filter(i => i.qty <= (i.minQty || 0) && i.minQty > 0).length;
+  const pendingTenantReqs = (db.tenantRequests || []).filter(r => r.status === 'pending').length;
+
+  // ─── Trending (last 6 months) ─────────────────────
+  const trending = [];
+  const nowDate = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
+    const ym = d.toISOString().slice(0, 7);
+    const monthLabel = d.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' });
+    trending.push({
+      month: ym, label: monthLabel,
+      woCreated: wo.filter(w => (w.createdAt || '').startsWith(ym)).length,
+      woDone: wo.filter(w => w.status === 'done' && (w.updatedAt || '').startsWith(ym)).length,
+      failures: (db.maintenanceLogs || []).filter(l => (l.createdAt || '').startsWith(ym) && (l.results || []).some(r => r.status === 'fail')).length
+    });
+  }
+
   res.json({
     ok: 1, data: {
       assets: { total: db.assets.length, active: db.assets.filter(a => a.status === 'active').length },
@@ -390,13 +443,17 @@ app.get('/api/stats', requireAuth(), (req, res) => {
         inProgress: wo.filter(w => w.status === 'in-progress').length,
         done: wo.filter(w => w.status === 'done').length,
         highPriority: wo.filter(w => w.priority === 'high' && w.status !== 'done').length,
-        overdue: wo.filter(w => w.dueDate && w.status !== 'done' && new Date(w.dueDate) < new Date()).length
+        overdue: overdueWOs.length
       },
       pm: {
-        total: pm.filter(p => p.status === 'active').length,
+        total: activePMs.length,
         overdue: pm.filter(p => p.status === 'active' && p.nextDueDate && p.nextDueDate < todayStr).length,
         dueToday: pm.filter(p => p.status === 'active' && p.nextDueDate === todayStr).length
-      }
+      },
+      kpi: { mttr, mtbf, pmCompliance, overdueRate },
+      trending,
+      lowStockCount,
+      pendingTenantReqs
     }
   });
 });
