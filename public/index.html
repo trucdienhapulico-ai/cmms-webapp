@@ -380,6 +380,47 @@ tr:hover td { background: var(--blue-bg); }
 }
 .bnav-scan-btn .bnav-icon { font-size: 22px; }
 .bnav-scan-btn.active { background: var(--blue-dark); }
+
+/* ─── PM Calendar ───────────────────────────────────────────── */
+.pm-tabs { display:flex; gap:8px; margin-bottom:20px; }
+.pm-tab { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); color:var(--text2); transition:all .15s; background:white; }
+.pm-tab.active { background:var(--blue); color:white; border-color:var(--blue); }
+.pm-cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.pm-cal-title { font-size:17px; font-weight:700; }
+.pm-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.pm-cal-header { font-size:11px; font-weight:700; color:var(--gray); text-align:center; padding:8px 0; text-transform:uppercase; }
+.pm-cal-cell { min-height:80px; border:1px solid var(--border); border-radius:8px; padding:6px; background:white; cursor:pointer; transition:border-color .15s; overflow:hidden; }
+.pm-cal-cell:hover { border-color:var(--blue-light); background:var(--blue-bg); }
+.pm-cal-cell.today { border-color:var(--blue); border-width:2px; }
+.pm-cal-cell.other-month { background:var(--gray-bg); opacity:0.5; cursor:default; }
+.pm-cal-cell.other-month:hover { border-color:var(--border); background:var(--gray-bg); }
+.pm-cal-day { font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text); }
+.pm-cal-cell.today .pm-cal-day { color:var(--blue); }
+.pm-badge { font-size:10px; padding:2px 5px; border-radius:10px; margin-bottom:2px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; display:block; line-height:1.4; }
+.pm-badge-upcoming { background:#dbeafe; color:#1e40af; }
+.pm-badge-overdue { background:#fee2e2; color:var(--red); font-weight:700; }
+.pm-badge-today { background:#dcfce7; color:var(--green); font-weight:700; }
+@media (max-width:768px) {
+  .pm-cal-cell { min-height:44px; padding:4px; }
+  .pm-badge { display:none; }
+  .pm-cal-cell.has-pm .pm-cal-day::after { content:' •'; color:var(--blue); }
+  .pm-cal-cell.has-overdue .pm-cal-day::after { color:var(--red); }
+}
+/* ─── Template Library ──────────────────────────────────────── */
+.tpl-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.tpl-card { background:white; border:1px solid var(--border); border-radius:12px; padding:16px; }
+.tpl-card-name { font-weight:700; font-size:15px; margin-bottom:4px; }
+.tpl-card-cat { font-size:11px; color:var(--gray); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+.tpl-item-list { list-style:none; padding:0; margin:0 0 12px; }
+.tpl-item-list li { font-size:12px; color:var(--text2); padding:3px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px; }
+.tpl-item-list li:last-child { border-bottom:none; }
+.tpl-item-type { font-size:10px; padding:1px 5px; border-radius:8px; background:var(--gray-bg); color:var(--gray); font-weight:600; flex-shrink:0; }
+.tpl-form-items { border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.tpl-form-item { display:grid; grid-template-columns:1fr auto auto 28px; gap:6px; padding:8px; border-bottom:1px solid var(--border); align-items:center; }
+.tpl-form-item:last-child { border-bottom:none; }
+.tpl-form-item input, .tpl-form-item select { font-size:13px; }
+.tpl-add-item-btn { display:flex; align-items:center; gap:6px; padding:8px 12px; font-size:13px; color:var(--blue); cursor:pointer; background:none; border:none; }
+.tpl-add-item-btn:hover { background:var(--blue-bg); }
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -424,6 +465,7 @@ tr:hover td { background: var(--blue-bg); }
     <div class="nav-section">
       <div class="nav-section-title">Vận hành</div>
       <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
+      <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
       <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
       <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
       <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
@@ -431,6 +473,10 @@ tr:hover td { background: var(--blue-bg); }
     <div class="nav-section" id="admin-menu" style="display:none">
       <div class="nav-section-title">Quản trị</div>
       <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Hỗ trợ</div>
+      <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
     </div>
     <div class="nav-logout">
       <button class="btn btn-ghost btn-full btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)">Đăng xuất</button>
@@ -451,6 +497,7 @@ tr:hover td { background: var(--blue-bg); }
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
     <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
+    <div class="bnav-item" onclick="navigate('pm')"><span class="bnav-icon">📅</span><span class="bnav-label">PM</span></div>
     <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
     <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
   </nav>
@@ -551,7 +598,8 @@ function navigate(page, param = null) {
   const titles = {
     dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
     users: 'Quản lý Người dùng', scan: 'Quét QR',
-    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì'
+    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
+    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
@@ -564,7 +612,7 @@ function navigate(page, param = null) {
   const renders = {
     dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets,
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
-    mlogs: renderMaintenanceLogs
+    mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap
   };
   (renders[page] || (() => {}))();
 
@@ -594,10 +642,128 @@ function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDat
 function fmtDateShort(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 function isOverdue(dueDate, status) { return dueDate && status !== 'done' && new Date(dueDate) < new Date(); }
 
+// ─── UI MAP ──────────────────────────────────────────────────
+function renderUIMap() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="card">
+      <div class="card-title">Sơ đồ Giao diện & Góp ý (UI Map)</div>
+      <p style="margin-bottom: 16px; color: var(--text2); line-height: 1.6; font-size: 13px;">
+        <strong>💡 Hướng dẫn góp ý:</strong> Nếu bạn muốn thay đổi hoặc sửa lỗi ở một khu vực nào trên web, vui lòng tìm khu vực đó trong bảng dưới đây và bấm <strong>Copy mã định vị</strong>. Hãy dán mã đó vào yêu cầu của bạn để AI (Antigravity/Claude) hiểu chính xác chỗ cần sửa nhé!
+      </p>
+      <div style="background: var(--blue-bg); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: var(--blue-dark); border: 1px dashed var(--blue-light);">
+        <strong>Quy ước nội bộ (Dành cho Dev/AI):</strong> Bất cứ khi nào bổ sung màn hình mới, thêm nút mới hoặc cấu trúc lại giao diện, BẮT BUỘC phải cập nhật bảng Sơ đồ UI này!
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Khu vực (View)</th>
+              <th>Thành phần (Component)</th>
+              <th>Mã định vị (Copy)</th>
+              <th>Mô tả / Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Khu vực">Menu Trái (Sidebar)</td>
+              <td data-label="Thành phần">Tất cả các nút điều hướng</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Sidebar-Nav]'); toast('Đã copy mã: [UI-Sidebar-Nav]')" style="font-family: monospace; font-size: 11px">[UI-Sidebar-Nav] 📋</button>
+              </td>
+              <td data-label="Mô tả">Menu chính bên trái màn hình (Dashboard, Thiết bị, PM...)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Menu Dưới (Bottom Nav)</td>
+              <td data-label="Thành phần">Các nút điều hướng (Mobile)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-BottomNav]'); toast('Đã copy mã: [UI-BottomNav]')" style="font-family: monospace; font-size: 11px">[UI-BottomNav] 📋</button>
+              </td>
+              <td data-label="Mô tả">Menu nằm dưới cùng khi xem trên điện thoại di động</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Dashboard</td>
+              <td data-label="Thành phần">Thống kê tổng quan</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Dash-Stats]'); toast('Đã copy mã: [UI-Dash-Stats]')" style="font-family: monospace; font-size: 11px">[UI-Dash-Stats] 📋</button>
+              </td>
+              <td data-label="Mô tả">Các ô màu vuông báo cáo tổng số Thiết bị, Work Order...</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lệnh Công việc</td>
+              <td data-label="Thành phần">Bảng danh sách Lệnh</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-WO-Table]'); toast('Đã copy mã: [UI-WO-Table]')" style="font-family: monospace; font-size: 11px">[UI-WO-Table] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng hiển thị các WO đang mở / hoàn thành / quá hạn</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lệnh Công việc</td>
+              <td data-label="Thành phần">Cửa sổ Tạo/Sửa Lệnh</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-WO-Form]'); toast('Đã copy mã: [UI-WO-Form]')" style="font-family: monospace; font-size: 11px">[UI-WO-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Cửa sổ Modal bật lên khi bấm nút + Tạo mới WO</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Danh sách thiết bị (Tree View)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Tree]'); toast('Đã copy mã: [UI-Asset-Tree]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Tree] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng danh sách thiết bị hiển thị theo thụt lề cấp bậc cha-con</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Cửa sổ Tạo/Sửa Thiết bị</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Form]'); toast('Đã copy mã: [UI-Asset-Form]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Cửa sổ bật lên khi bấm + Thêm hoặc Sửa thông tin thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Lịch Bảo trì (Calendar View)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Calendar]'); toast('Đã copy mã: [UI-PM-Calendar]')" style="font-family: monospace; font-size: 11px">[UI-PM-Calendar] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện lịch tháng hiển thị các kế hoạch PM sắp tới</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Thư viện Template Checklist</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Templates]'); toast('Đã copy mã: [UI-PM-Templates]')" style="font-family: monospace; font-size: 11px">[UI-PM-Templates] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện quản lý các biểu mẫu kiểm tra bảo trì chuẩn</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quét QR & Checklist</td>
+              <td data-label="Thành phần">Màn hình Quét Camera</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-QR-Scanner]'); toast('Đã copy mã: [UI-QR-Scanner]')" style="font-family: monospace; font-size: 11px">[UI-QR-Scanner] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện bật camera để quét mã vạch thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quét QR & Checklist</td>
+              <td data-label="Thành phần">Form Điền Checklist (Điện thoại)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Checklist-Form]'); toast('Đã copy mã: [UI-Checklist-Form]')" style="font-family: monospace; font-size: 11px">[UI-Checklist-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng câu hỏi kiểm tra sau khi kỹ thuật viên quét mã QR</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 // ─── DASHBOARD ───────────────────────────────────────────────
 async function renderDashboard() {
   const r = await api('GET', '/api/stats');
   const s = r.data;
+  const pm = s.pm || {};
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
@@ -606,6 +772,8 @@ async function renderDashboard() {
       <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">Lịch PM đang hoạt động</div><div class="stat-value">${pm.total || 0}</div><div class="stat-sub">${pm.dueToday || 0} đến hạn hôm nay</div></div>
+      <div class="stat-card ${(pm.overdue || 0) > 0 ? 'stat-red' : 'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue || 0}</div><div class="stat-sub">Cần tạo WO</div></div>
     </div>
     <div class="card">
       <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
@@ -747,7 +915,8 @@ async function renderAssets() {
   document.getElementById('page-body').innerHTML = `
     <div class="filter-bar">
       <input id="asset-q" placeholder="🔍 Tìm thiết bị..." oninput="filterAssets()">
-      <select id="asset-status" onchange="filterAssets()"><option value="">Tất cả</option><option>active</option><option>inactive</option><option>maintenance</option></select>
+      <select id="asset-cat" onchange="filterAssets()"><option value="">Tất cả danh mục</option></select>
+      <select id="asset-status" onchange="filterAssets()"><option value="">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="inactive">Tạm dừng</option><option value="maintenance">Đang bảo trì</option></select>
     </div>
     <div class="card" style="padding:0">
       <div class="table-wrap"><table>
@@ -755,26 +924,37 @@ async function renderAssets() {
         <tbody id="asset-tbody"></tbody>
       </table></div>
     </div>`;
+  const cr = await api('GET', '/api/assets/categories');
+  const catSel = document.getElementById('asset-cat');
+  if (catSel && cr.ok) {
+    (cr.data || []).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      catSel.appendChild(opt);
+    });
+  }
   filterAssets();
 }
 
 async function filterAssets() {
   const q = document.getElementById('asset-q')?.value || '';
   const status = document.getElementById('asset-status')?.value || '';
+  const cat = document.getElementById('asset-cat')?.value || '';
   let url = '/api/assets?';
   if (q) url += `q=${encodeURIComponent(q)}&`;
   if (status) url += `status=${status}&`;
+  if (cat) url += `category=${encodeURIComponent(cat)}&`;
   const r = await api('GET', url);
   const list = r.data || [];
   const tbody = document.getElementById('asset-tbody');
   if (!tbody) return;
-  
+
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
     return;
   }
 
-  if (q || status) {
+  if (q || status || cat) {
     tbody.innerHTML = list.map(a => renderAssetRow(a, 0)).join('');
     return;
   }
@@ -819,8 +999,19 @@ function renderAssetRow(a, level) {
       <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
         ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick='showAssetForm(${JSON.stringify(a).replace(/'/g, "&#39;").replace(/"/g,"&quot;")})'>Sửa</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteAsset('${a.id}')">Xóa</button>` : ''}
       </td>
     </tr>`;
+}
+
+async function deleteAsset(id) {
+  const r = await api('GET', `/api/assets/${id}`);
+  const name = r.ok ? r.data.name : id;
+  if (!confirm(`Xóa thiết bị "${name}"?\nHành động này không thể hoàn tác.`)) return;
+  const dr = await api('DELETE', `/api/assets/${id}`);
+  if (!dr.ok) return toast(dr.error, 'error');
+  toast('Đã xóa thiết bị', 'success');
+  renderAssets();
 }
 
 async function viewAsset(id) {
@@ -839,12 +1030,20 @@ async function viewAsset(id) {
 }
 
 async function showAssetForm(asset = {}) {
-  const r = await api('GET', '/api/assets');
-  const allAssets = r.data || [];
+  const [ar, cr] = await Promise.all([
+    api('GET', '/api/assets'),
+    api('GET', '/api/assets/categories')
+  ]);
+  const allAssets = ar.data || [];
   const parentOptions = allAssets
     .filter(a => a.id !== asset.id)
     .map(a => `<option value="${a.id}" ${asset.parentId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`)
     .join('');
+
+  const defaultCats = ['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'];
+  const apiCats = cr.ok ? cr.data : [];
+  const cats = [...new Set([...apiCats, ...defaultCats])].sort();
+  const catOptions = cats.map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('');
 
   openModal(asset.id ? 'Sửa thiết bị/Cấu trúc' : 'Thêm thiết bị/Cấu trúc mới', `
     <div class="form-row">
@@ -863,7 +1062,7 @@ async function showAssetForm(asset = {}) {
       <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${asset.code || ''}" placeholder="Tự động nếu bỏ trống"></div>
       <div class="form-group"><label>Danh mục</label><select id="a-cat">
         <option value="">-- Chọn --</option>
-        ${['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'].map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+        ${catOptions}
       </select></div>
     </div>
     <div class="form-group"><label>Vị trí *</label><input id="a-loc" value="${asset.location || ''}" placeholder="VD: Tầng hầm B1, Phòng kỹ thuật"></div>
@@ -1061,10 +1260,11 @@ async function renderAssetDetail(id) {
   if (!id) { navigate('assets'); return; }
   document.getElementById('page-body').innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
 
-  const [ar, qrr, logr] = await Promise.all([
+  const [ar, qrr, logr, wor] = await Promise.all([
     api('GET', `/api/assets/${id}`),
     api('GET', `/api/assets/${id}/qr`),
-    api('GET', `/api/maintenance-logs?assetId=${id}&limit=10`)
+    api('GET', `/api/maintenance-logs?assetId=${id}&limit=10`),
+    api('GET', `/api/work-orders?assetId=${id}`)
   ]);
 
   if (!ar.ok) {
@@ -1074,6 +1274,7 @@ async function renderAssetDetail(id) {
 
   const a = ar.data;
   const logs = logr.data || [];
+  const workOrders = wor.data || [];
 
   const statusLabel = { active: '🟢 Đang hoạt động', inactive: '⚪ Tạm dừng', maintenance: '🟡 Đang bảo trì' };
   const fields = [
@@ -1115,6 +1316,23 @@ async function renderAssetDetail(id) {
             <button class="btn btn-ghost" onclick="showWOForm({assetId:'${a.id}'})">+ Tạo Work Order</button>
             ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">✏️ Sửa</button>` : ''}
           </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>📋 Lệnh công việc liên quan</span>
+            <button class="btn btn-ghost btn-sm" onclick="showWOForm({assetId:'${a.id}'})">+ Tạo mới</button>
+          </div>
+          ${workOrders.length ? `<div class="table-wrap"><table>
+            <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày hạn</th><th></th></tr></thead>
+            <tbody>${workOrders.map(w => `<tr>
+              <td data-label="Mã"><code style="font-size:12px">${w.id}</code></td>
+              <td data-label="Tiêu đề" style="font-weight:600">${w.title}</td>
+              <td data-label="Ưu tiên"><span class="badge badge-${w.priority}">${w.priority}</span></td>
+              <td data-label="Trạng thái"><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+              <td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate,w.status)?'var(--red)':'inherit'}">${fmtDateShort(w.dueDate)}</td>
+              <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+            </tr>`).join('')}</tbody>
+          </table></div>` : '<div class="empty-state" style="padding:24px"><p>Chưa có lệnh công việc nào</p></div>'}
         </div>
         <div class="card">
           <div class="card-title">📝 Lịch sử bảo trì gần đây</div>
@@ -1338,6 +1556,383 @@ async function viewMLog(id) {
     ${log.note ? `<div style="margin-top:12px;background:var(--gray-bg);padding:10px;border-radius:8px;font-size:12px"><b>Ghi chú:</b> ${log.note}</div>` : ''}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
   );
+}
+
+// ─── PM MODULE ────────────────────────────────────────────────
+let pmViewMode = 'calendar';
+let pmCalYear = null;
+let pmCalMonth = null;
+let pmAssets = new Map();
+let pmTplItems = [];
+
+async function renderPM() {
+  if (['admin', 'manager'].includes(currentUser.role)) {
+    api('POST', '/api/pm-schedules/run-due').catch(() => {});
+  }
+  const ar = await api('GET', '/api/assets');
+  pmAssets = new Map((ar.data || []).map(a => [a.id, a]));
+  const now = new Date();
+  if (pmCalYear === null) pmCalYear = now.getFullYear();
+  if (pmCalMonth === null) pmCalMonth = now.getMonth();
+
+  const canManage = ['admin', 'manager'].includes(currentUser.role);
+  document.getElementById('topbar-actions').innerHTML = canManage
+    ? `<button class="btn btn-primary btn-sm" onclick="pmViewMode==='templates'?showTemplateForm():showPMForm()">+ ${pmViewMode==='templates'?'Tạo Template':'Tạo lịch PM'}</button>`
+    : '';
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="pm-tabs">
+      <button class="pm-tab ${pmViewMode === 'calendar' ? 'active' : ''}" onclick="setPMView('calendar')">📅 Lịch Tháng</button>
+      <button class="pm-tab ${pmViewMode === 'list' ? 'active' : ''}" onclick="setPMView('list')">📋 Danh sách</button>
+      <button class="pm-tab ${pmViewMode === 'templates' ? 'active' : ''}" onclick="setPMView('templates')">📂 Thư viện Template</button>
+    </div>
+    <div id="pm-content"></div>`;
+
+  if (pmViewMode === 'calendar') renderPMCalendar(pmCalYear, pmCalMonth);
+  else if (pmViewMode === 'list') renderPMList();
+  else renderPMTemplates();
+}
+
+function setPMView(mode) {
+  pmViewMode = mode;
+  document.querySelectorAll('.pm-tab').forEach(t => {
+    t.classList.toggle('active',
+      (mode === 'calendar' && t.textContent.includes('Lịch')) ||
+      (mode === 'list' && t.textContent.includes('Danh sách')) ||
+      (mode === 'templates' && t.textContent.includes('Template'))
+    );
+  });
+  if (mode === 'calendar') renderPMCalendar(pmCalYear, pmCalMonth);
+  else if (mode === 'list') renderPMList();
+  else renderPMTemplates();
+}
+
+function getPMsForDay(schedules, year, month, day) {
+  const date = new Date(year, month, day);
+  return schedules.filter(p => {
+    if (!p.startDate) return false;
+    const start = new Date(p.startDate + 'T00:00:00');
+    if (date < start) return false;
+    if (p.endDate && date > new Date(p.endDate + 'T00:00:00')) return false;
+    switch (p.frequency) {
+      case 'daily': return true;
+      case 'weekly': return date.getDay() === start.getDay();
+      case 'monthly': return date.getDate() === start.getDate();
+      case 'quarterly': {
+        const diff = (year - start.getFullYear()) * 12 + (month - start.getMonth());
+        return diff >= 0 && diff % 3 === 0 && date.getDate() === start.getDate();
+      }
+      case 'yearly': return month === start.getMonth() && date.getDate() === start.getDate();
+      default: return false;
+    }
+  });
+}
+
+async function renderPMCalendar(year, month) {
+  pmCalYear = year;
+  pmCalMonth = month;
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+
+  const r = await api('GET', '/api/pm-schedules?status=active');
+  const schedules = r.data || [];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevY = month === 0 ? year - 1 : year;
+  const prevM = month === 0 ? 11 : month - 1;
+  const nextY = month === 11 ? year + 1 : year;
+  const nextM = month === 11 ? 0 : month + 1;
+
+  let html = `
+    <div class="pm-cal-nav">
+      <button class="btn btn-ghost btn-sm" onclick="renderPMCalendar(${prevY},${prevM})">← Trước</button>
+      <div class="pm-cal-title">${monthNames[month]} ${year}</div>
+      <button class="btn btn-ghost btn-sm" onclick="renderPMCalendar(${nextY},${nextM})">Sau →</button>
+    </div>
+    <div class="pm-cal-grid">
+      ${dayNames.map(d => `<div class="pm-cal-header">${d}</div>`).join('')}`;
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="pm-cal-cell other-month"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const mm = String(month + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const dateStr = `${year}-${mm}-${dd}`;
+    const isToday = dateStr === todayStr;
+    const dayPMs = getPMsForDay(schedules, year, month, day);
+    const hasOverdue = dayPMs.some(() => dateStr < todayStr);
+    const badges = dayPMs.slice(0, 3).map(p => {
+      const cls = dateStr < todayStr ? 'pm-badge-overdue' : isToday ? 'pm-badge-today' : 'pm-badge-upcoming';
+      return `<span class="pm-badge ${cls}" onclick="event.stopPropagation();showPMsForDay('${dateStr}')" title="${p.name}">${p.name}</span>`;
+    }).join('');
+    const more = dayPMs.length > 3 ? `<span class="pm-badge pm-badge-upcoming">+${dayPMs.length - 3} nữa</span>` : '';
+    const cellClass = ['pm-cal-cell', isToday ? 'today' : '', dayPMs.length ? 'has-pm' : '', hasOverdue ? 'has-overdue' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cellClass}" onclick="showPMsForDay('${dateStr}')">
+      <div class="pm-cal-day">${day}</div>${badges}${more}
+    </div>`;
+  }
+
+  const trailing = (firstDay + daysInMonth) % 7;
+  if (trailing > 0) for (let i = trailing; i < 7; i++) html += `<div class="pm-cal-cell other-month"></div>`;
+
+  html += '</div>';
+  if (content) content.innerHTML = html;
+}
+
+async function renderPMList() {
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+
+  const r = await api('GET', '/api/pm-schedules');
+  const schedules = r.data || [];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const canManage = ['admin','manager'].includes(currentUser.role);
+
+  if (!schedules.length) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>Chưa có lịch bảo trì định kỳ nào</p></div>';
+    return;
+  }
+  content.innerHTML = `
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tên lịch PM</th><th>Thiết bị</th><th>Tần suất</th><th>Đến hạn tiếp</th><th>Phụ trách</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>${schedules.map(p => {
+          const overdue = p.nextDueDate && p.nextDueDate < todayStr && p.status === 'active';
+          const dueToday = p.nextDueDate === todayStr;
+          return `<tr>
+            <td data-label="Tên"><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--gray)">${p.id}</div></td>
+            <td data-label="Thiết bị">${p.assetId ? (pmAssets.get(p.assetId)?.name || p.assetId) : '—'}</td>
+            <td data-label="Tần suất">${freqLabel[p.frequency] || p.frequency}</td>
+            <td data-label="Đến hạn" style="color:${overdue ? 'var(--red)' : dueToday ? 'var(--green)' : 'inherit'};font-weight:${overdue || dueToday ? '700' : 'normal'}">
+              ${p.nextDueDate || '—'}${overdue ? ' ⚠️' : dueToday ? ' ✅' : ''}
+            </td>
+            <td data-label="Phụ trách">${p.assignedTo || '—'}</td>
+            <td data-label="Trạng thái"><span class="badge badge-${p.status === 'active' ? 'open' : 'cancelled'}">${p.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}</span></td>
+            <td data-label="">
+              <button class="btn btn-ghost btn-sm" onclick="viewPMSchedule('${p.id}')">Xem</button>
+              ${canManage ? `<button class="btn btn-primary btn-sm" onclick="generatePMWorkOrder('${p.id}')">+ WO</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
+async function showPMsForDay(dateStr) {
+  const r = await api('GET', '/api/pm-schedules?status=active');
+  const all = r.data || [];
+  const d = new Date(dateStr + 'T00:00:00');
+  const daySchedules = getPMsForDay(all, d.getFullYear(), d.getMonth(), d.getDate());
+  if (!daySchedules.length) return;
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const canManage = ['admin','manager'].includes(currentUser.role);
+  openModal(`📅 PM — ${fmtDateShort(dateStr + 'T00:00:00')}`,
+    daySchedules.map(p => `
+      <div style="padding:12px 0;border-bottom:1px solid #f1f5f9">
+        <div style="font-weight:700;margin-bottom:4px">${p.name}</div>
+        <div style="font-size:12px;color:var(--gray)">${p.assetId ? (pmAssets.get(p.assetId)?.name || p.assetId) : '—'} · ${freqLabel[p.frequency]} · ${p.assignedTo || 'Chưa giao'}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal();viewPMSchedule('${p.id}')">Chi tiết</button>
+          ${canManage ? `<button class="btn btn-primary btn-sm" onclick="closeModal();generatePMWorkOrder('${p.id}')">+ Tạo WO</button>` : ''}
+        </div>
+      </div>`).join(''),
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
+  );
+}
+
+async function viewPMSchedule(id) {
+  const r = await api('GET', '/api/pm-schedules');
+  const schedule = (r.data || []).find(p => p.id === id);
+  if (!schedule) return toast('Không tìm thấy lịch PM', 'error');
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const todayStr = new Date().toISOString().split('T')[0];
+  const overdue = schedule.nextDueDate && schedule.nextDueDate < todayStr;
+  const canManage = ['admin','manager'].includes(currentUser.role);
+  openModal(`📅 ${schedule.name}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      ${[
+        ['Mã lịch PM', `<code>${schedule.id}</code>`],
+        ['Tần suất', freqLabel[schedule.frequency] || schedule.frequency],
+        ['Thiết bị', schedule.assetId ? `${pmAssets.get(schedule.assetId)?.name || ''} <code style="font-size:11px">${schedule.assetId}</code>` : '—'],
+        ['Người phụ trách', schedule.assignedTo || '—'],
+        ['Ưu tiên', `<span class="badge badge-${schedule.priority}">${schedule.priority}</span>`],
+        ['Trạng thái', `<span class="badge badge-${schedule.status === 'active' ? 'open' : 'cancelled'}">${schedule.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}</span>`],
+        ['Ngày bắt đầu', schedule.startDate || '—'],
+        ['Ngày kết thúc', schedule.endDate || 'Không giới hạn'],
+        ['Đến hạn tiếp theo', `<span style="color:${overdue ? 'var(--red)' : 'inherit'};font-weight:${overdue ? '700' : 'normal'}">${schedule.nextDueDate || '—'}${overdue ? ' ⚠️' : ''}</span>`],
+        ['Số WO đã tạo', schedule.generatedCount || 0],
+        ['Tạo WO lần cuối', schedule.lastGeneratedDate || 'Chưa có']
+      ].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
+    </div>
+    ${schedule.notes ? `<div style="background:var(--gray-bg);padding:12px;border-radius:8px;font-size:13px;margin-bottom:8px">${schedule.notes}</div>` : ''}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+     ${canManage ? `
+     <button class="btn btn-ghost btn-sm" onclick="closeModal();showPMForm(${JSON.stringify(schedule).replace(/"/g,'&quot;')})">✏️ Sửa</button>
+     <button class="btn btn-primary" onclick="closeModal();generatePMWorkOrder('${schedule.id}')">+ Tạo Work Order</button>
+     <button class="btn btn-danger btn-sm" onclick="closeModal();deletePM('${schedule.id}')">Xóa</button>` : ''}`
+  );
+}
+
+async function showPMForm(pm = {}) {
+  const freqs = [['daily','Hàng ngày'],['weekly','Hàng tuần'],['monthly','Hàng tháng'],['quarterly','Hàng quý'],['yearly','Hàng năm']];
+  const assets = pmAssets.size ? [...pmAssets.values()] : (await api('GET', '/api/assets')).data || [];
+  const assetOpts = `<option value="">-- Không gắn thiết bị --</option>` +
+    assets.map(a => `<option value="${a.id}" ${pm.assetId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`).join('');
+  openModal(pm.id ? 'Sửa lịch PM' : 'Tạo lịch Bảo trì Định kỳ', `
+    <div class="form-group"><label>Tên lịch PM *</label><input id="pm-name" value="${pm.name || ''}" placeholder="VD: Kiểm tra máy bơm hàng tháng"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Tần suất *</label><select id="pm-freq">
+        ${freqs.map(([v, l]) => `<option value="${v}" ${pm.frequency === v ? 'selected' : ''}>${l}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Ưu tiên</label><select id="pm-priority">
+        <option value="low" ${pm.priority === 'low' ? 'selected' : ''}>Thấp</option>
+        <option value="medium" ${(!pm.priority || pm.priority === 'medium') ? 'selected' : ''}>Trung bình</option>
+        <option value="high" ${pm.priority === 'high' ? 'selected' : ''}>Cao</option>
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Thiết bị</label><select id="pm-assetId">${assetOpts}</select></div>
+      <div class="form-group"><label>Người phụ trách</label><input id="pm-assigned" value="${pm.assignedTo || ''}" placeholder="Tên kỹ thuật viên"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Ngày đến hạn đầu tiên *</label><input type="date" id="pm-start" value="${pm.startDate || pm.nextDueDate || ''}"></div>
+      <div class="form-group"><label>Ngày kết thúc</label><input type="date" id="pm-end" value="${pm.endDate || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Trạng thái</label><select id="pm-status">
+        <option value="active" ${(!pm.status || pm.status === 'active') ? 'selected' : ''}>Đang hoạt động</option>
+        <option value="paused" ${pm.status === 'paused' ? 'selected' : ''}>Tạm dừng</option>
+      </select></div>
+    </div>
+    <div class="form-group"><label>Ghi chú / Nội dung công việc</label><textarea id="pm-notes" placeholder="Mô tả công việc cần thực hiện...">${pm.notes || ''}</textarea></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="savePM('${pm.id || ''}')">Lưu</button>`
+  );
+}
+
+async function savePM(id) {
+  const body = {
+    name: document.getElementById('pm-name').value.trim(),
+    frequency: document.getElementById('pm-freq').value,
+    priority: document.getElementById('pm-priority').value,
+    assetId: document.getElementById('pm-assetId').value || null,
+    assignedTo: document.getElementById('pm-assigned').value.trim() || null,
+    startDate: document.getElementById('pm-start').value,
+    endDate: document.getElementById('pm-end').value || null,
+    status: document.getElementById('pm-status').value,
+    notes: document.getElementById('pm-notes').value.trim()
+  };
+  if (!body.name || !body.frequency || !body.startDate) return toast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+  const r = id ? await api('PUT', `/api/pm-schedules/${id}`, body) : await api('POST', '/api/pm-schedules', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật lịch PM' : 'Tạo lịch PM thành công!', 'success');
+  renderPM();
+}
+
+async function deletePM(id) {
+  if (!confirm('Xóa lịch bảo trì định kỳ này? Hành động không thể hoàn tác.')) return;
+  const r = await api('DELETE', `/api/pm-schedules/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa lịch PM', 'success');
+  renderPM();
+}
+
+async function generatePMWorkOrder(scheduleId) {
+  if (!confirm('Tạo Work Order từ lịch PM này?')) return;
+  const r = await api('POST', `/api/pm-schedules/${scheduleId}/generate-wo`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast(`✅ Đã tạo ${r.data.workOrder.id}`, 'success');
+  renderPM();
+}
+
+// ─── Template Library ─────────────────────────────────────────
+async function renderPMTemplates() {
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+  const r = await api('GET', '/api/checklist-templates');
+  const templates = r.data || [];
+  const canManage = ['admin', 'manager'].includes(currentUser.role);
+  const canDelete = currentUser.role === 'admin';
+  const typeLabel = { status: 'Trạng thái', number: 'Số liệu', text: 'Văn bản' };
+  if (!templates.length) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>Chưa có template nào</p></div>';
+    return;
+  }
+  content.innerHTML = `<div class="tpl-grid">${templates.map(t => `
+    <div class="tpl-card">
+      <div class="tpl-card-name">${t.name}</div>
+      <div class="tpl-card-cat">${t.category}</div>
+      <ul class="tpl-item-list">${(t.items || []).map(it =>
+        `<li><span class="tpl-item-type">${typeLabel[it.type] || it.type}</span>${it.label}${it.unit ? ` <span style="color:var(--gray);font-size:10px">(${it.unit})</span>` : ''}</li>`
+      ).join('')}</ul>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="showTemplateForm(${JSON.stringify(t).replace(/"/g,'&quot;')})">✏️ Sửa</button>` : ''}
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteTemplate('${t.id}')">Xóa</button>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function tplRenderItems() {
+  const container = document.getElementById('tpl-items-container');
+  if (!container) return;
+  const typeLabel = { status: 'Trạng thái', number: 'Số liệu', text: 'Văn bản' };
+  container.innerHTML = pmTplItems.map((it, i) => `
+    <div class="tpl-form-item">
+      <input value="${it.label}" placeholder="Tên hạng mục" oninput="pmTplItems[${i}].label=this.value">
+      <select onchange="pmTplItems[${i}].type=this.value;tplRenderItems()">
+        ${Object.entries(typeLabel).map(([v,l]) => `<option value="${v}" ${it.type===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+      ${it.type === 'number' ? `<input value="${it.unit||''}" placeholder="Đơn vị" style="width:70px" oninput="pmTplItems[${i}].unit=this.value">` : '<div></div>'}
+      <button class="btn btn-ghost btn-sm" onclick="pmTplItems.splice(${i},1);tplRenderItems()" style="color:var(--red)">✕</button>
+    </div>`).join('');
+}
+
+function showTemplateForm(tpl = {}) {
+  pmTplItems = (tpl.items || [{ label: '', type: 'status' }]).map(it => ({ ...it }));
+  openModal(tpl.id ? 'Sửa Template Checklist' : 'Tạo Template Checklist', `
+    <div class="form-group"><label>Tên template *</label><input id="tpl-name" value="${tpl.name || ''}" placeholder="VD: Kiểm tra máy bơm PCCC"></div>
+    <div class="form-group"><label>Danh mục *</label><input id="tpl-cat" value="${tpl.category || ''}" placeholder="VD: PCCC, Thang máy, Hệ thống điện..."></div>
+    <div class="form-group"><label>Các hạng mục kiểm tra</label>
+      <div class="tpl-form-items">
+        <div id="tpl-items-container"></div>
+        <button class="tpl-add-item-btn" onclick="pmTplItems.push({label:'',type:'status'});tplRenderItems()">+ Thêm hạng mục</button>
+      </div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveTemplate('${tpl.id || ''}')">Lưu</button>`
+  );
+  tplRenderItems();
+}
+
+async function saveTemplate(id) {
+  const name = document.getElementById('tpl-name').value.trim();
+  const category = document.getElementById('tpl-cat').value.trim();
+  const items = pmTplItems.filter(it => it.label.trim());
+  if (!name || !category) return toast('Vui lòng điền tên và danh mục', 'error');
+  if (!items.length) return toast('Cần ít nhất 1 hạng mục kiểm tra', 'error');
+  const r = id
+    ? await api('PUT', `/api/checklist-templates/${id}`, { name, category, items })
+    : await api('POST', '/api/checklist-templates', { name, category, items });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật template' : 'Tạo template thành công!', 'success');
+  renderPMTemplates();
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Xóa template này? Các checklist đã dùng template này sẽ không bị ảnh hưởng.')) return;
+  const r = await api('DELETE', `/api/checklist-templates/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa template', 'success');
+  renderPMTemplates();
 }
 
 // ─── Init ────────────────────────────────────────────────────
