@@ -6,10 +6,41 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const QRCode = require('qrcode');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = 3090;
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+// ─── Trust proxy (Synology Reverse Proxy / Cloudflare Tunnel) ─
+app.set('trust proxy', 1);
+
+// ─── HTTPS redirect (khi chạy sau reverse proxy) ─────────────
+app.use((req, res, next) => {
+  if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// ─── Security headers ─────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// ─── Rate limiting ────────────────────────────────────────────
+app.use('/api/', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: 0, error: 'Quá nhiều request, thử lại sau.' }
+}));
 
 // ─── Middleware ───────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -140,7 +171,12 @@ app.post('/api/login', (req, res) => {
   if (!user || !verifyPassword(password, user.passwordHash))
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
   const sid = createSession(user);
-  res.cookie('sid', sid, { httpOnly: true, maxAge: 86400000 * 7 });
+  res.cookie('sid', sid, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: 'strict',
+    maxAge: 8 * 60 * 60 * 1000
+  });
   res.json({ ok: 1, data: { id: user.id, username: user.username, role: user.role, name: user.name } });
 });
 
