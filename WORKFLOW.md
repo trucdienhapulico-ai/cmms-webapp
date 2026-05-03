@@ -34,11 +34,37 @@ Bạn là Builder. Hãy thực hiện task này với phạm vi hẹp nhất có
 Sau khi xong, hãy run test, commit, push code và tự động đóng issue này.
 ```
 
-## ⚙️ Cơ chế Tự Động Hóa (Worker)
-Bạn hãy chạy file `claude-worker.ps1` ở thư mục gốc của dự án.
-- Cứ mỗi 30 phút, script sẽ tự động quét GitHub Issue.
-- Bất cứ khi nào bạn tạo một Issue có nhãn `claude-todo`, script sẽ báo động và tự khởi chạy Claude Code với context được thu hẹp tối đa vào nội dung Issue đó.
-- Code xong, hệ thống tự push và dọn dẹp. Bạn chỉ việc mở GitHub lên check kết quả.
+## ⚙️ Hệ thống Hàng đợi Tác vụ (Task Queue Protocol)
+
+Tất cả các tác vụ được quản lý bằng **file trong thư mục `brain/`**, không phải qua GitHub Issues trực tiếp. Quy trình này áp dụng cho **CẢ HAI** agent:
+
+### Cấu trúc thư mục
+```
+brain/
+  ├── roadmap.md          # Tiến độ tổng quát
+  ├── tasks_queue/        # Hàng đợi – bỏ file .txt vào đây để giao việc
+  └── tasks_done/         # Lịch sử – file đã xong hoặc lỗi
+```
+
+### Vòng đời của một tác vụ (Lifecycle)
+```
+[1] .txt        → Đang chờ trong hàng đợi (chưa ai nhận)
+[2] .working    → Đang được xử lý (một agent đã nhận)
+[3] .done.txt   → Hoàn thành (chuyển sang tasks_done/)
+[4] .failed.txt → Lỗi / bị hủy (chuyển sang tasks_done/)
+```
+
+### Quy tắc BẮT BUỘC cho cả Antigravity & Claude Code
+1. **Trước khi bắt đầu** một task: Đổi đuôi file từ `.txt` → `.working`
+2. **Sau khi hoàn thành** task: Di chuyển file sang `brain/tasks_done/` với đuôi `.done.txt`
+3. **Nếu gặp lỗi** hoặc bị hủy: Di chuyển sang `brain/tasks_done/` với đuôi `.failed.txt`
+4. **Khi khởi động lại**: Quét tìm file `.working` bị kẹt → đổi lại thành `.txt` (phục hồi)
+5. **Antigravity khi tự làm Issue thay Claude Code**: Cũng PHẢI tuân thủ đúng quy trình đổi đuôi file này để tránh Claude Code làm lại task đã xong.
+
+### Cách giao việc
+- **Cho Claude Code**: Tạo file `.txt` trong `brain/tasks_queue/`, sau đó chạy `.\claude-worker.ps1`
+- **Cho Antigravity tự làm**: USER yêu cầu trực tiếp. Antigravity tự đổi đuôi file tương ứng.
+- **Hẹn giờ**: Chạy `.\schedule-worker.ps1` để đặt alarm cho Claude Code thức dậy vào giờ chỉ định.
 
 ## 🗺️ Quy ước Cập nhật Giao diện (Dành cho Cả Architect & Builder)
 Hệ thống có một chức năng nội bộ mang tên **Sơ đồ UI / Góp ý (UI Map)** được code sẵn tại hàm `renderUIMap()` trong file `public/index.html`.
