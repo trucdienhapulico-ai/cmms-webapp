@@ -33,7 +33,7 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
 - [x] **Advanced Dashboard & Analytics**:
     - KPI: MTTR, MTBF, PM Compliance rate (Tab 3.7.1).
     - Biểu đồ xu hướng sự cố và chi phí bảo trì.
-- [ ] **HR & Scheduling**:
+- [x] **HR & Scheduling**:
     - Quản lý lịch trực ca, workload của kỹ thuật viên (Tab 4.15).
     - Theo dõi giờ công thực tế qua Check-in/out GPS.
 - [ ] **Advanced Inventory**:

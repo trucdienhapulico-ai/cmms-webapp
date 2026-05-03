@@ -60,6 +60,7 @@ function loadDB() {
   if (!db.inventoryTx) { db.inventoryTx = []; saveDB(db); }
   if (!db.notifications) { db.notifications = []; saveDB(db); }
   if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
+  if (!db.shifts) { db.shifts = []; saveDB(db); }
   return db;
 }
 function saveDB(db) {
@@ -83,6 +84,7 @@ function initDB() {
     inventoryTx: [],
     notifications: [],
     tenantRequests: [],
+    shifts: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -915,6 +917,112 @@ app.put('/api/tenant-requests/:id/reject', requireAuth(['admin','manager']), (re
   tr.status = 'rejected'; tr.updatedAt = now();
   saveDB(db);
   res.json({ ok: 1 });
+});
+
+// ─── Shifts / HR ─────────────────────────────────────────────
+const SHIFT_DEFAULTS = { morning: { start: '06:00', end: '14:00' }, afternoon: { start: '14:00', end: '22:00' }, night: { start: '22:00', end: '06:00' } };
+
+app.get('/api/shifts/workload', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const month = req.query.month || now().slice(0, 7);
+  const shifts = (db.shifts || []).filter(s => s.date && s.date.startsWith(month));
+  const users = db.users.filter(u => u.role === 'operator');
+  const result = users.map(u => {
+    const uShifts = shifts.filter(s => s.userId === u.id);
+    let totalHours = 0;
+    uShifts.forEach(s => {
+      if (s.checkInAt && s.checkOutAt) {
+        totalHours += (new Date(s.checkOutAt) - new Date(s.checkInAt)) / 3600000;
+      } else {
+        totalHours += 8;
+      }
+    });
+    const wos = (db.workOrders || []).filter(w => w.assignedTo === u.id || w.assignedTo === u.username);
+    return {
+      userId: u.id, userName: u.name || u.username,
+      totalShifts: uShifts.length,
+      totalHours: Math.round(totalHours * 10) / 10,
+      activeWOs: wos.filter(w => w.status !== 'done' && w.status !== 'cancelled').length,
+      completedWOs: wos.filter(w => w.status === 'done').length
+    };
+  });
+  res.json({ ok: 1, data: result });
+});
+
+app.get('/api/shifts', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { from, to, userId } = req.query;
+  let list = db.shifts || [];
+  if (from) list = list.filter(s => s.date >= from);
+  if (to) list = list.filter(s => s.date <= to);
+  if (userId) list = list.filter(s => s.userId === userId);
+  list = [...list].sort((a, b) => a.date.localeCompare(b.date));
+  res.json({ ok: 1, data: list });
+});
+
+app.post('/api/shifts', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const { userId, userName, date, shiftType, notes } = req.body;
+  if (!userId || !date || !shiftType) return res.json({ ok: 0, error: 'Thiếu thông tin bắt buộc' });
+  const def = SHIFT_DEFAULTS[shiftType] || SHIFT_DEFAULTS.morning;
+  const shift = {
+    id: `SH-${Date.now()}`, userId, userName: userName || userId,
+    date, shiftType, startTime: def.start, endTime: def.end,
+    notes: notes || '', status: 'scheduled',
+    checkInAt: null, checkOutAt: null,
+    createdBy: req.session.username, createdAt: now()
+  };
+  db.shifts.push(shift);
+  saveDB(db);
+  res.json({ ok: 1, data: shift });
+});
+
+app.put('/api/shifts/:id', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const shift = (db.shifts || []).find(s => s.id === req.params.id);
+  if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
+  const { userId, userName, date, shiftType, notes } = req.body;
+  if (userId) shift.userId = userId;
+  if (userName) shift.userName = userName;
+  if (date) shift.date = date;
+  if (shiftType) { shift.shiftType = shiftType; const def = SHIFT_DEFAULTS[shiftType] || {}; shift.startTime = def.start; shift.endTime = def.end; }
+  if (notes !== undefined) shift.notes = notes;
+  shift.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: shift });
+});
+
+app.delete('/api/shifts/:id', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const idx = (db.shifts || []).findIndex(s => s.id === req.params.id);
+  if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
+  db.shifts.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+app.post('/api/shifts/:id/check-in', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const shift = (db.shifts || []).find(s => s.id === req.params.id);
+  if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
+  const session = getSession(req);
+  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  shift.checkInAt = now();
+  shift.status = 'checked-in';
+  saveDB(db);
+  res.json({ ok: 1, data: shift });
+});
+
+app.post('/api/shifts/:id/check-out', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const shift = (db.shifts || []).find(s => s.id === req.params.id);
+  if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
+  const session = getSession(req);
+  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  shift.checkOutAt = now();
+  shift.status = 'checked-out';
+  saveDB(db);
+  res.json({ ok: 1, data: shift });
 });
 
 // ─── Stats (inject overdue check) ─────────────────────────────

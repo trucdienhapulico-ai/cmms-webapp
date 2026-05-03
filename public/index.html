@@ -468,6 +468,7 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
       <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
       <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
+      <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
       <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
       <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
     </div>
@@ -616,7 +617,8 @@ function navigate(page, param = null) {
     users: 'Quản lý Người dùng', scan: 'Quét QR',
     assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
     pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
-    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal'
+    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
+    shifts: 'Lịch trực & Workload'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
@@ -624,14 +626,16 @@ function navigate(page, param = null) {
     assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
     users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
     inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
-    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>'
+    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>',
+    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>'
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
     dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets,
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
     mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
-    inventory: renderInventory, tenantportal: renderTenantPortal
+    inventory: renderInventory, tenantportal: renderTenantPortal,
+    shifts: renderShifts
   };
   (renders[page] || (() => {}))();
 
@@ -660,6 +664,184 @@ document.getElementById('modal').addEventListener('click', e => { if (e.target =
 function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 function fmtDateShort(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 function isOverdue(dueDate, status) { return dueDate && status !== 'done' && new Date(dueDate) < new Date(); }
+
+// ─── SHIFTS / HR ─────────────────────────────────────────────
+let _shiftsWeekOffset = 0;
+let _shiftsTab = 'calendar';
+
+function _weekBounds(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  d.setHours(0, 0, 0, 0);
+  const from = d.toISOString().slice(0, 10);
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  const to = end.toISOString().slice(0, 10);
+  const label = `${from.slice(8)}.${from.slice(5,7)} – ${to.slice(8)}.${to.slice(5,7)}`;
+  return { from, to, label };
+}
+
+function _dayLabel(dateStr) {
+  const days = ['CN','T2','T3','T4','T5','T6','T7'];
+  const d = new Date(dateStr + 'T12:00:00');
+  return days[d.getDay()] + ' ' + dateStr.slice(8) + '/' + dateStr.slice(5,7);
+}
+
+async function renderShifts() {
+  const wb = _weekBounds(_shiftsWeekOffset);
+  const today = new Date().toISOString().slice(0, 10);
+  let days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(wb.from + 'T12:00:00');
+    d.setDate(d.getDate() + i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  const calActive = _shiftsTab === 'calendar';
+  const wlActive = _shiftsTab === 'workload';
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn ${calActive ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="_shiftsTab='calendar';renderShifts()">📆 Lịch trực tuần</button>
+        <button class="btn ${wlActive ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="_shiftsTab='workload';renderShifts()">📊 Workload</button>
+      </div>
+    </div>
+    <div id="shifts-body"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải...</p></div></div>`;
+
+  if (_shiftsTab === 'calendar') {
+    const r = await api('GET', `/api/shifts?from=${wb.from}&to=${wb.to}`);
+    const shifts = r.data || [];
+    const shiftTypes = [
+      { key: 'morning', label: 'Sáng 6–14h' },
+      { key: 'afternoon', label: 'Chiều 14–22h' },
+      { key: 'night', label: 'Đêm 22–6h' }
+    ];
+    const isOp = currentUser.role === 'operator';
+    const canManage = ['admin', 'manager'].includes(currentUser.role);
+
+    const headerCells = days.map(d => {
+      const isToday = d === today;
+      return `<th style="${isToday ? 'background:rgba(59,130,246,0.08);font-weight:700' : ''}">${_dayLabel(d)}</th>`;
+    }).join('');
+
+    const rows = shiftTypes.map(st => {
+      const cells = days.map(d => {
+        const cell = shifts.filter(s => s.date === d && s.shiftType === st.key);
+        const content = cell.map(s => {
+          const isMe = s.userId === currentUser.id;
+          const badge = s.status === 'checked-in' ? '<span style="background:#16a34a;color:#fff;border-radius:4px;padding:1px 5px;font-size:10px">● Check-in</span>'
+            : s.status === 'checked-out' ? '<span style="background:#64748b;color:#fff;border-radius:4px;padding:1px 5px;font-size:10px">✓ Xong</span>'
+            : '<span style="background:#e2e8f0;color:#475569;border-radius:4px;padding:1px 5px;font-size:10px">Lịch</span>';
+          const actions = isOp && isMe
+            ? (s.status === 'scheduled' ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;margin-top:3px" onclick="shiftCheckIn('${s.id}')">Check-in</button>`
+              : s.status === 'checked-in' ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;margin-top:3px" onclick="shiftCheckOut('${s.id}')">Check-out</button>`
+              : '') : '';
+          const del = canManage ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 4px;color:var(--red)" onclick="deleteShift('${s.id}')">✕</button>` : '';
+          return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:12px">
+            <div style="font-weight:600;display:flex;justify-content:space-between;align-items:center">${s.userName} ${del}</div>
+            <div>${badge}</div>${actions}</div>`;
+        }).join('');
+        const addBtn = canManage ? `<button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px;margin-top:2px;color:#3b82f6" onclick="showShiftForm({date:'${d}',shiftType:'${st.key}'})">+ Thêm</button>` : '';
+        return `<td style="vertical-align:top;min-width:110px;padding:6px 5px">${content}${addBtn}</td>`;
+      }).join('');
+      return `<tr><td style="white-space:nowrap;font-size:12px;font-weight:600;padding:8px 10px;background:#f1f5f9">${st.label}</td>${cells}</tr>`;
+    }).join('');
+
+    document.getElementById('shifts-body').innerHTML = `
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="_shiftsWeekOffset--;renderShifts()">← Tuần trước</button>
+          <span style="font-weight:700;font-size:15px">Tuần ${wb.label}</span>
+          <button class="btn btn-ghost btn-sm" onclick="_shiftsWeekOffset++;renderShifts()">Tuần sau →</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#f8fafc"><th style="text-align:left;padding:8px 10px;font-size:12px;min-width:80px">Ca / Ngày</th>${headerCells}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } else {
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const r = await api('GET', `/api/shifts/workload?month=${month}`);
+    const data = r.data || [];
+    const rows = data.map(u => {
+      const overStyle = u.totalHours > 160 ? 'background:#fee2e2' : u.totalHours < 80 && u.totalShifts > 0 ? 'background:#fef3c7' : '';
+      return `<tr style="${overStyle}">
+        <td data-label="Tên KTV" style="font-weight:600">${u.userName}</td>
+        <td data-label="Số ca">${u.totalShifts}</td>
+        <td data-label="Giờ công" style="color:${u.totalHours>160?'var(--red)':u.totalHours<80&&u.totalShifts>0?'#d97706':'inherit'}">${u.totalHours}h</td>
+        <td data-label="WO đang làm">${u.activeWOs}</td>
+        <td data-label="WO xong">${u.completedWOs}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('shifts-body').innerHTML = `
+      <div class="card">
+        <div class="card-title">📊 Workload KTV – Tháng ${month}</div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table><thead><tr><th>Tên KTV</th><th>Số ca</th><th>Giờ công</th><th>WO đang làm</th><th>WO xong</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:var(--text2)">Không có dữ liệu</td></tr>'}</tbody></table>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:12px">
+          <span style="display:inline-block;width:12px;height:12px;background:#fee2e2;border:1px solid #fca5a5;vertical-align:middle;margin-right:4px"></span>Quá tải (>160h) &nbsp;
+          <span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1px solid #fcd34d;vertical-align:middle;margin-right:4px"></span>Dưới mức (<80h)
+        </div>
+      </div>`;
+  }
+}
+
+async function showShiftForm(prefill = {}) {
+  const ur = await api('GET', '/api/users');
+  const operators = (ur.data || []).filter(u => u.role === 'operator' || u.role === 'admin' || u.role === 'manager');
+  const optUsers = operators.map(u => `<option value="${u.id}" data-name="${u.name||u.username}" ${prefill.userId===u.id?'selected':''}>${u.name||u.username} (${u.role})</option>`).join('');
+  const today = new Date().toISOString().slice(0, 10);
+  const body = `
+    <div class="form-group"><label>Kỹ thuật viên</label>
+      <select id="sf-user">${optUsers}</select></div>
+    <div class="form-group"><label>Ngày</label>
+      <input type="date" id="sf-date" value="${prefill.date || today}"></div>
+    <div class="form-group"><label>Loại ca</label>
+      <select id="sf-type">
+        <option value="morning" ${prefill.shiftType==='morning'?'selected':''}>Sáng (6:00–14:00)</option>
+        <option value="afternoon" ${prefill.shiftType==='afternoon'?'selected':''}>Chiều (14:00–22:00)</option>
+        <option value="night" ${prefill.shiftType==='night'?'selected':''}>Đêm (22:00–6:00)</option>
+      </select></div>
+    <div class="form-group"><label>Ghi chú</label>
+      <textarea id="sf-notes" rows="2" placeholder="Ghi chú (tùy chọn)"></textarea></div>`;
+  openModal('Tạo ca trực', body, `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">Hủy</button>
+    <button class="btn btn-primary btn-sm" onclick="_saveShift()">Lưu ca</button>`);
+}
+
+async function _saveShift() {
+  const sel = document.getElementById('sf-user');
+  const userId = sel.value;
+  const userName = sel.options[sel.selectedIndex]?.getAttribute('data-name') || userId;
+  const date = document.getElementById('sf-date').value;
+  const shiftType = document.getElementById('sf-type').value;
+  const notes = document.getElementById('sf-notes').value;
+  if (!userId || !date) return toast('Vui lòng điền đầy đủ thông tin');
+  const r = await api('POST', '/api/shifts', { userId, userName, date, shiftType, notes });
+  if (r.ok) { closeModal(); toast('Đã tạo ca trực'); renderShifts(); }
+  else toast('Lỗi: ' + r.error);
+}
+
+async function shiftCheckIn(id) {
+  const r = await api('POST', `/api/shifts/${id}/check-in`, {});
+  if (r.ok) { toast('Đã check-in'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
+
+async function shiftCheckOut(id) {
+  const r = await api('POST', `/api/shifts/${id}/check-out`, {});
+  if (r.ok) { toast('Đã check-out'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
+
+async function deleteShift(id) {
+  if (!confirm('Xóa ca trực này?')) return;
+  const r = await api('DELETE', `/api/shifts/${id}`);
+  if (r.ok) { toast('Đã xóa'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
 
 // ─── UI MAP ──────────────────────────────────────────────────
 function renderUIMap() {
@@ -878,6 +1060,24 @@ function renderUIMap() {
               <td data-label="Thành phần">Form Tạo/Sửa lịch PM</td>
               <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Form]'); toast('Đã copy mã: [UI-PM-Form]')" style="font-family: monospace; font-size: 11px">[UI-PM-Form] 📋</button></td>
               <td data-label="Mô tả">Cửa sổ Modal tạo/sửa kế hoạch bảo trì (tần suất, thiết bị, người phụ trách)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Lịch trực tuần (grid 7 ngày × 3 ca)</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Calendar]'); toast('Đã copy mã: [UI-Shifts-Calendar]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Calendar] 📋</button></td>
+              <td data-label="Mô tả">Grid 7 ngày x 3 ca (Sáng/Chiều/Đêm), xem KTV được phân công, check-in/out</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Bảng thống kê workload KTV</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Workload]'); toast('Đã copy mã: [UI-Shifts-Workload]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Workload] 📋</button></td>
+              <td data-label="Mô tả">Số ca, giờ công, WO đang làm/đã xong theo tháng, highlight quá tải/thiếu</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Form tạo/sửa ca trực</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Form]'); toast('Đã copy mã: [UI-Shifts-Form]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Form] 📋</button></td>
+              <td data-label="Mô tả">Modal chọn KTV, ngày, loại ca (Sáng/Chiều/Đêm), ghi chú</td>
             </tr>
           </tbody>
         </table>
