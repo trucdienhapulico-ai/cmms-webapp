@@ -46,3 +46,22 @@ Bất cứ khi nào bạn thay đổi cấu trúc giao diện, thêm màn hình 
 - **BẮT BUỘC** phải tìm đến hàm `renderUIMap()` và cập nhật/bổ sung thông tin vào bảng Sơ đồ UI.
 - Thêm Mã định vị chuẩn xác (ví dụ: `[UI-TênKhuVực-TênThànhPhần]`) để người dùng (USER) có thể copy mã đó paste vào yêu cầu (Issue) lần sau.
 - Việc này giúp AI thế hệ sau luôn biết chính xác vị trí cần sửa khi USER cung cấp một mã UI thay vì phải diễn đạt mơ hồ.
+
+### 🎨 UI/UX CONVENTIONS: M&E OPERATIONS
+
+**1. Mobile-First & Phone-Native**
+- **Core:** One-hand operation, bottom sheets, gesture-based actions (swipe).
+- **Data Entry:** QR/NFC-first > AI Vision > Pickers > Manual input.
+- **Onboarding:** Rapid "Zero-Config" flow (Setup-to-Action < 60s).
+
+**2. Modern Design System**
+- **Layout:** Card-centric, clean typography, high-contrast status colors (Green/Amber/Red).
+- **Scalability:** Responsive logic for both SME (simple) and Enterprise (complex) assets.
+- **Performance:** Ultra-low latency; real-time telemetry focus.
+
+**3. AI-Powered Insights**
+- **Predictive:** Show "Next Failure Date" instead of just "Status OK."
+- **Search:** Natural Language Processing (NLP) for instant SOP & drawing retrieval.
+- **Smart Forms:** Autocomplete technical reports using historical operational data.
+
+**Principle:** Minimal Taps, Maximal Insight.
