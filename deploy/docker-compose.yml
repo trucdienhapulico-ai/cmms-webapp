@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
-      - TUNNEL_TOKEN=YOUR_CLOUDFLARE_TUNNEL_TOKEN_HERE
+      - TUNNEL_TOKEN=eyJhIjoiMDdhYjVhMjE5YTZjZDg2NDA3ZTQ1NWM0OTQxOWVmYWEiLCJ0IjoiYzEyOTgwNGEtOWU5ZS00MzQ0LTgwZWItMjgwNTczMTdjNDcwIiwicyI6Ik1HWmxaREF4TXpZdE0yUTVOQzAwWXpBekxUazVNekl0WTJKak1HWXdOVE5rTm1KaSJ9
     networks:
       - cmms-net
 
