@@ -41,7 +41,7 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
     - Quản lý nhà cung cấp (Vendor) và đánh giá chất lượng.
 - [x] **System Integration (Part 1)**:
     - Backup tự động và Audit log hệ thống (Issue #21).
-- [ ] **System Integration (Part 2)**:
+- [x] **System Integration (Part 2)**:
     - Webhooks/API cho tích hợp BMS/IoT tương lai (Issue #23).
 - [ ] **UI/UX Excellence**:
     - Premium Polish & Dark Mode (Issue #24).

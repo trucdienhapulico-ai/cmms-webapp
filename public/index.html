@@ -479,6 +479,7 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
       <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
       <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
+      <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Hỗ trợ</div>
@@ -642,7 +643,8 @@ function navigate(page, param = null) {
     mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
     inventory: renderInventory, tenantportal: renderTenantPortal,
     shifts: renderShifts, auditlog: renderAuditLog,
-    vendors: renderVendors, purchaseorders: renderPO
+    vendors: renderVendors, purchaseorders: renderPO,
+    integration: renderIntegration
   };
   (renders[page] || (() => {}))();
 
@@ -1097,6 +1099,18 @@ function renderUIMap() {
               <td data-label="Thành phần">Form tạo/sửa ca trực</td>
               <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Form]'); toast('Đã copy mã: [UI-Shifts-Form]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Form] 📋</button></td>
               <td data-label="Mô tả">Modal chọn KTV, ngày, loại ca (Sáng/Chiều/Đêm), ghi chú</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kết nối BMS/IoT</td>
+              <td data-label="Thành phần">Quản lý API Keys</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Int-ApiKeys]'); toast('Đã copy mã: [UI-Int-ApiKeys]')" style="font-family: monospace; font-size: 11px">[UI-Int-ApiKeys] 📋</button></td>
+              <td data-label="Mô tả">Trang tạo/thu hồi API Key cho BMS/IoT bên ngoài (Admin only)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kết nối BMS/IoT</td>
+              <td data-label="Thành phần">Quản lý Webhooks</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Int-Webhooks]'); toast('Đã copy mã: [UI-Int-Webhooks]')" style="font-family: monospace; font-size: 11px">[UI-Int-Webhooks] 📋</button></td>
+              <td data-label="Mô tả">Đăng ký/xóa webhook nhận sự kiện từ CMMS (work_order.created, pm.due...)</td>
             </tr>
           </tbody>
         </table>
@@ -2848,6 +2862,139 @@ async function createBackup() {
   if (!r.ok) return toast(r.error || 'Lỗi backup', 'error');
   toast(`✅ Backup thành công: ${r.data.filename}`, 'success');
   renderAuditLog();
+}
+
+// ─── INTEGRATION (BMS/IoT) ───────────────────────────────────
+async function renderIntegration() {
+  document.getElementById('page-title').textContent = 'Kết nối BMS/IoT';
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:4px">🔑 API Keys</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Dùng để xác thực các yêu cầu từ hệ thống BMS/IoT bên ngoài. Lưu key ngay sau khi tạo — sẽ không hiển thị lại toàn bộ.</p>
+      <div id="apikey-list" style="margin-bottom:12px"><div class="empty-state" style="padding:16px"><p>Đang tải...</p></div></div>
+      <button class="btn btn-primary btn-sm" onclick="showApiKeyForm()">+ Tạo API Key mới</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:4px">🪝 Webhooks</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Hệ thống sẽ gửi POST đến URL đăng ký khi có sự kiện (ví dụ: work_order.created).</p>
+      <div id="webhook-list" style="margin-bottom:12px"><div class="empty-state" style="padding:16px"><p>Đang tải...</p></div></div>
+      <button class="btn btn-primary btn-sm" onclick="showWebhookForm()">+ Đăng ký Webhook</button>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">📡 External Alert API</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:8px">Gửi cảnh báo từ BMS/IoT để tự động tạo Work Order:</p>
+      <pre style="background:var(--gray-bg);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto">POST /api/external/alert
+X-Api-Key: &lt;your-api-key&gt;
+Content-Type: application/json
+
+{
+  "assetId": "A0001",
+  "faultCode": "HVAC-TEMP-HIGH",
+  "description": "Nhiệt độ vượt ngưỡng 35°C",
+  "severity": "critical"   // critical→high, warning→medium, info→low
+}</pre>
+    </div>`;
+  await loadApiKeys();
+  await loadWebhooks();
+}
+
+async function loadApiKeys() {
+  const r = await api('GET', '/api/integration/api-keys');
+  const list = r.data || [];
+  document.getElementById('apikey-list').innerHTML = list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Nhãn</th><th>Key (ẩn)</th><th>Trạng thái</th><th>Tạo lúc</th><th></th></tr></thead><tbody>
+        ${list.map(k => `<tr>
+          <td data-label="Nhãn"><strong>${k.label}</strong></td>
+          <td data-label="Key"><code style="font-size:11px">${k.key}</code></td>
+          <td data-label="Trạng thái"><span class="badge badge-${k.active ? 'open' : 'done'}">${k.active ? 'Hoạt động' : 'Thu hồi'}</span></td>
+          <td data-label="Tạo lúc" style="font-size:12px">${fmtDate(k.createdAt)}</td>
+          <td data-label="">${k.active ? `<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="revokeApiKey('${k.id}')">Thu hồi</button>` : ''}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`
+    : `<div class="empty-state" style="padding:16px"><div class="icon">🔑</div><p>Chưa có API key nào</p></div>`;
+}
+
+async function loadWebhooks() {
+  const r = await api('GET', '/api/integration/webhooks');
+  const list = r.data || [];
+  document.getElementById('webhook-list').innerHTML = list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Nhãn</th><th>URL</th><th>Events</th><th>Tạo lúc</th><th></th></tr></thead><tbody>
+        ${list.map(w => `<tr>
+          <td data-label="Nhãn"><strong>${w.label}</strong></td>
+          <td data-label="URL"><code style="font-size:11px;word-break:break-all">${w.url}</code></td>
+          <td data-label="Events"><span style="font-size:11px">${(w.events || []).join(', ')}</span></td>
+          <td data-label="Tạo lúc" style="font-size:12px">${fmtDate(w.createdAt)}</td>
+          <td data-label=""><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteWebhook('${w.id}')">Xóa</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`
+    : `<div class="empty-state" style="padding:16px"><div class="icon">🪝</div><p>Chưa đăng ký webhook nào</p></div>`;
+}
+
+function showApiKeyForm() {
+  openModal('Tạo API Key mới', `
+    <div class="form-group"><label>Nhãn *</label><input id="apikey-label" placeholder="VD: BMS Tầng 1, SCADA Server..."></div>
+    <p style="font-size:12px;color:var(--text2)">Key sẽ được hiển thị <strong>một lần duy nhất</strong> sau khi tạo. Hãy sao chép và lưu ngay.</p>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+     <button class="btn btn-primary" onclick="createApiKey()">Tạo Key</button>`
+  );
+}
+
+async function createApiKey() {
+  const label = document.getElementById('apikey-label')?.value?.trim();
+  if (!label) return toast('Vui lòng nhập nhãn', 'error');
+  const r = await api('POST', '/api/integration/api-keys', { label });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  openModal('✅ API Key đã tạo — Sao chép ngay!', `
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Key chỉ hiển thị <strong>một lần</strong>. Hãy sao chép và lưu vào nơi an toàn.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <code id="new-key-val" style="font-size:13px;background:var(--gray-bg);padding:10px 14px;border-radius:8px;flex:1;word-break:break-all">${r.data.key}</code>
+      <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('new-key-val').textContent); toast('Đã sao chép!', 'success')">📋 Copy</button>
+    </div>`,
+    `<button class="btn btn-primary" onclick="closeModal(); loadApiKeys()">Đã lưu, đóng</button>`
+  );
+}
+
+async function revokeApiKey(id) {
+  if (!confirm('Thu hồi API key này? Các hệ thống đang dùng key này sẽ bị mất quyền truy cập.')) return;
+  const r = await api('DELETE', `/api/integration/api-keys/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã thu hồi key', 'success');
+  loadApiKeys();
+}
+
+function showWebhookForm() {
+  const eventOpts = ['work_order.created', 'work_order.updated', 'asset.alert', 'pm.due'];
+  openModal('Đăng ký Webhook', `
+    <div class="form-group"><label>Nhãn</label><input id="wh-label" placeholder="VD: Slack #alerts, SCADA Listener..."></div>
+    <div class="form-group"><label>URL *</label><input id="wh-url" placeholder="https://your-server.com/webhook"></div>
+    <div class="form-group"><label>Sự kiện *</label>
+      ${eventOpts.map(e => `<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px"><input type="checkbox" name="wh-events" value="${e}"> ${e}</label>`).join('')}
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+     <button class="btn btn-primary" onclick="saveWebhook()">Đăng ký</button>`
+  );
+}
+
+async function saveWebhook() {
+  const label = document.getElementById('wh-label')?.value?.trim();
+  const url = document.getElementById('wh-url')?.value?.trim();
+  const events = [...document.querySelectorAll('input[name="wh-events"]:checked')].map(el => el.value);
+  if (!url) return toast('Vui lòng nhập URL', 'error');
+  if (!events.length) return toast('Chọn ít nhất một sự kiện', 'error');
+  const r = await api('POST', '/api/integration/webhooks', { label, url, events });
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã đăng ký webhook', 'success');
+  closeModal();
+  loadWebhooks();
+}
+
+async function deleteWebhook(id) {
+  if (!confirm('Xóa webhook này?')) return;
+  const r = await api('DELETE', `/api/integration/webhooks/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa webhook', 'success');
+  loadWebhooks();
 }
 
 // ─── Init ────────────────────────────────────────────────────
