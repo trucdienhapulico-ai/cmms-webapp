@@ -637,10 +637,13 @@ async function doLogout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
-
-function showApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+async function showApp() {
+  const loginScreen = document.getElementById('login-screen');
+  const appContainer = document.getElementById('app');
+  
+  if (loginScreen) loginScreen.style.setProperty('display', 'none', 'important');
+  if (appContainer) appContainer.style.display = 'flex';
+  
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
   document.getElementById('sidebar-name').textContent = currentUser.name;
@@ -652,6 +655,11 @@ function showApp() {
     loadNotifBell();
     setInterval(loadNotifBell, 60000); // refresh every 60s
   }
+  
+  // Fetch app meta info
+  const meta = await api('GET', '/api/meta');
+  console.log('Environment:', meta.env, 'Version:', meta.version);
+  
   if (pendingAssetId) {
     const id = pendingAssetId;
     pendingAssetId = null;
@@ -3063,12 +3071,87 @@ async function deleteWebhook(id) {
   loadWebhooks();
 }
 
-// ─── Init ────────────────────────────────────────────────────
+async function renderRelease() {
+  const rTask = await api('GET', '/api/system/tasks');
+  const rInfo = await api('GET', '/api/system/info');
+  const tasks = rTask.data;
+  const info = rInfo.data;
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-label">Phiên bản hiện tại</div>
+        <div class="stat-value">v${info.version}</div>
+        <div class="stat-sub">Môi trường: <b>${info.env.toUpperCase()}</b></div>
+      </div>
+      <div class="stat-card ${info.env === 'test' ? 'stat-yellow' : 'stat-green'}">
+        <div class="stat-icon">🚀</div>
+        <div class="stat-label">Trạng thái Staging</div>
+        <div class="stat-value">${info.env === 'test' ? 'Đang Test' : 'Stable'}</div>
+        <div class="stat-sub">Đang chạy trên NAS</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">📖 Nhật ký Task (Development Logs)</div>
+      <div style="margin-top:15px">
+        <div id="release-tab-content" class="table-wrap">
+          <table>
+            <thead><tr><th>Tên Task</th><th>Thời gian hoàn thành</th><th>Kích thước</th></tr></thead>
+            <tbody>
+              ${tasks.done.map(t => `<tr><td><code>${t.name}</code></td><td>${new Date(t.time).toLocaleString('vi-VN')}</td><td>${Math.round(t.size/1024)} KB</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px; border-top:4px solid var(--blue)">
+      <div class="card-title">🚀 Quy trình Phê duyệt & Phát hành</div>
+      <div style="margin-top:15px; font-size:14px; line-height:1.6">
+        <p>1. <b>Phát triển:</b> Mọi tính năng mới được deploy mặc định lên <b>TEST</b> (cổng 8081).</p>
+        <p>2. <b>Kiểm tra:</b> Admin kiểm tra tính năng tại bản TEST.</p>
+        <p>3. <b>Phê duyệt:</b> Nếu OK, nhấn nút "Yêu cầu phát hành" bên dưới.</p>
+      </div>
+      <div style="margin-top:20px; text-align:center">
+        <button class="btn btn-primary" onclick="promoteToStable()" ${info.env !== 'test' ? 'disabled' : ''}>
+          🚀 Yêu cầu phát hành sang Stable
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function promoteToStable() {
+  if (!confirm('Bạn có chắc chắn muốn phê duyệt bản TEST này để phát hành sang STABLE không?')) return;
+  const r = await api('POST', '/api/system/promote');
+  if (r.ok) {
+    alert('Yêu cầu đã được gửi! Bạn có thể chạy "node deploy.js --stable" để hoàn tất đồng bộ.');
+    renderRelease();
+  }
+}
+
+// ─── Init ───────────────────────────────────────────────────
 (async () => {
   const pathMatch = window.location.pathname.match(/^\/asset\/([^/?#]+)/);
   if (pathMatch) pendingAssetId = pathMatch[1];
   const r = await api('GET', '/api/me');
-  if (r.ok) { currentUser = r.data; showApp(); }
+  if (r.ok) { 
+    currentUser = r.data; 
+    showApp(); 
+    const meta = await api('GET', '/api/system/info');
+    if (meta.ok) {
+      const vEl = document.getElementById('app-version');
+      if (vEl) vEl.innerText = 'v' + meta.data.version;
+      const tEl = document.getElementById('env-tag');
+      if (tEl) {
+        tEl.innerText = meta.data.env.toUpperCase();
+        tEl.style.backgroundColor = meta.data.env === 'test' ? '#f59e0b20' : '#16a34a20';
+        tEl.style.color = meta.data.env === 'test' ? 'var(--yellow)' : 'var(--green)';
+      }
+    }
+  }
 })();
 </script>
 </body>

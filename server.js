@@ -26,7 +26,8 @@ app.use((req, res, next) => {
 
 // ─── Security headers ─────────────────────────────────────────
 app.use((req, res, next) => {
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  // Bỏ includeSubDomains để không ảnh hưởng đến các cổng 8080, 8081
+  res.setHeader('Strict-Transport-Security', 'max-age=3600'); 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -1324,7 +1325,56 @@ app.post('/api/external/alert', validateApiKey, (req, res) => {
 });
 
 // ─── Health check ─────────────────────────────────────────────
-app.get('/api/health', (req, res) => res.json({ ok: 1, uptime: process.uptime() }));
+// ─── System / Release Management ──────────────────────────────
+const APP_VERSION = '1.3.5'; // Sẽ tự động tăng khi deploy
+
+app.get('/api/system/info', requireAuth(), (req, res) => {
+  res.json({
+    ok: 1,
+    data: {
+      version: APP_VERSION,
+      env: process.env.NODE_ENV || 'development',
+      node: process.version,
+      uptime: process.uptime()
+    }
+  });
+});
+
+app.get('/api/system/tasks', requireAuth(['admin']), (req, res) => {
+  const doneDir = path.join(__dirname, 'brain', 'tasks_done');
+  const queueDir = path.join(__dirname, 'brain', 'tasks_queue');
+  
+  const getTasks = (dir) => {
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir)
+      .filter(f => f.endsWith('.txt'))
+      .map(f => {
+        const stats = fs.statSync(path.join(dir, f));
+        return { name: f, time: stats.mtime, size: stats.size };
+      })
+      .sort((a, b) => b.time - a.time);
+  };
+
+  res.json({
+    ok: 1,
+    data: {
+      done: getTasks(doneDir),
+      queue: getTasks(queueDir)
+    }
+  });
+});
+
+// Endpoint kích hoạt đồng bộ sang Stable (Chỉ dành cho Admin)
+app.post('/api/system/promote', requireAuth(['admin']), (req, res) => {
+  // Trong thực tế, lệnh này sẽ gọi child_process.exec('node deploy.js --stable')
+  // Để an toàn, chúng ta log vào Audit Log và yêu cầu Admin chạy lệnh tay hoặc script tự động
+  logAudit(req, 'promote', 'system', null, `Admin initiated promotion to STABLE (v${APP_VERSION})`);
+  res.json({ ok: 1, message: 'Yêu cầu phát hành đã được ghi nhận vào hệ thống Audit Log.' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: now(), version: APP_VERSION });
+});
 
 // ─── SPA fallback ─────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
