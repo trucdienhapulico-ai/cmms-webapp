@@ -20,21 +20,28 @@ mkdir -p ~/hermes-cmms-agent && cd ~/hermes-cmms-agent
 mkdir -p ./data
 ```
 
-Tạo file `.env` chứa các biến môi trường cấu hình LLM (Sử dụng Gemini hoặc OpenRouter để miễn phí):
+Tạo file `.env` chứa các biến môi trường cấu hình LLM. (Bạn có thể sử dụng Gemini miễn phí, hoặc dùng gói **Codex Pro** thông qua Proxy):
 
 ```bash
 cat << 'EOF' > .env
-# --- CẤU HÌNH LLM (Chọn 1 trong 2) ---
+# --- CẤU HÌNH LLM (Chọn 1 trong 3 tùy chọn dưới đây) ---
 
-# Tùy chọn A: Dùng Google Gemini (Khuyên dùng)
-LLM_PROVIDER=gemini
-GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
-MODEL_NAME=gemini-2.5-flash
+# Tùy chọn A: Dùng Google Gemini (Khuyên dùng - Nhanh & Rộng)
+# LLM_PROVIDER=gemini
+# GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+# MODEL_NAME=gemini-2.5-flash
 
 # Tùy chọn B: Dùng OpenRouter
 # LLM_PROVIDER=openrouter
 # OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY_HERE
 # MODEL_NAME=meta-llama/llama-3-8b-instruct:free
+
+# Tùy chọn C: Dùng gói Github Copilot / Codex Pro (Thông qua Proxy)
+# *Yêu cầu: Phải cấu hình chạy thêm copilot-proxy trong docker-compose*
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=http://localhost:3000/v1
+OPENAI_API_KEY=dummy-key
+MODEL_NAME=claude-3-5-sonnet
 
 # --- CẤU HÌNH CMMS ENDPOINT ---
 CMMS_API_URL=http://<IP_CỦA_NAS>:3090/api
@@ -44,12 +51,24 @@ EOF
 
 ### 1.2. Tạo file `docker-compose.yml`
 
-Tạo file `docker-compose.yml` với nội dung sau:
+Tạo file `docker-compose.yml` với nội dung sau. Cấu hình này đã được cập nhật để chạy song song **Copilot Proxy** (nếu bạn dùng Tùy chọn C ở trên):
 
 ```yaml
 version: "3.9"
 
 services:
+  # ─── Copilot Proxy (Dành cho Tùy chọn C - Codex Pro) ───
+  copilot-proxy:
+    image: ghcr.io/ericc-ch/copilot-api:latest
+    container_name: hermes-copilot-proxy
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      # Lấy file token từ máy cá nhân lên Ubuntu thông qua SSH
+      - ./github-copilot-token.json:/app/token.json:ro
+      
+  # ─── Hermes AI Agent ───
   hermes-agent:
     # Tham khảo image chính thức của Hermes hoặc build từ source
     image: nousresearch/hermes-agent:latest 
@@ -62,9 +81,18 @@ services:
       - ./skills:/app/skills      # Thư mục chứa custom scripts (CMMS API)
     networks:
       - host                      # Dùng host network để dễ ra internet/LAN
+    depends_on:
+      - copilot-proxy
 ```
 
-Khởi chạy Agent:
+**⚠️ Hướng dẫn copy token Codex Pro qua SSH:**
+Nếu bạn dùng tuỳ chọn C, bạn cần copy file token Github Copilot (tìm thấy trên máy Windows tại `C:\Users\<Tên_Bạn>\AppData\Local\github-copilot\apps.json`) lên máy Ubuntu.
+Chạy lệnh sau trên máy Windows của bạn (thay IP và username):
+```bash
+scp "C:\Users\vitmo.WINDOWS11PRO\AppData\Local\github-copilot\apps.json" username@IP_UBUNTU:~/hermes-cmms-agent/github-copilot-token.json
+```
+
+Khởi chạy hệ thống:
 ```bash
 docker compose up -d
 ```
@@ -142,4 +170,4 @@ Vì CMMS nằm ở NAS, và AI Agent nằm ở Ubuntu, cần đảm bảo:
 ---
 
 ## Dành cho Trợ lý AI (AI System Prompt)
-*If you are an AI reading this file on the Ubuntu host: Please proceed to execute the bash commands in Section 1 to construct the workspace, create the `.env` configuration (ask the human for API keys if necessary), compose the `docker-compose.yml`, and inject the Python skill in Section 2 into the skills directory. Then execute `docker compose up -d`.*
+*If you are an AI reading this file on the Ubuntu host: Please proceed to execute the bash commands in Section 1 to construct the workspace. If the user opted for Option C (Codex Pro), ensure the `github-copilot-token.json` exists before running `docker compose up -d`. Inject the Python skill in Section 2 into the skills directory. Then start the stack.*
