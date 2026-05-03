@@ -6,10 +6,11 @@
 <title>CMMS – Quản lý Bảo trì Cơ điện</title>
 <style>
 :root {
-  --blue: #1e40af; --blue-light: #3b82f6; --blue-bg: #eff6ff;
+  --blue: #1e40af; --blue-light: #3b82f6; --blue-bg: #eff6ff; --blue-dark: #1d3fa5;
   --green: #16a34a; --green-bg: #f0fdf4;
   --red: #dc2626; --red-bg: #fef2f2;
   --yellow: #d97706; --yellow-bg: #fffbeb;
+  --orange: #e8710a; --orange-light: #fef3e2;
   --gray: #64748b; --gray-bg: #f8fafc; --border: #e2e8f0;
   --text: #0f172a; --text2: #475569;
   --sidebar-w: 220px;
@@ -139,34 +140,247 @@ tr:hover td { background: var(--blue-bg); }
 .toast-item.error { background: var(--red); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+/* ─── Responsive ─────────────────────────────────────────────── */
+.table-wrap { -webkit-overflow-scrolling: touch; }
+
+/* ─── Bottom Navigation (mobile only) ───────────────────── */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  z-index: 500; padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  height: 60px;
+}
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 8px 4px; cursor: pointer;
+  color: var(--gray); transition: color .15s;
+  -webkit-tap-highlight-color: transparent; min-height: 56px;
+  user-select: none;
+}
+.bnav-item.active { color: var(--blue); }
+.bnav-item.active .bnav-icon { transform: scale(1.15); }
+.bnav-icon { font-size: 20px; line-height: 1; transition: transform .15s; }
+.bnav-label { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: 0.2px; }
+
 @media (max-width: 768px) {
-  :root { --sidebar-w: 240px; }
-  .sidebar { 
-    left: calc(-1 * var(--sidebar-w)); 
-    transition: left .3s ease; 
-    box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+  .bottom-nav { display: flex; }
+  :root { --sidebar-w: 260px; }
+  .sidebar {
+    left: calc(-1 * var(--sidebar-w));
+    transition: left .25s ease;
+    box-shadow: none;
+    z-index: 300;
   }
-  .sidebar.open { left: 0; }
-  .main { margin-left: 0; }
-  .topbar { padding: 0 16px; }
-  .topbar-title { font-size: 15px; }
-  .page-body { padding: 16px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .stat-value { font-size: 24px; }
-  .form-row { grid-template-columns: 1fr; }
-  .modal { width: 95%; max-height: 90vh; }
-  .table-wrap { margin: 0 -16px; padding: 0 16px; }
-  
-  /* Sidebar toggle show */
-  #sidebar-toggle { display: flex !important; }
-  
-  /* Sidebar overlay when open */
-  .sidebar-overlay-bg { 
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; 
+  .sidebar.open { left: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.35); }
+  .sidebar-overlay-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290;
   }
   .sidebar-overlay-bg.show { display: block; }
+  #sidebar-toggle { display: flex !important; }
+
+  .main { margin-left: 0; }
+  .topbar { padding: 0 12px; height: 52px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-actions .btn { font-size: 12px; padding: 6px 12px; }
+  .page-body { padding: 12px; }
+
+  /* Login */
+  .login-box { width: 92%; padding: 28px 20px; }
+
+  /* Stats */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { padding: 14px 16px; }
+  .stat-value { font-size: 24px; }
+
+  /* Cards */
+  .card { padding: 14px 16px; margin-bottom: 14px; }
+
+  /* Forms */
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .filter-bar { flex-direction: column; gap: 8px; }
+  .filter-bar input, .filter-bar select { width: 100%; }
+
+  /* Tables: horizontal scroll */
+  .table-wrap { overflow-x: auto; margin: 0 -16px; padding: 0; }
+  table { min-width: 540px; }
+
+  /* Modal: slide up from bottom */
+  .modal-overlay { padding-top: 0; align-items: flex-end; }
+  .modal { width: 100%; max-width: 100%; border-radius: 14px 14px 0 0; max-height: 92vh; }
+
+  /* Touch-friendly tap targets */
+  .btn { min-height: 42px; }
+  .btn-sm { min-height: 36px; padding: 7px 14px; }
+  .form-group input, .form-group select, .form-group textarea { min-height: 48px; font-size: 16px; padding: 12px 14px; }
+  .filter-bar input, .filter-bar select { min-height: 44px; font-size: 16px; }
+
+  /* Bottom nav spacing */
+  .bottom-nav { display: flex; }
+  .page-body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 12px); }
+  /* Toast above bottom nav */
+  #toast { bottom: 76px; right: 16px; }
 }
+
+/* ─── Checklist Module ──────────────────────────────────────── */
+.cl-tabs { display:flex; background:#fff; border-bottom:2px solid var(--border); overflow-x:auto; -webkit-overflow-scrolling:touch; margin:-24px -28px 16px; }
+.cl-tab { flex:1; min-width:80px; padding:12px 8px; text-align:center; font-size:13px; font-weight:600; color:var(--gray); border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+.cl-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.cl-tab span { font-size:18px; display:block; margin-bottom:3px; }
+.cl-summary-bar { background:#fff; border-radius:12px; border:1px solid var(--border); padding:14px 16px; margin-bottom:16px; display:flex; gap:8px; justify-content:space-around; }
+.sum-item { text-align:center; }
+.sum-num { font-size:24px; font-weight:800; }
+.sum-label { font-size:11px; color:var(--gray); margin-top:2px; }
+.sum-ok .sum-num { color:var(--green); }
+.sum-caution .sum-num { color:var(--orange); }
+.sum-fail .sum-num { color:var(--red); }
+.sum-total .sum-num { color:var(--blue); }
+.checklist-card { background:#fff; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+.checklist-card .card-header { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); background:var(--gray-bg); }
+.checklist-card .card-header h3 { font-size:14px; font-weight:700; color:var(--text); }
+.checklist-card .card-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+.progress-ring { font-size:13px; font-weight:700; color:var(--blue); }
+.checklist-item { padding:12px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:flex-start; gap:10px; }
+.checklist-item:last-child { border-bottom:none; }
+.item-label { flex:1; font-size:14px; line-height:1.4; padding-top:2px; }
+.item-unit { font-size:12px; color:var(--gray); }
+.status-group { display:flex; gap:4px; flex-shrink:0; }
+.status-btn { padding:5px 10px; border-radius:20px; border:1.5px solid var(--border); background:#fff; font-size:12px; font-weight:600; color:var(--gray); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+.status-btn:hover { border-color:var(--blue-light); color:var(--blue); }
+.status-btn.ok.selected { background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.status-btn.caution.selected { background:var(--yellow-bg); border-color:var(--yellow); color:var(--yellow); }
+.status-btn.fail.selected { background:var(--red-bg); border-color:var(--red); color:var(--red); }
+.item-input { width:72px; padding:5px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; text-align:right; outline:none; }
+.item-input:focus { border-color:var(--blue-light); }
+.cl-section-divider { padding:7px 16px; background:var(--gray-bg); border-bottom:1px solid #f1f5f9; font-size:11px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; }
+.cl-history-item { background:#fff; border-radius:10px; border:1px solid var(--border); padding:14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+.cl-history-item:hover { border-color:var(--blue-light); }
+.cl-history-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.cl-history-date { font-weight:700; font-size:14px; }
+.cl-history-stats { display:flex; gap:6px; }
+.stat-badge { font-size:11px; padding:3px 8px; border-radius:20px; font-weight:600; }
+.stat-ok { background:var(--green-bg); color:var(--green); }
+.stat-caution { background:var(--yellow-bg); color:var(--yellow); }
+.stat-fail { background:var(--red-bg); color:var(--red); }
+.cl-history-employee { font-size:13px; color:var(--gray); margin-bottom:6px; }
+.cl-history-equip { display:flex; gap:6px; flex-wrap:wrap; }
+.equip-badge { font-size:11px; padding:2px 8px; border-radius:20px; background:var(--blue-bg); color:var(--blue); font-weight:600; }
+.detail-section { margin-bottom:16px; }
+.detail-section h4 { font-size:12px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.detail-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
+.detail-item:last-child { border-bottom:none; }
+.detail-item .di-label { flex:1; color:var(--text2); }
+.detail-status { font-size:12px; padding:3px 10px; border-radius:20px; font-weight:600; }
+.ds-ok { background:var(--green-bg); color:var(--green); }
+.ds-caution { background:var(--yellow-bg); color:var(--yellow); }
+.ds-fail { background:var(--red-bg); color:var(--red); }
+.ds-na { background:var(--gray-bg); color:var(--gray); }
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-value { font-size: 22px; }
+
+  /* Full-bleed layout: remove horizontal padding on mobile */
+  .page-body { padding: 12px 0; padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 12px); }
+  .stats-grid { padding: 0 12px; }
+  .filter-bar { padding: 0 12px; }
+
+  /* Card-view tables — true full-width */
+  .card:has(.table-wrap) { padding: 12px 0; border-radius: 0; border-left: none; border-right: none; }
+  .table-wrap { margin: 0; overflow-x: visible; padding: 0; }
+  .table-wrap table { min-width: 0; width: 100%; }
+  .table-wrap table thead { display: none; }
+  .table-wrap table tr {
+    display: block; background: white;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    border-left: none; border-right: none; border-radius: 0;
+    margin-bottom: 8px;
+  }
+  .table-wrap table tr:hover td { background: transparent; }
+  .table-wrap table td {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px;
+  }
+  .table-wrap table td:last-child { border-bottom: none; }
+  .table-wrap table td::before {
+    content: attr(data-label);
+    font-size: 10px; font-weight: 700; color: var(--gray);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    min-width: 72px; padding-top: 2px; flex-shrink: 0;
+  }
+  .table-wrap table td[data-label=""] { justify-content: flex-start; gap: 8px; background: var(--gray-bg); padding: 10px 14px; }
+  .table-wrap table td[data-label=""] .btn { flex: 1; justify-content: center; }
+  .table-wrap table td[data-label=""]::before { display: none; }
+  .table-wrap table td:has(> .empty-state) { display: block; }
+  .table-wrap table td:has(> .empty-state)::before { display: none; }
+  /* Title row emphasis */
+  .table-wrap table td[data-label="Tiêu đề"],
+  .table-wrap table td[data-label="Tên thiết bị"] { border-bottom: 2px solid var(--border); padding: 12px 14px; }
+}
+
+/* ─── Stat card icon ─── */
+.stat-icon { font-size: 22px; line-height: 1; margin-bottom: 6px; }
+
+/* ─── Asset Detail Page ──────────────────────────────────────── */
+.asset-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.asset-detail-field { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.asset-detail-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.asset-detail-value { font-size: 14px; font-weight: 600; color: var(--text); }
+.qr-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
+.qr-card svg { max-width: 180px; height: auto; }
+.qr-url { font-size: 11px; color: var(--gray); margin-top: 8px; word-break: break-all; }
+@media (max-width: 768px) {
+  .asset-detail-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .asset-detail-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── QR Scanner ─────────────────────────────────────────────── */
+.scanner-container { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+#qr-reader { width: 100%; }
+#qr-reader video { border-radius: 8px; }
+#html5-qrcode-button-camera-permission,
+#html5-qrcode-button-camera-start,
+#html5-qrcode-button-camera-stop {
+  padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; margin: 4px;
+}
+#html5-qrcode-button-camera-permission { background: var(--blue); color: white; }
+#html5-qrcode-button-camera-start { background: var(--green); color: white; }
+#html5-qrcode-button-camera-stop { background: var(--red); color: white; }
+#html5-qrcode-select-camera { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; margin: 4px; }
+.scan-hint { text-align: center; padding: 16px; color: var(--gray); font-size: 13px; }
+
+/* ─── Checklist Modal ────────────────────────────────────────── */
+.cl-modal-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 12px; }
+.cl-modal-item:last-child { border-bottom: none; }
+.cl-modal-label { flex: 1; font-size: 14px; padding-top: 8px; }
+.cl-modal-unit { font-size: 11px; color: var(--gray); }
+.cl-modal-input { width: 90px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; }
+.cl-modal-input:focus { border-color: var(--blue-light); outline: none; }
+.cl-text-input { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; margin-top: 4px; }
+.cl-text-input:focus { border-color: var(--blue-light); outline: none; }
+.mlog-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.mlog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.mlog-title { font-weight: 700; font-size: 14px; }
+.mlog-meta { font-size: 11px; color: var(--gray); }
+.mlog-results { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.mlog-result-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+
+/* ─── Prominent Scan QR button in bottom nav ────────────────── */
+.bnav-scan-btn {
+  color: white !important;
+  background: var(--blue);
+  border-radius: 14px;
+  margin: 6px 8px;
+  box-shadow: 0 3px 10px rgba(30, 64, 175, 0.4);
+  flex: 1.3;
+}
+.bnav-scan-btn .bnav-icon { font-size: 22px; }
+.bnav-scan-btn.active { background: var(--blue-dark); }
 </style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -210,6 +424,8 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-section-title">Vận hành</div>
       <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
       <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
+      <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
+      <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
     </div>
     <div class="nav-section" id="admin-menu" style="display:none">
       <div class="nav-section-title">Quản trị</div>
@@ -231,6 +447,12 @@ tr:hover td { background: var(--blue-bg); }
     </div>
     <div class="page-body" id="page-body"></div>
   </div>
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
+    <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
+    <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
+    <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
+  </nav>
 </div>
 
 <!-- MODAL -->
@@ -251,6 +473,9 @@ tr:hover td { background: var(--blue-bg); }
 // ─── State ───────────────────────────────────────────────────
 let currentUser = null;
 let currentPage = 'dashboard';
+let currentAssetId = null;
+let pendingAssetId = null;
+let qrScanner = null;
 
 // ─── API ────────────────────────────────────────────────────
 async function api(method, url, body) {
@@ -298,23 +523,50 @@ function showApp() {
   document.getElementById('sidebar-name').textContent = currentUser.name;
   document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
   if (['admin', 'manager'].includes(currentUser.role)) document.getElementById('admin-menu').style.display = 'block';
-  navigate('dashboard');
+  if (pendingAssetId) {
+    const id = pendingAssetId;
+    pendingAssetId = null;
+    navigate('assetDetail', id);
+  } else {
+    navigate('dashboard');
+  }
 }
 
 // ─── Navigation ──────────────────────────────────────────────
-function navigate(page) {
+function navigate(page, param = null) {
+  // Stop QR scanner when leaving scan page
+  if (currentPage === 'scan' && page !== 'scan' && qrScanner) {
+    stopQrScanner();
+  }
   currentPage = page;
+  if (page === 'assetDetail') currentAssetId = param;
+
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
   });
-  const titles = { dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị', users: 'Quản lý Người dùng' };
+  document.querySelectorAll('.bnav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
+  });
+  const titles = {
+    dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
+    users: 'Quản lý Người dùng', scan: 'Quét QR',
+    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì'
+  };
   document.getElementById('page-title').textContent = titles[page] || page;
-  const actions = { workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>', assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>', users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>' };
+  const actions = {
+    workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>',
+    assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
+    users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
+    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>'
+  };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
-  const renders = { dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets, users: renderUsers };
+  const renders = {
+    dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets,
+    users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
+    mlogs: renderMaintenanceLogs
+  };
   (renders[page] || (() => {}))();
-  
-  // Close sidebar on mobile after navigation
+
   if (window.innerWidth <= 768) {
     document.querySelector('.sidebar').classList.remove('open');
     document.querySelector('.sidebar-overlay-bg').classList.remove('show');
@@ -347,12 +599,12 @@ async function renderDashboard() {
   const s = r.data;
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card stat-blue"><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
-      <div class="stat-card stat-blue"><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
-      <div class="stat-card stat-yellow"><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
-      <div class="stat-card stat-green"><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
-      <div class="stat-card stat-red"><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
-      <div class="stat-card stat-red"><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+      <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
+      <div class="stat-card stat-blue"><div class="stat-icon">📋</div><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
+      <div class="stat-card stat-yellow"><div class="stat-icon">⚙️</div><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
+      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
     </div>
     <div class="card">
       <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
@@ -361,7 +613,7 @@ async function renderDashboard() {
   const wr = await api('GET', '/api/work-orders?status=open&priority=high');
   const list = wr.data || [];
   document.getElementById('dashboard-wo').innerHTML = list.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td><code>${w.id}</code></td><td>${w.title}</td><td>${w.assetId || '—'}</td><td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td data-label="Mã"><code>${w.id}</code></td><td data-label="Tiêu đề">${w.title}</td><td data-label="Thiết bị">${w.assetId || '—'}</td><td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
     : '<div class="empty-state"><div class="icon">✅</div><p>Không có lệnh ưu tiên cao nào</p></div>';
 }
 
@@ -397,14 +649,14 @@ async function filterWO() {
   const typeLabel = { corrective: 'Sửa chữa', preventive: 'Phòng ngừa', inspection: 'Kiểm tra', emergency: '🚨 Khẩn cấp' };
   tbody.innerHTML = list.length ? list.map(w => `
     <tr>
-      <td><code style="font-size:12px">${w.id}</code></td>
-      <td style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
-      <td>${typeLabel[w.type] || w.type}</td>
-      <td><span class="badge badge-${w.priority}">${w.priority}</span></td>
-      <td><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
-      <td style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
-      <td>${w.assignedTo || '—'}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+      <td data-label="Mã"><code style="font-size:12px">${w.id}</code></td>
+      <td data-label="Tiêu đề" style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
+      <td data-label="Loại">${typeLabel[w.type] || w.type}</td>
+      <td data-label="Ưu tiên"><span class="badge badge-${w.priority}">${w.priority}</span></td>
+      <td data-label="Trạng thái"><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+      <td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
+      <td data-label="Phụ trách">${w.assignedTo || '—'}</td>
+      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
     </tr>`).join('') : '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Chưa có lệnh công việc nào</p></div></td></tr>';
 }
 
@@ -517,13 +769,13 @@ async function filterAssets() {
   if (!tbody) return;
   tbody.innerHTML = list.length ? list.map(a => `
     <tr>
-      <td><code style="font-size:12px">${a.id}</code></td>
-      <td style="font-weight:600">${a.name}</td>
-      <td>${a.category}</td>
-      <td>${a.location}</td>
-      <td style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
-      <td><span class="badge badge-${a.status}">${a.status}</span></td>
-      <td style="display:flex;gap:6px">
+      <td data-label="Mã"><code style="font-size:12px">${a.id}</code></td>
+      <td data-label="Tên thiết bị" style="font-weight:600">${a.name}</td>
+      <td data-label="Danh mục">${a.category}</td>
+      <td data-label="Vị trí">${a.location}</td>
+      <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
+      <td data-label="Trạng thái"><span class="badge badge-${a.status}">${a.status}</span></td>
+      <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
         ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
       </td>
@@ -538,7 +790,10 @@ async function viewAsset(id) {
       ${[['Mã thiết bị', a.code || a.id], ['Danh mục', a.category], ['Vị trí', a.location], ['Trạng thái', `<span class="badge badge-${a.status}">${a.status}</span>`], ['Hãng SX', a.manufacturer || '—'], ['Model', a.model || '—'], ['Số series', a.serialNumber || '—'], ['Ngày lắp đặt', fmtDateShort(a.installDate)]].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
     </div>
     ${a.notes ? `<div style="margin-top:16px;font-size:12px;background:var(--gray-bg);padding:12px;border-radius:8px">${a.notes}</div>` : ''}`,
-    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-primary" onclick="closeModal();showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}`
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+     <button class="btn btn-ghost btn-sm" onclick="closeModal();navigate('assetDetail','${a.id}')">📄 Chi tiết & QR</button>
+     <button class="btn btn-success btn-sm" onclick="closeModal();showChecklistForm('${a.id}','${a.category}')">📝 Checklist</button>
+     ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-primary" onclick="closeModal();showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}`
   );
 }
 
@@ -605,10 +860,10 @@ async function renderUsers() {
       <div class="table-wrap"><table>
         <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Ngày tạo</th><th></th></tr></thead>
         <tbody>${list.map(u => `<tr>
-          <td><code>${u.username}</code></td><td>${u.name}</td>
-          <td>${roleLabel[u.role] || u.role}</td>
-          <td>${fmtDateShort(u.createdAt)}</td>
-          <td>${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
+          <td data-label="Tài khoản"><code>${u.username}</code></td><td data-label="Họ tên">${u.name}</td>
+          <td data-label="Vai trò">${roleLabel[u.role] || u.role}</td>
+          <td data-label="Ngày tạo">${fmtDateShort(u.createdAt)}</td>
+          <td data-label="">${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
@@ -644,8 +899,389 @@ async function deleteUser(id, name) {
   toast('Đã xóa tài khoản', 'success'); renderUsers();
 }
 
+// ─── SCAN ────────────────────────────────────────────────────
+function stopQrScanner() {
+  if (!qrScanner) return;
+  qrScanner.clear().catch(() => {});
+  qrScanner = null;
+}
+
+function extractAssetIdFromQr(decodedText) {
+  const raw = (decodedText || '').trim();
+  if (!raw) return null;
+
+  try {
+    const payload = JSON.parse(raw);
+    return payload.assetId || payload.id || payload.asset_id || null;
+  } catch (_) {}
+
+  try {
+    const url = new URL(raw, window.location.origin);
+    const pathMatch = url.pathname.match(/\/asset\/([^/?#]+)/);
+    if (pathMatch) return decodeURIComponent(pathMatch[1]);
+    const queryAssetId = url.searchParams.get('assetId') || url.searchParams.get('id');
+    if (queryAssetId) return queryAssetId;
+  } catch (_) {}
+
+  const directMatch = raw.match(/\bA\d{3,}\b/i);
+  return directMatch ? directMatch[0].toUpperCase() : null;
+}
+
+async function openChecklistFromAssetScan(assetId) {
+  const id = (assetId || '').trim().toUpperCase();
+  if (!id) return toast('Chưa có mã thiết bị', 'error');
+
+  stopQrScanner();
+  const r = await api('GET', `/api/assets/${encodeURIComponent(id)}`);
+  if (!r.ok) {
+    toast(`Không tìm thấy thiết bị: ${id}`, 'error');
+    if (currentPage === 'scan') renderScan();
+    return;
+  }
+
+  navigate('assetDetail', r.data.id);
+  toast(`Đã quét ${r.data.code || r.data.id}`, 'success');
+  setTimeout(() => showChecklistForm(r.data.id, r.data.category, 'qr'), 250);
+}
+
+function handleManualAssetScan() {
+  const input = document.getElementById('manual-asset-id');
+  openChecklistFromAssetScan(input?.value || '');
+}
+
+function renderScan() {
+  stopQrScanner();
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="padding:16px">
+      <p style="font-size:13px;color:var(--gray);margin-bottom:12px;text-align:center">Hướng camera vào mã QR của thiết bị</p>
+      <div class="scanner-container">
+        <div id="qr-reader"></div>
+      </div>
+      <div class="scan-hint">📷 Cần cấp quyền camera để quét QR</div>
+      <div class="form-group" style="margin-top:16px">
+        <label>Nhập mã thiết bị thủ công</label>
+        <input id="manual-asset-id" placeholder="VD: A0007" onkeydown="if(event.key==='Enter') handleManualAssetScan()">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleManualAssetScan()">Mở Checklist</button>
+    </div>`;
+
+  if (typeof Html5QrcodeScanner === 'undefined') {
+    document.getElementById('qr-reader').innerHTML = '<div class="empty-state" style="padding:24px"><p>Không tải được thư viện quét QR. Có thể nhập mã thiết bị thủ công.</p></div>';
+    return;
+  }
+
+  qrScanner = new Html5QrcodeScanner('qr-reader', {
+    fps: 10,
+    qrbox: { width: 250, height: 250 },
+    aspectRatio: 1.0,
+    showTorchButtonIfSupported: true,
+    showZoomSliderIfSupported: true,
+    defaultZoomValueIfSupported: 1.5
+  }, false);
+
+  qrScanner.render(
+    (decodedText) => {
+      const assetId = extractAssetIdFromQr(decodedText);
+      if (assetId) {
+        openChecklistFromAssetScan(assetId);
+      } else {
+        stopQrScanner();
+        toast('QR không hợp lệ: ' + decodedText, 'error');
+        renderScan();
+      }
+    },
+    () => {}
+  );
+}
+
+// ─── ASSET DETAIL ─────────────────────────────────────────────
+async function renderAssetDetail(id) {
+  if (!id) { navigate('assets'); return; }
+  document.getElementById('page-body').innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+
+  const [ar, qrr, logr] = await Promise.all([
+    api('GET', `/api/assets/${id}`),
+    api('GET', `/api/assets/${id}/qr`),
+    api('GET', `/api/maintenance-logs?assetId=${id}&limit=10`)
+  ]);
+
+  if (!ar.ok) {
+    document.getElementById('page-body').innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>${ar.error}</p></div>`;
+    return;
+  }
+
+  const a = ar.data;
+  const logs = logr.data || [];
+
+  const statusLabel = { active: '🟢 Đang hoạt động', inactive: '⚪ Tạm dừng', maintenance: '🟡 Đang bảo trì' };
+  const fields = [
+    ['Mã thiết bị', a.code || a.id], ['Danh mục', a.category],
+    ['Vị trí', a.location], ['Trạng thái', statusLabel[a.status] || a.status],
+    ['Hãng sản xuất', a.manufacturer || '—'], ['Model', a.model || '—'],
+    ['Số series', a.serialNumber || '—'], ['Ngày lắp đặt', fmtDateShort(a.installDate)]
+  ];
+
+  const logsHtml = logs.length ? logs.map(l => {
+    const ok = (l.results || []).filter(r => r.status === 'ok').length;
+    const fail = (l.results || []).filter(r => r.status === 'fail').length;
+    const caution = (l.results || []).filter(r => r.status === 'caution').length;
+    return `<div class="mlog-item">
+      <div class="mlog-header">
+        <div class="mlog-title">${l.templateName || 'Checklist'}</div>
+        <div class="mlog-meta">${fmtDate(l.createdAt)}</div>
+      </div>
+      <div class="mlog-meta">👤 ${l.submittedBy}</div>
+      <div class="mlog-results">
+        ${ok > 0 ? `<span class="mlog-result-badge stat-ok">✓ ${ok} Đạt</span>` : ''}
+        ${caution > 0 ? `<span class="mlog-result-badge stat-caution">⚠ ${caution} Cần lưu ý</span>` : ''}
+        ${fail > 0 ? `<span class="mlog-result-badge stat-fail">✗ ${fail} Không đạt</span>` : ''}
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty-state" style="padding:24px"><p>Chưa có nhật ký bảo trì</p></div>';
+
+  document.getElementById('page-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+      <div>
+        <div class="card">
+          <div class="card-title">🏗️ ${a.name}</div>
+          <div class="asset-detail-grid">
+            ${fields.map(([k, v]) => `<div class="asset-detail-field"><div class="asset-detail-label">${k}</div><div class="asset-detail-value">${v}</div></div>`).join('')}
+          </div>
+          ${a.notes ? `<div style="background:var(--gray-bg);padding:12px;border-radius:8px;font-size:13px;color:var(--text2)">${a.notes}</div>` : ''}
+          <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-success" onclick="showChecklistForm('${a.id}','${a.category}')">📝 Làm Checklist</button>
+            <button class="btn btn-ghost" onclick="showWOForm({assetId:'${a.id}'})">+ Tạo Work Order</button>
+            ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">✏️ Sửa</button>` : ''}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📝 Lịch sử bảo trì gần đây</div>
+          ${logsHtml}
+        </div>
+      </div>
+      <div>
+        <div class="qr-card">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px">📱 Mã QR Thiết bị</div>
+          ${qrr.ok ? qrr.data.svg : '<p style="color:var(--gray);font-size:12px">Không tạo được QR</p>'}
+          ${qrr.ok ? `<div class="qr-url">${qrr.data.url}</div>` : ''}
+          ${qrr.ok ? `<div style="margin-top:12px"><button class="btn btn-ghost btn-sm btn-full" onclick="printQR('${a.id}','${a.name}')">🖨️ In QR</button></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+
+  // Responsive: stack on mobile
+  if (window.innerWidth <= 768) {
+    document.querySelector('#page-body > div').style.gridTemplateColumns = '1fr';
+  }
+}
+
+function printQR(id, name) {
+  api('GET', `/api/assets/${id}/qr`).then(r => {
+    if (!r.ok) return toast('Lỗi tạo QR', 'error');
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>QR - ${name}</title>
+    <style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif}
+    h2{margin-bottom:8px}p{color:#64748b;font-size:13px;margin-bottom:16px}svg{width:220px;height:220px}</style></head>
+    <body><h2>${name}</h2><p>${id}</p>${r.data.svg}<p style="margin-top:12px;font-size:11px">${r.data.url}</p></body></html>`);
+    w.document.close();
+    w.print();
+  });
+}
+
+// ─── CHECKLIST FORM ───────────────────────────────────────────
+async function showChecklistForm(assetId, category, source = 'asset') {
+  const [ar, tr] = await Promise.all([
+    api('GET', `/api/assets/${assetId}`),
+    api('GET', `/api/checklist-templates`)
+  ]);
+  if (!ar.ok) return toast(ar.error || 'Không tìm thấy thiết bị', 'error');
+  if (!tr.ok) return toast(tr.error || 'Không tải được mẫu checklist', 'error');
+  const asset = ar.data;
+  const templates = tr.data || [];
+
+  const matching = templates.filter(t => t.category === category);
+  const allTemplates = matching.length ? matching : templates;
+
+  let tplSelect = allTemplates.length > 1
+    ? `<div class="form-group"><label>Chọn mẫu checklist</label>
+        <select id="cl-tpl-sel" onchange="renderChecklistItems()">
+          ${allTemplates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+        </select></div>`
+    : '';
+
+  openModal(`📝 Checklist — ${asset.name}`, `
+    ${tplSelect}
+    <div id="cl-items-container"></div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Ghi chú</label>
+      <textarea id="cl-note" class="cl-text-input" placeholder="Ghi chú thêm..." style="height:60px"></textarea>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+     <button class="btn btn-success" onclick="submitChecklist('${assetId}')">✅ Nộp Checklist</button>`
+  );
+
+  window._clTemplates = allTemplates;
+  window._clAssetId = assetId;
+  window._clSource = source;
+  renderChecklistItems();
+}
+
+function renderChecklistItems() {
+  const selEl = document.getElementById('cl-tpl-sel');
+  const tplId = selEl ? selEl.value : window._clTemplates[0]?.id;
+  const tpl = window._clTemplates.find(t => t.id === tplId) || window._clTemplates[0];
+  if (!tpl) return;
+  window._clActiveTpl = tpl;
+
+  const container = document.getElementById('cl-items-container');
+  container.innerHTML = `<div style="font-weight:700;font-size:13px;color:var(--gray);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">${tpl.name}</div>` +
+    tpl.items.map(item => {
+      if (item.type === 'status') {
+        return `<div class="cl-modal-item">
+          <div class="cl-modal-label">${item.label}</div>
+          <div class="status-group">
+            <button class="status-btn ok" data-item="${item.id}" data-val="ok" onclick="selectStatus(this)">✓ Đạt</button>
+            <button class="status-btn caution" data-item="${item.id}" data-val="caution" onclick="selectStatus(this)">⚠</button>
+            <button class="status-btn fail" data-item="${item.id}" data-val="fail" onclick="selectStatus(this)">✗</button>
+          </div>
+        </div>`;
+      } else if (item.type === 'number') {
+        return `<div class="cl-modal-item">
+          <div class="cl-modal-label">${item.label} <span class="cl-modal-unit">(${item.unit || ''})</span></div>
+          <input type="number" class="cl-modal-input" id="cl-num-${item.id}" placeholder="0" step="any">
+        </div>`;
+      } else {
+        return `<div class="cl-modal-item" style="flex-direction:column">
+          <div class="cl-modal-label">${item.label}</div>
+          <input type="text" class="cl-text-input" id="cl-txt-${item.id}" placeholder="Nhập ghi chú...">
+        </div>`;
+      }
+    }).join('');
+}
+
+function selectStatus(btn) {
+  const itemId = btn.dataset.item;
+  document.querySelectorAll(`.status-btn[data-item="${itemId}"]`).forEach(b => {
+    b.classList.toggle('selected', b === btn);
+  });
+}
+
+async function submitChecklist(assetId) {
+  const tpl = window._clActiveTpl;
+  if (!tpl) return toast('Chưa chọn template', 'error');
+
+  const results = tpl.items.map(item => {
+    if (item.type === 'status') {
+      const sel = document.querySelector(`.status-btn.selected[data-item="${item.id}"]`);
+      return { id: item.id, label: item.label, type: 'status', status: sel?.dataset.val || null };
+    } else if (item.type === 'number') {
+      const val = document.getElementById(`cl-num-${item.id}`)?.value;
+      return { id: item.id, label: item.label, type: 'number', value: val ? parseFloat(val) : null, unit: item.unit };
+    } else {
+      const val = document.getElementById(`cl-txt-${item.id}`)?.value;
+      return { id: item.id, label: item.label, type: 'text', value: val || '' };
+    }
+  });
+
+  const unanswered = results.filter(r => r.type === 'status' && r.status === null);
+  if (unanswered.length > 0) {
+    if (!confirm(`Còn ${unanswered.length} mục chưa đánh giá. Vẫn nộp?`)) return;
+  }
+
+  const note = document.getElementById('cl-note')?.value || '';
+  const payload = {
+    assetId,
+    templateId: tpl.id,
+    templateName: tpl.name,
+    source: window._clSource || 'asset',
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: new Date().toISOString(),
+    results,
+    note
+  };
+
+  const checklistRecord = await api('POST', '/api/checklists', payload);
+  if (!checklistRecord.ok) return toast(checklistRecord.error, 'error');
+
+  const r = await api('POST', '/api/maintenance-logs', payload);
+
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast('✅ Đã nộp checklist thành công!', 'success');
+  if (currentPage === 'assetDetail' && currentAssetId === assetId) renderAssetDetail(assetId);
+}
+
+// ─── MAINTENANCE LOGS ──────────────────────────────────────────
+async function renderMaintenanceLogs() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="filter-bar">
+      <input id="mlog-asset" placeholder="🔍 Lọc theo mã thiết bị..." oninput="filterMLogs()">
+    </div>
+    <div id="mlog-list"></div>`;
+  filterMLogs();
+}
+
+async function filterMLogs() {
+  const assetId = document.getElementById('mlog-asset')?.value.trim() || '';
+  let url = '/api/maintenance-logs?limit=50';
+  if (assetId) url += `&assetId=${encodeURIComponent(assetId)}`;
+  const r = await api('GET', url);
+  const list = r.data || [];
+  const container = document.getElementById('mlog-list');
+  if (!container) return;
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>Chưa có nhật ký bảo trì</p></div>';
+    return;
+  }
+  container.innerHTML = list.map(l => {
+    const ok = (l.results || []).filter(r => r.status === 'ok').length;
+    const fail = (l.results || []).filter(r => r.status === 'fail').length;
+    const caution = (l.results || []).filter(r => r.status === 'caution').length;
+    return `<div class="mlog-item" onclick="viewMLog('${l.id}')" style="cursor:pointer">
+      <div class="mlog-header">
+        <div><div class="mlog-title">${l.templateName || 'Checklist'}</div>
+          <div class="mlog-meta" style="margin-top:2px">🏗️ ${l.assetId} · 👤 ${l.submittedBy}</div>
+        </div>
+        <div class="mlog-meta">${fmtDate(l.createdAt)}</div>
+      </div>
+      <div class="mlog-results">
+        ${ok > 0 ? `<span class="mlog-result-badge stat-ok">✓ ${ok} Đạt</span>` : ''}
+        ${caution > 0 ? `<span class="mlog-result-badge stat-caution">⚠ ${caution} Cần lưu ý</span>` : ''}
+        ${fail > 0 ? `<span class="mlog-result-badge stat-fail">✗ ${fail} Không đạt</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function viewMLog(id) {
+  const r = await api('GET', '/api/maintenance-logs?limit=1000');
+  const log = (r.data || []).find(l => l.id === id);
+  if (!log) return;
+  const statusClass = { ok: 'ds-ok', caution: 'ds-caution', fail: 'ds-fail' };
+  const statusLabel = { ok: '✓ Đạt', caution: '⚠ Cần lưu ý', fail: '✗ Không đạt' };
+  openModal(`${log.templateName} — ${log.assetId}`, `
+    <div style="font-size:12px;color:var(--gray);margin-bottom:16px">
+      👤 ${log.submittedBy} · 🕐 ${fmtDate(log.createdAt)}
+    </div>
+    ${(log.results || []).map(item => `
+      <div class="detail-item">
+        <div class="di-label">${item.label}</div>
+        ${item.type === 'status' && item.status
+          ? `<span class="detail-status ${statusClass[item.status] || 'ds-na'}">${statusLabel[item.status] || item.status}</span>`
+          : item.type === 'number'
+            ? `<span style="font-weight:700">${item.value ?? '—'} ${item.unit || ''}</span>`
+            : `<span style="color:var(--text2)">${item.value || '—'}</span>`
+        }
+      </div>`).join('')}
+    ${log.note ? `<div style="margin-top:12px;background:var(--gray-bg);padding:10px;border-radius:8px;font-size:12px"><b>Ghi chú:</b> ${log.note}</div>` : ''}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
+  );
+}
+
 // ─── Init ────────────────────────────────────────────────────
 (async () => {
+  const pathMatch = window.location.pathname.match(/^\/asset\/([^/?#]+)/);
+  if (pathMatch) pendingAssetId = pathMatch[1];
   const r = await api('GET', '/api/me');
   if (r.ok) { currentUser = r.data; showApp(); }
 })();

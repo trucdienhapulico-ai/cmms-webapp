@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = 3090;
@@ -19,7 +20,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ─── DB helpers ──────────────────────────────────────────────
 function loadDB() {
   if (!fs.existsSync(DB_PATH)) initDB();
-  return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  if (!db.checklists) { db.checklists = []; saveDB(db); }
+  if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
+  if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
+  return db;
 }
 function saveDB(db) {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -34,10 +39,58 @@ function initDB() {
     }],
     assets: [],
     workOrders: [],
+    checklists: [],
+    checklistTemplates: getDefaultTemplates(),
+    maintenanceLogs: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+}
+
+function getDefaultTemplates() {
+  return [
+    {
+      id: 'tpl-pump', name: 'Kiểm tra máy bơm nước', category: 'PCCC',
+      items: [
+        { id: 1, label: 'Áp suất đầu ra', type: 'number', unit: 'bar' },
+        { id: 2, label: 'Nhiệt độ động cơ bình thường', type: 'status' },
+        { id: 3, label: 'Không có tiếng ồn bất thường', type: 'status' },
+        { id: 4, label: 'Không rò rỉ dầu/nước', type: 'status' },
+        { id: 5, label: 'Đèn báo hoạt động bình thường', type: 'status' }
+      ]
+    },
+    {
+      id: 'tpl-elevator', name: 'Kiểm tra thang máy', category: 'Thang máy',
+      items: [
+        { id: 1, label: 'Cửa đóng/mở bình thường', type: 'status' },
+        { id: 2, label: 'Không rung lắc khi vận hành', type: 'status' },
+        { id: 3, label: 'Đèn và nút nhấn hoạt động', type: 'status' },
+        { id: 4, label: 'Dừng tầng chính xác', type: 'status' },
+        { id: 5, label: 'Nhiệt độ phòng máy', type: 'number', unit: '°C' }
+      ]
+    },
+    {
+      id: 'tpl-elec', name: 'Kiểm tra tủ điện', category: 'Hệ thống điện',
+      items: [
+        { id: 1, label: 'Điện áp pha A', type: 'number', unit: 'V' },
+        { id: 2, label: 'Điện áp pha B', type: 'number', unit: 'V' },
+        { id: 3, label: 'Điện áp pha C', type: 'number', unit: 'V' },
+        { id: 4, label: 'Không có MCB trip', type: 'status' },
+        { id: 5, label: 'Không có mùi cháy/dây nóng', type: 'status' },
+        { id: 6, label: 'Đèn nguồn bình thường', type: 'status' }
+      ]
+    },
+    {
+      id: 'tpl-general', name: 'Kiểm tra tổng quát thiết bị', category: 'Khác',
+      items: [
+        { id: 1, label: 'Thiết bị hoạt động bình thường', type: 'status' },
+        { id: 2, label: 'Không có hư hỏng nhìn thấy', type: 'status' },
+        { id: 3, label: 'Khu vực xung quanh sạch sẽ', type: 'status' },
+        { id: 4, label: 'Ghi chú bổ sung', type: 'text' }
+      ]
+    }
+  ];
 }
 
 // ─── Auth helpers ─────────────────────────────────────────────
@@ -286,6 +339,86 @@ app.get('/api/stats', requireAuth(), (req, res) => {
       }
     }
   });
+});
+
+// ─── Checklists Routes ────────────────────────────────────────
+app.get('/api/checklists', requireAuth(), (req, res) => {
+  const db = loadDB();
+  let list = db.checklists || [];
+  const { shift, date, limit } = req.query;
+  if (shift) list = list.filter(c => c.shift === shift);
+  if (date) list = list.filter(c => c.date === date);
+  list = [...list].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  if (limit) list = list.slice(0, parseInt(limit));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.get('/api/checklists/:id', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const item = (db.checklists || []).find(c => c.id === req.params.id);
+  if (!item) return res.json({ ok: 0, error: 'Không tìm thấy checklist' });
+  res.json({ ok: 1, data: item });
+});
+
+app.post('/api/checklists', requireAuth(), (req, res) => {
+  const db = loadDB();
+  if (!db.checklists) db.checklists = [];
+  const record = { id: `CL-${Date.now()}`, ...req.body, savedBy: req.session.username, createdAt: now() };
+  db.checklists.unshift(record);
+  if (db.checklists.length > 500) db.checklists = db.checklists.slice(0, 500);
+  saveDB(db);
+  res.json({ ok: 1, data: record });
+});
+
+// ─── QR Code ──────────────────────────────────────────────────
+app.get('/api/assets/:id/qr', requireAuth(), async (req, res) => {
+  const db = loadDB();
+  const asset = db.assets.find(a => a.id === req.params.id);
+  if (!asset) return res.json({ ok: 0, error: 'Không tìm thấy thiết bị' });
+  const host = req.headers.host || `localhost:${PORT}`;
+  const url = `http://${host}/asset/${asset.id}`;
+  try {
+    const svg = await QRCode.toString(url, { type: 'svg', margin: 2, width: 200 });
+    res.json({ ok: 1, data: { svg, url, assetId: asset.id, assetName: asset.name } });
+  } catch (e) {
+    res.json({ ok: 0, error: e.message });
+  }
+});
+
+// ─── Checklist Templates ──────────────────────────────────────
+app.get('/api/checklist-templates', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { category } = req.query;
+  let list = db.checklistTemplates || [];
+  if (category) list = list.filter(t => t.category === category);
+  res.json({ ok: 1, data: list });
+});
+
+// ─── Maintenance Logs ─────────────────────────────────────────
+app.get('/api/maintenance-logs', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { assetId, limit } = req.query;
+  let list = db.maintenanceLogs || [];
+  if (assetId) list = list.filter(l => l.assetId === assetId);
+  list = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  if (limit) list = list.slice(0, parseInt(limit));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.post('/api/maintenance-logs', requireAuth(), (req, res) => {
+  const db = loadDB();
+  if (!db.maintenanceLogs) db.maintenanceLogs = [];
+  const log = {
+    id: `ML-${Date.now()}`,
+    ...req.body,
+    submittedBy: req.session.username,
+    submittedById: req.session.userId,
+    createdAt: now()
+  };
+  db.maintenanceLogs.unshift(log);
+  if (db.maintenanceLogs.length > 1000) db.maintenanceLogs = db.maintenanceLogs.slice(0, 1000);
+  saveDB(db);
+  res.json({ ok: 1, data: log });
 });
 
 // ─── Health check ─────────────────────────────────────────────
