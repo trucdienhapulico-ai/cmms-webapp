@@ -102,6 +102,7 @@ tr:hover td { background: var(--blue-bg); }
 .badge-low { background: #f0fdf4; color: var(--green); }
 .badge-active { background: var(--green-bg); color: var(--green); }
 .badge-inactive { background: #f1f5f9; color: var(--gray); }
+.badge-maintenance { background: #fef3c7; color: #d97706; }
 
 /* Filters */
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -767,19 +768,59 @@ async function filterAssets() {
   const list = r.data || [];
   const tbody = document.getElementById('asset-tbody');
   if (!tbody) return;
-  tbody.innerHTML = list.length ? list.map(a => `
+  
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
+    return;
+  }
+
+  if (q || status) {
+    tbody.innerHTML = list.map(a => renderAssetRow(a, 0)).join('');
+    return;
+  }
+
+  const map = {};
+  const roots = [];
+  list.forEach(a => map[a.id] = { ...a, children: [] });
+  list.forEach(a => {
+    if (a.parentId && map[a.parentId]) {
+      map[a.parentId].children.push(map[a.id]);
+    } else {
+      roots.push(map[a.id]);
+    }
+  });
+
+  let html = '';
+  function buildTree(nodes, level) {
+    nodes.forEach(node => {
+      html += renderAssetRow(node, level);
+      if (node.children && node.children.length > 0) {
+        buildTree(node.children, level + 1);
+      }
+    });
+  }
+  buildTree(roots, 0);
+  tbody.innerHTML = html;
+}
+
+function renderAssetRow(a, level) {
+  const indent = level * 20;
+  const prefix = level > 0 ? `<span style="display:inline-block;width:${indent}px;text-align:right;color:var(--border);padding-right:8px;font-size:16px;">↳</span>` : '';
+  const typeLabel = { equipment: 'Thiết bị', system: 'Hệ thống', building: 'Tòa nhà' };
+  
+  return `
     <tr>
       <td data-label="Mã"><code style="font-size:12px">${a.id}</code></td>
-      <td data-label="Tên thiết bị" style="font-weight:600">${a.name}</td>
-      <td data-label="Danh mục">${a.category}</td>
-      <td data-label="Vị trí">${a.location}</td>
+      <td data-label="Tên thiết bị" style="font-weight:600">${prefix}${a.name} <span style="font-size:10px;color:var(--gray);font-weight:normal;background:var(--gray-bg);padding:2px 4px;border-radius:4px;margin-left:4px">${typeLabel[a.type] || 'Thiết bị'}</span></td>
+      <td data-label="Danh mục">${a.category || '—'}</td>
+      <td data-label="Vị trí">${a.location || '—'}</td>
       <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
       <td data-label="Trạng thái"><span class="badge badge-${a.status}">${a.status}</span></td>
       <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
-        ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+        ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick='showAssetForm(${JSON.stringify(a).replace(/'/g, "&#39;").replace(/"/g,"&quot;")})'>Sửa</button>` : ''}
       </td>
-    </tr>`).join('') : '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
+    </tr>`;
 }
 
 async function viewAsset(id) {
@@ -797,12 +838,31 @@ async function viewAsset(id) {
   );
 }
 
-function showAssetForm(asset = {}) {
-  openModal(asset.id ? 'Sửa thiết bị' : 'Thêm thiết bị mới', `
-    <div class="form-group"><label>Tên thiết bị *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Máy bơm nước B1"></div>
+async function showAssetForm(asset = {}) {
+  const r = await api('GET', '/api/assets');
+  const allAssets = r.data || [];
+  const parentOptions = allAssets
+    .filter(a => a.id !== asset.id)
+    .map(a => `<option value="${a.id}" ${asset.parentId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`)
+    .join('');
+
+  openModal(asset.id ? 'Sửa thiết bị/Cấu trúc' : 'Thêm thiết bị/Cấu trúc mới', `
+    <div class="form-row">
+      <div class="form-group"><label>Loại *</label><select id="a-type">
+        <option value="equipment" ${(!asset.type || asset.type === 'equipment') ? 'selected' : ''}>Thiết bị (Equipment)</option>
+        <option value="system" ${asset.type === 'system' ? 'selected' : ''}>Hệ thống (System)</option>
+        <option value="building" ${asset.type === 'building' ? 'selected' : ''}>Tòa nhà (Building)</option>
+      </select></div>
+      <div class="form-group"><label>Thuộc cấp trên (Parent)</label><select id="a-parent">
+        <option value="">-- Không có (Cấp cao nhất) --</option>
+        ${parentOptions}
+      </select></div>
+    </div>
+    <div class="form-group"><label>Tên *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Bơm 1, Hệ thống Nước, Tòa A"></div>
     <div class="form-row">
       <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${asset.code || ''}" placeholder="Tự động nếu bỏ trống"></div>
-      <div class="form-group"><label>Danh mục *</label><select id="a-cat">
+      <div class="form-group"><label>Danh mục</label><select id="a-cat">
+        <option value="">-- Chọn --</option>
         ${['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'].map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('')}
       </select></div>
     </div>
@@ -829,6 +889,8 @@ async function saveAsset(id) {
   const body = {
     name: document.getElementById('a-name').value.trim(),
     code: document.getElementById('a-code').value.trim(),
+    type: document.getElementById('a-type').value,
+    parentId: document.getElementById('a-parent').value || null,
     category: document.getElementById('a-cat').value,
     location: document.getElementById('a-loc').value.trim(),
     manufacturer: document.getElementById('a-brand').value.trim(),
