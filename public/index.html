@@ -164,6 +164,7 @@ tr:hover td { background: var(--blue-bg); }
 .bnav-label { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: 0.2px; }
 
 @media (max-width: 768px) {
+  .bottom-nav { display: flex; }
   :root { --sidebar-w: 260px; }
   .sidebar {
     left: calc(-1 * var(--sidebar-w));
@@ -366,6 +367,18 @@ tr:hover td { background: var(--blue-bg); }
 .mlog-meta { font-size: 11px; color: var(--gray); }
 .mlog-results { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .mlog-result-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+
+/* ─── Prominent Scan QR button in bottom nav ────────────────── */
+.bnav-scan-btn {
+  color: white !important;
+  background: var(--blue);
+  border-radius: 14px;
+  margin: 6px 8px;
+  box-shadow: 0 3px 10px rgba(30, 64, 175, 0.4);
+  flex: 1.3;
+}
+.bnav-scan-btn .bnav-icon { font-size: 22px; }
+.bnav-scan-btn.active { background: var(--blue-dark); }
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -438,7 +451,7 @@ tr:hover td { background: var(--blue-bg); }
     <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
     <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
     <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
-    <div class="bnav-item" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
+    <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
   </nav>
 </div>
 
@@ -523,8 +536,7 @@ function showApp() {
 function navigate(page, param = null) {
   // Stop QR scanner when leaving scan page
   if (currentPage === 'scan' && page !== 'scan' && qrScanner) {
-    qrScanner.clear().catch(() => {});
-    qrScanner = null;
+    stopQrScanner();
   }
   currentPage = page;
   if (page === 'assetDetail') currentAssetId = param;
@@ -888,7 +900,57 @@ async function deleteUser(id, name) {
 }
 
 // ─── SCAN ────────────────────────────────────────────────────
+function stopQrScanner() {
+  if (!qrScanner) return;
+  qrScanner.clear().catch(() => {});
+  qrScanner = null;
+}
+
+function extractAssetIdFromQr(decodedText) {
+  const raw = (decodedText || '').trim();
+  if (!raw) return null;
+
+  try {
+    const payload = JSON.parse(raw);
+    return payload.assetId || payload.id || payload.asset_id || null;
+  } catch (_) {}
+
+  try {
+    const url = new URL(raw, window.location.origin);
+    const pathMatch = url.pathname.match(/\/asset\/([^/?#]+)/);
+    if (pathMatch) return decodeURIComponent(pathMatch[1]);
+    const queryAssetId = url.searchParams.get('assetId') || url.searchParams.get('id');
+    if (queryAssetId) return queryAssetId;
+  } catch (_) {}
+
+  const directMatch = raw.match(/\bA\d{3,}\b/i);
+  return directMatch ? directMatch[0].toUpperCase() : null;
+}
+
+async function openChecklistFromAssetScan(assetId) {
+  const id = (assetId || '').trim().toUpperCase();
+  if (!id) return toast('Chưa có mã thiết bị', 'error');
+
+  stopQrScanner();
+  const r = await api('GET', `/api/assets/${encodeURIComponent(id)}`);
+  if (!r.ok) {
+    toast(`Không tìm thấy thiết bị: ${id}`, 'error');
+    if (currentPage === 'scan') renderScan();
+    return;
+  }
+
+  navigate('assetDetail', r.data.id);
+  toast(`Đã quét ${r.data.code || r.data.id}`, 'success');
+  setTimeout(() => showChecklistForm(r.data.id, r.data.category, 'qr'), 250);
+}
+
+function handleManualAssetScan() {
+  const input = document.getElementById('manual-asset-id');
+  openChecklistFromAssetScan(input?.value || '');
+}
+
 function renderScan() {
+  stopQrScanner();
   document.getElementById('page-body').innerHTML = `
     <div class="card" style="padding:16px">
       <p style="font-size:13px;color:var(--gray);margin-bottom:12px;text-align:center">Hướng camera vào mã QR của thiết bị</p>
@@ -896,7 +958,17 @@ function renderScan() {
         <div id="qr-reader"></div>
       </div>
       <div class="scan-hint">📷 Cần cấp quyền camera để quét QR</div>
+      <div class="form-group" style="margin-top:16px">
+        <label>Nhập mã thiết bị thủ công</label>
+        <input id="manual-asset-id" placeholder="VD: A0007" onkeydown="if(event.key==='Enter') handleManualAssetScan()">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleManualAssetScan()">Mở Checklist</button>
     </div>`;
+
+  if (typeof Html5QrcodeScanner === 'undefined') {
+    document.getElementById('qr-reader').innerHTML = '<div class="empty-state" style="padding:24px"><p>Không tải được thư viện quét QR. Có thể nhập mã thiết bị thủ công.</p></div>';
+    return;
+  }
 
   qrScanner = new Html5QrcodeScanner('qr-reader', {
     fps: 10,
@@ -909,12 +981,11 @@ function renderScan() {
 
   qrScanner.render(
     (decodedText) => {
-      qrScanner.clear().catch(() => {});
-      qrScanner = null;
-      const match = decodedText.match(/\/asset\/([^/?#]+)/);
-      if (match) {
-        navigate('assetDetail', match[1]);
+      const assetId = extractAssetIdFromQr(decodedText);
+      if (assetId) {
+        openChecklistFromAssetScan(assetId);
       } else {
+        stopQrScanner();
         toast('QR không hợp lệ: ' + decodedText, 'error');
         renderScan();
       }
@@ -1018,11 +1089,13 @@ function printQR(id, name) {
 }
 
 // ─── CHECKLIST FORM ───────────────────────────────────────────
-async function showChecklistForm(assetId, category) {
+async function showChecklistForm(assetId, category, source = 'asset') {
   const [ar, tr] = await Promise.all([
     api('GET', `/api/assets/${assetId}`),
     api('GET', `/api/checklist-templates`)
   ]);
+  if (!ar.ok) return toast(ar.error || 'Không tìm thấy thiết bị', 'error');
+  if (!tr.ok) return toast(tr.error || 'Không tải được mẫu checklist', 'error');
   const asset = ar.data;
   const templates = tr.data || [];
 
@@ -1049,6 +1122,7 @@ async function showChecklistForm(assetId, category) {
 
   window._clTemplates = allTemplates;
   window._clAssetId = assetId;
+  window._clSource = source;
   renderChecklistItems();
 }
 
@@ -1115,13 +1189,21 @@ async function submitChecklist(assetId) {
   }
 
   const note = document.getElementById('cl-note')?.value || '';
-  const r = await api('POST', '/api/maintenance-logs', {
+  const payload = {
     assetId,
     templateId: tpl.id,
     templateName: tpl.name,
+    source: window._clSource || 'asset',
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: new Date().toISOString(),
     results,
     note
-  });
+  };
+
+  const checklistRecord = await api('POST', '/api/checklists', payload);
+  if (!checklistRecord.ok) return toast(checklistRecord.error, 'error');
+
+  const r = await api('POST', '/api/maintenance-logs', payload);
 
   if (!r.ok) return toast(r.error, 'error');
   closeModal();
