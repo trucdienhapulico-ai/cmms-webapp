@@ -63,6 +63,17 @@ services:
       - cmms-stable
       - cmms-test
 
+  # ─── Cloudflare Tunnel (Optional for Public HTTPS) ─────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cmms-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=YOUR_CLOUDFLARE_TUNNEL_TOKEN_HERE
+    networks:
+      - cmms-net
+
 volumes:
   stable-data:
     name: cmms-stable-data
