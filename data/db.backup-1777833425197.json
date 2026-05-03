@@ -1,0 +1,298 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "username": "admin",
+      "role": "admin",
+      "passwordHash": "cb4b735c2dcfdeeb4e04a338ac3a553d:195b69925b752595df2b185fb32775f1e1527279d9189da35f9cd95c29b2478a0c3247f76b8ce38e69b691329be79ac6c14725377eb0964391a4bb2909842f8e",
+      "name": "Administrator",
+      "createdAt": "2026-05-01T23:50:24.726Z"
+    },
+    {
+      "id": "u1777688491125",
+      "username": "nguyenvanky",
+      "name": "Nguyen Van Ky",
+      "role": "operator",
+      "passwordHash": "b828748103e13201a29c16f9d9fded4a:8bd7eb1bded8e474c8208b6a4a0ecb734c481a49d0493f32c200027843e782e5b4310da6e452104e0d9d8b1a63b7bbcfef8bcb2bbe96fd19eb32771f48cb91fa",
+      "createdAt": "2026-05-02T02:21:31.150Z"
+    }
+  ],
+  "assets": [
+    {
+      "id": "A0007",
+      "name": "May bom nuoc chua chay B1",
+      "code": "A0007",
+      "category": "PCCC",
+      "location": "Tang ham B1",
+      "manufacturer": "Ebara",
+      "model": "65x50 FS",
+      "installDate": "2021-06-15",
+      "status": "active",
+      "createdAt": "2026-05-02T02:20:51.748Z",
+      "updatedAt": "2026-05-02T02:20:51.748Z"
+    },
+    {
+      "id": "A0008",
+      "name": "Tu dien tang 5",
+      "code": "A0008",
+      "category": "He thong dien",
+      "location": "Hanh lang tang 5",
+      "manufacturer": "Schneider",
+      "model": "NSX250B",
+      "installDate": "2020-03-10",
+      "status": "active",
+      "createdAt": "2026-05-02T02:21:18.898Z",
+      "updatedAt": "2026-05-02T02:21:18.898Z"
+    },
+    {
+      "id": "A0009",
+      "name": "Thang may so 2",
+      "code": "A0009",
+      "category": "Thang may",
+      "location": "Loi thang trung tam",
+      "manufacturer": "Mitsubishi",
+      "model": "NEXIEZ-MRL",
+      "installDate": "2019-09-20",
+      "status": "maintenance",
+      "createdAt": "2026-05-02T02:21:19.060Z",
+      "updatedAt": "2026-05-02T02:26:15.162Z"
+    }
+  ],
+  "workOrders": [
+    {
+      "id": "WO-0001",
+      "title": "Bom nuoc B1 bi ro van - can thay gioang",
+      "description": "Van xa nuoc bi ro, ap suat giam 15%. Can tat bom phu, thay gioang van so 3.",
+      "assetId": "A0007",
+      "priority": "high",
+      "assignedTo": "Nguyen Van Ky",
+      "dueDate": "2026-05-03",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.204Z",
+      "updatedAt": "2026-05-02T02:26:42.369Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.204Z"
+        },
+        {
+          "action": "comment",
+          "by": "admin",
+          "at": "2026-05-02T02:26:42.369Z",
+          "note": "Da tat bom phu, chuan bi vat tu thay the"
+        }
+      ]
+    },
+    {
+      "id": "WO-0002",
+      "title": "Bao duong dinh ky thang may so 2",
+      "description": "Bao duong 6 thang. Kiem tra ray, cap keo, dau may, bo dieu khien.",
+      "assetId": "A0009",
+      "priority": "medium",
+      "assignedTo": "Tran Minh Tuan",
+      "dueDate": "2026-05-10",
+      "type": "preventive",
+      "status": "in-progress",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.344Z",
+      "updatedAt": "2026-05-02T02:21:30.967Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.344Z"
+        },
+        {
+          "action": "status: open → in-progress",
+          "by": "admin",
+          "at": "2026-05-02T02:21:30.967Z",
+          "note": "Da dua thang may vao lich bao duong, ky thuat vien dang trien khai"
+        }
+      ],
+      "statusNote": "Da dua thang may vao lich bao duong, ky thuat vien dang trien khai"
+    },
+    {
+      "id": "WO-0003",
+      "title": "MCB tang 5 bi trip lien tuc",
+      "description": "MCB so 7 tu dien tang 5 trip 3 lan trong sang nay. Khu vuc bep tang 5 mat dien.",
+      "assetId": "A0008",
+      "priority": "high",
+      "assignedTo": "Le Van Duc",
+      "type": "emergency",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.498Z",
+      "updatedAt": "2026-05-02T02:21:19.498Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.498Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0004",
+      "title": "Kiem tra he thong camera tang 1-3",
+      "priority": "low",
+      "assignedTo": "Pham Quoc Hung",
+      "dueDate": "2026-05-15",
+      "type": "inspection",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.633Z",
+      "updatedAt": "2026-05-02T02:21:19.633Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.633Z"
+        }
+      ]
+    }
+  ],
+  "nextId": {
+    "asset": 10,
+    "workOrder": 5
+  },
+  "checklists": [],
+  "checklistTemplates": [
+    {
+      "id": "tpl-pump",
+      "name": "Kiểm tra máy bơm nước",
+      "category": "PCCC",
+      "items": [
+        {
+          "id": 1,
+          "label": "Áp suất đầu ra",
+          "type": "number",
+          "unit": "bar"
+        },
+        {
+          "id": 2,
+          "label": "Nhiệt độ động cơ bình thường",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Không có tiếng ồn bất thường",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Không rò rỉ dầu/nước",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Đèn báo hoạt động bình thường",
+          "type": "status"
+        }
+      ]
+    },
+    {
+      "id": "tpl-elevator",
+      "name": "Kiểm tra thang máy",
+      "category": "Thang máy",
+      "items": [
+        {
+          "id": 1,
+          "label": "Cửa đóng/mở bình thường",
+          "type": "status"
+        },
+        {
+          "id": 2,
+          "label": "Không rung lắc khi vận hành",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Đèn và nút nhấn hoạt động",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Dừng tầng chính xác",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Nhiệt độ phòng máy",
+          "type": "number",
+          "unit": "°C"
+        }
+      ]
+    },
+    {
+      "id": "tpl-elec",
+      "name": "Kiểm tra tủ điện",
+      "category": "Hệ thống điện",
+      "items": [
+        {
+          "id": 1,
+          "label": "Điện áp pha A",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 2,
+          "label": "Điện áp pha B",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 3,
+          "label": "Điện áp pha C",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 4,
+          "label": "Không có MCB trip",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Không có mùi cháy/dây nóng",
+          "type": "status"
+        },
+        {
+          "id": 6,
+          "label": "Đèn nguồn bình thường",
+          "type": "status"
+        }
+      ]
+    },
+    {
+      "id": "tpl-general",
+      "name": "Kiểm tra tổng quát thiết bị",
+      "category": "Khác",
+      "items": [
+        {
+          "id": 1,
+          "label": "Thiết bị hoạt động bình thường",
+          "type": "status"
+        },
+        {
+          "id": 2,
+          "label": "Không có hư hỏng nhìn thấy",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Khu vực xung quanh sạch sẽ",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Ghi chú bổ sung",
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "maintenanceLogs": []
+}

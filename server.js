@@ -61,6 +61,7 @@ function loadDB() {
   if (!db.notifications) { db.notifications = []; saveDB(db); }
   if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
   if (!db.shifts) { db.shifts = []; saveDB(db); }
+  if (!db.auditLogs) { db.auditLogs = []; saveDB(db); }
   return db;
 }
 function saveDB(db) {
@@ -85,6 +86,7 @@ function initDB() {
     notifications: [],
     tenantRequests: [],
     shifts: [],
+    auditLogs: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -169,6 +171,26 @@ function requireAuth(roles = []) {
 }
 
 function now() { return new Date().toISOString(); }
+
+function logAudit(req, action, entity, entityId, details = '') {
+  const db = loadDB();
+  if (!db.auditLogs) db.auditLogs = [];
+  const session = getSession(req);
+  db.auditLogs.unshift({
+    id: `AUDIT-${Date.now()}`,
+    action,
+    entity,
+    entityId: entityId || null,
+    userId: session?.userId || null,
+    userName: session?.username || 'system',
+    details,
+    ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
+    createdAt: now()
+  });
+  if (db.auditLogs.length > 5000) db.auditLogs = db.auditLogs.slice(0, 5000);
+  saveDB(db);
+}
+
 function nextId(db, type) {
   const id = db.nextId[type]++;
   saveDB(db);
@@ -189,11 +211,14 @@ app.post('/api/login', (req, res) => {
     sameSite: 'strict',
     maxAge: 8 * 60 * 60 * 1000
   });
+  logAudit(req, 'login', 'user', user.id, 'Login successful');
   res.json({ ok: 1, data: { id: user.id, username: user.username, role: user.role, name: user.name } });
 });
 
 app.post('/api/logout', (req, res) => {
   const sid = req.cookies?.sid;
+  const session = getSession(req);
+  logAudit(req, 'logout', 'user', session?.userId || null, 'Logout');
   if (sid) sessions.delete(sid);
   res.clearCookie('sid');
   res.json({ ok: 1 });
@@ -213,6 +238,7 @@ app.post('/api/me/change-password', requireAuth(), (req, res) => {
     return res.json({ ok: 0, error: 'Mật khẩu cũ không đúng' });
   user.passwordHash = hashPassword(newPassword);
   saveDB(db);
+  logAudit(req, 'update', 'user', user.id, 'Password changed');
   res.json({ ok: 1 });
 });
 
@@ -232,6 +258,7 @@ app.post('/api/users', requireAuth(['admin']), (req, res) => {
   const user = { id: `u${Date.now()}`, username, name, role, passwordHash: hashPassword(password), createdAt: now() };
   db.users.push(user);
   saveDB(db);
+  logAudit(req, 'create', 'user', user.id, user.username);
   res.json({ ok: 1, data: { ...user, passwordHash: undefined } });
 });
 
@@ -240,8 +267,10 @@ app.delete('/api/users/:id', requireAuth(['admin']), (req, res) => {
   const idx = db.users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy user' });
   if (db.users[idx].username === 'admin') return res.json({ ok: 0, error: 'Không thể xóa admin' });
+  const deletedUser = db.users[idx];
   db.users.splice(idx, 1);
   saveDB(db);
+  logAudit(req, 'delete', 'user', deletedUser.id, deletedUser.username);
   res.json({ ok: 1 });
 });
 
@@ -279,6 +308,7 @@ app.post('/api/assets', requireAuth(['admin', 'manager']), (req, res) => {
   const asset = { id, name, code: code || id, type: type || 'equipment', parentId: parentId || null, category, location, manufacturer, model, serialNumber, installDate, notes, status: status || 'active', createdAt: now(), updatedAt: now() };
   db.assets.push(asset);
   saveDB(db);
+  logAudit(req, 'create', 'asset', asset.id, asset.name);
   res.json({ ok: 1, data: asset });
 });
 
@@ -288,6 +318,7 @@ app.put('/api/assets/:id', requireAuth(['admin', 'manager']), (req, res) => {
   if (!asset) return res.json({ ok: 0, error: 'Không tìm thấy' });
   Object.assign(asset, req.body, { id: asset.id, updatedAt: now() });
   saveDB(db);
+  logAudit(req, 'update', 'asset', asset.id, asset.name);
   res.json({ ok: 1, data: asset });
 });
 
@@ -295,8 +326,10 @@ app.delete('/api/assets/:id', requireAuth(['admin']), (req, res) => {
   const db = loadDB();
   const idx = db.assets.findIndex(a => a.id === req.params.id);
   if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy' });
+  const deletedAsset = db.assets[idx];
   db.assets.splice(idx, 1);
   saveDB(db);
+  logAudit(req, 'delete', 'asset', deletedAsset.id, deletedAsset.name);
   res.json({ ok: 1 });
 });
 
@@ -340,6 +373,7 @@ app.post('/api/work-orders', requireAuth(['admin', 'manager', 'operator']), (req
   };
   db.workOrders.push(wo);
   saveDB(db);
+  logAudit(req, 'create', 'workOrder', wo.id, wo.title);
   res.json({ ok: 1, data: wo });
 });
 
@@ -353,6 +387,7 @@ app.put('/api/work-orders/:id', requireAuth(['admin', 'manager', 'operator']), (
     wo.history.push({ action: `status: ${oldStatus} → ${req.body.status}`, by: req.session.username, at: now(), note: req.body.statusNote || '' });
   }
   saveDB(db);
+  logAudit(req, 'update', 'workOrder', wo.id, wo.title);
   res.json({ ok: 1, data: wo });
 });
 
@@ -750,6 +785,7 @@ app.post('/api/inventory', requireAuth(['admin', 'manager']), (req, res) => {
   if (!db.inventory) db.inventory = [];
   db.inventory.push(item);
   saveDB(db);
+  logAudit(req, 'create', 'inventory', item.id, item.name);
   res.json({ ok: 1, data: item });
 });
 
@@ -811,6 +847,7 @@ app.post('/api/inventory/:id/transaction', requireAuth(), (req, res) => {
     });
   }
   saveDB(db);
+  logAudit(req, type, 'inventory', item.id, `${type === 'in' ? '+' : '-'}${Math.abs(Number(qty))} ${item.unit} ${item.name}`);
   res.json({ ok: 1, data: { tx, item } });
 });
 
@@ -907,6 +944,7 @@ app.put('/api/tenant-requests/:id/approve', requireAuth(['admin','manager']), (r
   db.workOrders.push(wo);
   tr.status = 'approved'; tr.workOrderId = woId; tr.updatedAt = now();
   saveDB(db);
+  logAudit(req, 'approve', 'tenantRequest', tr.id, `${tr.category} - ${tr.name}`);
   res.json({ ok: 1, data: { workOrder: wo, tenantRequest: tr } });
 });
 
@@ -916,6 +954,7 @@ app.put('/api/tenant-requests/:id/reject', requireAuth(['admin','manager']), (re
   if (!tr) return res.json({ ok: 0, error: 'Khong tim thay' });
   tr.status = 'rejected'; tr.updatedAt = now();
   saveDB(db);
+  logAudit(req, 'reject', 'tenantRequest', tr.id, `${tr.category} - ${tr.name}`);
   res.json({ ok: 1 });
 });
 
@@ -1025,7 +1064,39 @@ app.post('/api/shifts/:id/check-out', requireAuth(), (req, res) => {
   res.json({ ok: 1, data: shift });
 });
 
-// ─── Stats (inject overdue check) ─────────────────────────────
+// ─── Audit Logs ───────────────────────────────────────────────
+app.get('/api/audit-logs', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  let list = db.auditLogs || [];
+  const { entity, action, userId, limit } = req.query;
+  if (entity) list = list.filter(l => l.entity === entity);
+  if (action) list = list.filter(l => l.action === action);
+  if (userId) list = list.filter(l => l.userId === userId);
+  list = list.slice(0, Number(limit) || 50);
+  res.json({ ok: 1, data: list, total: (db.auditLogs || []).length });
+});
+
+// ─── Export DB ────────────────────────────────────────────────
+app.get('/api/export/db', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const safe = JSON.parse(JSON.stringify(db));
+  (safe.users || []).forEach(u => delete u.passwordHash);
+  res.setHeader('Content-Disposition', `attachment; filename=cmms-export-${now().split('T')[0]}.json`);
+  logAudit(req, 'export', 'system', null, 'Full DB export');
+  res.json(safe);
+});
+
+// ─── Backup ───────────────────────────────────────────────────
+app.post('/api/backup', requireAuth(['admin']), (req, res) => {
+  const backupDir = path.join(__dirname, 'data', 'backup');
+  fs.mkdirSync(backupDir, { recursive: true });
+  const filename = `db_${now().split('T')[0]}_${Date.now()}.json`;
+  const db = loadDB();
+  fs.writeFileSync(path.join(backupDir, filename), JSON.stringify(db, null, 2));
+  logAudit(req, 'create', 'backup', filename, 'Manual backup created');
+  res.json({ ok: 1, data: { filename } });
+});
+
 // ─── Health check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: 1, uptime: process.uptime() }));
 

@@ -476,6 +476,7 @@ tr:hover td { background: var(--blue-bg); }
       <div class="nav-section-title">Quản trị</div>
       <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
       <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
+      <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Hỗ trợ</div>
@@ -618,7 +619,7 @@ function navigate(page, param = null) {
     assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
     pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
     inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
-    shifts: 'Lịch trực & Workload'
+    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
@@ -635,7 +636,7 @@ function navigate(page, param = null) {
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
     mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
     inventory: renderInventory, tenantportal: renderTenantPortal,
-    shifts: renderShifts
+    shifts: renderShifts, auditlog: renderAuditLog
   };
   (renders[page] || (() => {}))();
 
@@ -2549,6 +2550,88 @@ async function rejectTenantReq(id) {
   if (!r.ok) return toast(r.error, 'error');
   toast('Đã từ chối yêu cầu', 'success');
   renderTenantPortal();
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────────
+let _auditFilters = { entity: '', action: '', limit: 50 };
+
+const _auditActionBadge = {
+  create:  '<span style="background:#22c55e;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">create</span>',
+  update:  '<span style="background:#f59e0b;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">update</span>',
+  delete:  '<span style="background:#ef4444;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">delete</span>',
+  login:   '<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">login</span>',
+  logout:  '<span style="background:#6366f1;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">logout</span>',
+  export:  '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">export</span>',
+  approve: '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">approve</span>',
+  reject:  '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">reject</span>',
+  in:      '<span style="background:#22c55e;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">in</span>',
+  out:     '<span style="background:#f59e0b;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">out</span>'
+};
+
+function _auditBadge(action) {
+  return _auditActionBadge[action] || `<span style="background:#6b7280;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">${action}</span>`;
+}
+
+async function renderAuditLog(opts = {}) {
+  if (opts.entity !== undefined) _auditFilters.entity = opts.entity;
+  if (opts.action !== undefined) _auditFilters.action = opts.action;
+  if (opts.limit)  _auditFilters.limit  = opts.limit;
+
+  const params = new URLSearchParams({ limit: _auditFilters.limit });
+  if (_auditFilters.entity) params.set('entity', _auditFilters.entity);
+  if (_auditFilters.action) params.set('action', _auditFilters.action);
+
+  const r = await api('GET', `/api/audit-logs?${params}`);
+  const list  = r.data  || [];
+  const total = r.total || 0;
+
+  const entities = ['', 'user', 'asset', 'workOrder', 'pmSchedule', 'inventory', 'tenantRequest', 'backup', 'system'];
+  const actions  = ['', 'create', 'update', 'delete', 'login', 'logout', 'export', 'approve', 'reject', 'in', 'out'];
+
+  const entityOpts = entities.map(e => `<option value="${e}" ${_auditFilters.entity===e?'selected':''}>${e||'Tất cả đối tượng'}</option>`).join('');
+  const actionOpts = actions.map(a => `<option value="${a}" ${_auditFilters.action===a?'selected':''}>${a||'Tất cả hành động'}</option>`).join('');
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <select class="form-control" style="width:auto" onchange="renderAuditLog({entity:this.value})">
+          ${entityOpts}
+        </select>
+        <select class="form-control" style="width:auto" onchange="renderAuditLog({action:this.value})">
+          ${actionOpts}
+        </select>
+        ${_auditFilters.limit < total ? `<button class="btn btn-ghost btn-sm" onclick="renderAuditLog({limit:${_auditFilters.limit+50}})">Tải thêm (${total - _auditFilters.limit} còn lại)</button>` : `<span style="font-size:12px;color:var(--gray)">Hiển thị ${list.length} / ${total} mục</span>`}
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="exportDB()">📥 Xuất dữ liệu</button>
+          <button class="btn btn-ghost btn-sm" onclick="createBackup()">💾 Tạo Backup</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      ${!list.length ? `<div class="empty-state" style="padding:32px"><div class="icon">📜</div><p>Chưa có nhật ký nào</p></div>` : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Thời gian</th><th>Người thao tác</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th><th>IP</th></tr></thead>
+        <tbody>${list.map(l => `<tr>
+          <td data-label="Thời gian" style="white-space:nowrap;font-size:12px">${fmtDate(l.createdAt)}</td>
+          <td data-label="Người thao tác"><strong>${l.userName || '—'}</strong></td>
+          <td data-label="Hành động">${_auditBadge(l.action)}</td>
+          <td data-label="Đối tượng"><span style="font-size:12px;color:var(--gray)">${l.entity}</span>${l.entityId ? `<br><code style="font-size:10px">${l.entityId}</code>` : ''}</td>
+          <td data-label="Chi tiết" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${l.details || '—'}</td>
+          <td data-label="IP" style="font-size:11px;color:var(--gray)">${l.ip || '—'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+
+async function exportDB() {
+  window.location.href = '/api/export/db';
+}
+
+async function createBackup() {
+  const r = await api('POST', '/api/backup');
+  if (!r.ok) return toast(r.error || 'Lỗi backup', 'error');
+  toast(`✅ Backup thành công: ${r.data.filename}`, 'success');
+  renderAuditLog();
 }
 
 // ─── Init ────────────────────────────────────────────────────

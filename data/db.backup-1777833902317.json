@@ -1,0 +1,756 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "username": "admin",
+      "role": "admin",
+      "passwordHash": "cb4b735c2dcfdeeb4e04a338ac3a553d:195b69925b752595df2b185fb32775f1e1527279d9189da35f9cd95c29b2478a0c3247f76b8ce38e69b691329be79ac6c14725377eb0964391a4bb2909842f8e",
+      "name": "Administrator",
+      "createdAt": "2026-05-01T23:50:24.726Z"
+    },
+    {
+      "id": "u1777688491125",
+      "username": "nguyenvanky",
+      "name": "Nguyen Van Ky",
+      "role": "operator",
+      "passwordHash": "b828748103e13201a29c16f9d9fded4a:8bd7eb1bded8e474c8208b6a4a0ecb734c481a49d0493f32c200027843e782e5b4310da6e452104e0d9d8b1a63b7bbcfef8bcb2bbe96fd19eb32771f48cb91fa",
+      "createdAt": "2026-05-02T02:21:31.150Z"
+    },
+    {
+      "id": "u17778334250749188",
+      "username": "operator1",
+      "name": "operator1",
+      "role": "operator",
+      "passwordHash": "6147e8605d9e14e13a7f2f46838a2b8c:9d7b8daa904ead015c523ade1cfcadc857563231d2f0acee0989a1d58519d3cdfa45defeace8698858af2305476bcfa5cb822fa214b93c86fcbbcce2b456496d",
+      "importedFromOps": true,
+      "createdAt": "2026-04-30T02:16:08.180Z"
+    },
+    {
+      "id": "u17778334250999528",
+      "username": "phongnd",
+      "name": "phongnd",
+      "role": "operator",
+      "passwordHash": "75848ce4634702b5bbc47d766507356f:e8b8fcec429328cdf70f30762ca36288c4484c5f3d681f532a59050f34523741bee2474ca47774a5d0ec7cafea3b068df2a25b40118e368b80fea20d890e49d6",
+      "importedFromOps": true,
+      "createdAt": "2026-04-30T10:33:20.674Z"
+    },
+    {
+      "id": "u17778334251233720",
+      "username": "hoanghv",
+      "name": "hoanghv",
+      "role": "operator",
+      "passwordHash": "3a8baba1c5c75bd21779fd7d34b67c6e:8185f47edc11c43131e3386e53f48bd391dc882b16d73d8625bfe0ce81090f00846173b9c423a0c5f549e43bc5fb07ce3d30595ff5b866a2bd83b49234c43d13",
+      "importedFromOps": true,
+      "createdAt": "2026-04-30T10:33:26.275Z"
+    },
+    {
+      "id": "u1777833425148885",
+      "username": "haudv",
+      "name": "haudv",
+      "role": "operator",
+      "passwordHash": "9d39839c5149a949e023e5b09b020ef9:4cc4a4923d8871148d44c4de20287975ffde2874481afcdf2350805ce850a72549a7287a4f56cd5ad6468f569236327132b67c91aa4e4362885009365e85fd7d",
+      "importedFromOps": true,
+      "createdAt": "2026-04-30T10:34:17.572Z"
+    },
+    {
+      "id": "u17778334251713548",
+      "username": "thangnq",
+      "name": "thangnq",
+      "role": "operator",
+      "passwordHash": "c61adffa642e989c6890fc1cae1b0ef6:76759fb16cc6e1e2d7a5c27186ce6e31c297803a1d077409cb0c444a34d45f30f3b340fb15dd8c5a5fb2b1cdb4f2455abb80535ec73607a69c833bcdb9f09524",
+      "importedFromOps": true,
+      "createdAt": "2026-04-30T10:34:23.981Z"
+    }
+  ],
+  "assets": [
+    {
+      "id": "A0007",
+      "name": "May bom nuoc chua chay B1",
+      "code": "A0007",
+      "category": "PCCC",
+      "location": "Tang ham B1",
+      "manufacturer": "Ebara",
+      "model": "65x50 FS",
+      "installDate": "2021-06-15",
+      "status": "active",
+      "createdAt": "2026-05-02T02:20:51.748Z",
+      "updatedAt": "2026-05-02T02:20:51.748Z"
+    },
+    {
+      "id": "A0008",
+      "name": "Tu dien tang 5",
+      "code": "A0008",
+      "category": "He thong dien",
+      "location": "Hanh lang tang 5",
+      "manufacturer": "Schneider",
+      "model": "NSX250B",
+      "installDate": "2020-03-10",
+      "status": "active",
+      "createdAt": "2026-05-02T02:21:18.898Z",
+      "updatedAt": "2026-05-02T02:21:18.898Z"
+    },
+    {
+      "id": "A0009",
+      "name": "Thang may so 2",
+      "code": "A0009",
+      "category": "Thang may",
+      "location": "Loi thang trung tam",
+      "manufacturer": "Mitsubishi",
+      "model": "NEXIEZ-MRL",
+      "installDate": "2019-09-20",
+      "status": "maintenance",
+      "createdAt": "2026-05-02T02:21:19.060Z",
+      "updatedAt": "2026-05-02T02:26:15.162Z"
+    },
+    {
+      "id": "A0010",
+      "name": "Bơm 160kW hút từ hồ lán trại",
+      "code": "A0010",
+      "category": "Bơm tưới chính",
+      "location": "Trạm bơm chính",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-1",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0011",
+      "name": "Bơm 18,5kW",
+      "code": "A0011",
+      "category": "Bơm tưới chính",
+      "location": "Trạm bơm chính",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-2",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0012",
+      "name": "Bơm 30kW",
+      "code": "A0012",
+      "category": "Bơm tưới chính",
+      "location": "Trạm bơm chính",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-3",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0013",
+      "name": "Bơm LK1",
+      "code": "A0013",
+      "category": "Bơm LK",
+      "location": "Giếng LK1",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-11",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0014",
+      "name": "Bơm LK2",
+      "code": "A0014",
+      "category": "Bơm LK",
+      "location": "Giếng LK2",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-12",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0015",
+      "name": "Bơm LK3",
+      "code": "A0015",
+      "category": "Bơm LK",
+      "location": "Giếng LK3",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-13",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0016",
+      "name": "Bơm LK4",
+      "code": "A0016",
+      "category": "Bơm LK",
+      "location": "Giếng LK4",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-14",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0017",
+      "name": "Bơm LK5",
+      "code": "A0017",
+      "category": "Bơm LK",
+      "location": "Giếng LK5",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-15",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0018",
+      "name": "Bơm LK6",
+      "code": "A0018",
+      "category": "Bơm LK",
+      "location": "Giếng LK6",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-16",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0019",
+      "name": "Bơm LK7",
+      "code": "A0019",
+      "category": "Bơm LK",
+      "location": "Giếng LK7",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-17",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0020",
+      "name": "Bơm LK8",
+      "code": "A0020",
+      "category": "Bơm LK",
+      "location": "Giếng LK8",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-18",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0021",
+      "name": "Bơm LK9",
+      "code": "A0021",
+      "category": "Bơm LK",
+      "location": "Giếng LK9",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-19",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0022",
+      "name": "Bơm LK10",
+      "code": "A0022",
+      "category": "Bơm LK",
+      "location": "Giếng LK10",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-20",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0023",
+      "name": "Bơm LK11",
+      "code": "A0023",
+      "category": "Bơm LK",
+      "location": "Giếng LK11",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-21",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0024",
+      "name": "Bơm LK12",
+      "code": "A0024",
+      "category": "Bơm LK",
+      "location": "Giếng LK12",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-22",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0025",
+      "name": "Bơm LK13",
+      "code": "A0025",
+      "category": "Bơm LK",
+      "location": "Giếng LK13",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-23",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0026",
+      "name": "Bơm LK14",
+      "code": "A0026",
+      "category": "Bơm LK",
+      "location": "Giếng LK14",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-24",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0027",
+      "name": "Bơm LK15",
+      "code": "A0027",
+      "category": "Bơm LK",
+      "location": "Giếng LK15",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-25",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0028",
+      "name": "Bơm LK16",
+      "code": "A0028",
+      "category": "Bơm LK",
+      "location": "Giếng LK16",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-26",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0029",
+      "name": "Bơm LK17",
+      "code": "A0029",
+      "category": "Bơm LK",
+      "location": "Giếng LK17",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-27",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0030",
+      "name": "Bơm LK18",
+      "code": "A0030",
+      "category": "Bơm LK",
+      "location": "Giếng LK18",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "inactive",
+      "opsSourceId": "pump-28",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    },
+    {
+      "id": "A0031",
+      "name": "Bơm LK19",
+      "code": "A0031",
+      "category": "Bơm LK",
+      "location": "Giếng LK19",
+      "manufacturer": "",
+      "model": "",
+      "installDate": "",
+      "status": "active",
+      "opsSourceId": "pump-29",
+      "createdAt": "2026-05-03T18:37:05.197Z",
+      "updatedAt": "2026-05-03T18:37:05.197Z"
+    }
+  ],
+  "workOrders": [
+    {
+      "id": "WO-0001",
+      "title": "Bom nuoc B1 bi ro van - can thay gioang",
+      "description": "Van xa nuoc bi ro, ap suat giam 15%. Can tat bom phu, thay gioang van so 3.",
+      "assetId": "A0007",
+      "priority": "high",
+      "assignedTo": "Nguyen Van Ky",
+      "dueDate": "2026-05-03",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.204Z",
+      "updatedAt": "2026-05-02T02:26:42.369Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.204Z"
+        },
+        {
+          "action": "comment",
+          "by": "admin",
+          "at": "2026-05-02T02:26:42.369Z",
+          "note": "Da tat bom phu, chuan bi vat tu thay the"
+        }
+      ]
+    },
+    {
+      "id": "WO-0002",
+      "title": "Bao duong dinh ky thang may so 2",
+      "description": "Bao duong 6 thang. Kiem tra ray, cap keo, dau may, bo dieu khien.",
+      "assetId": "A0009",
+      "priority": "medium",
+      "assignedTo": "Tran Minh Tuan",
+      "dueDate": "2026-05-10",
+      "type": "preventive",
+      "status": "in-progress",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.344Z",
+      "updatedAt": "2026-05-02T02:21:30.967Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.344Z"
+        },
+        {
+          "action": "status: open → in-progress",
+          "by": "admin",
+          "at": "2026-05-02T02:21:30.967Z",
+          "note": "Da dua thang may vao lich bao duong, ky thuat vien dang trien khai"
+        }
+      ],
+      "statusNote": "Da dua thang may vao lich bao duong, ky thuat vien dang trien khai"
+    },
+    {
+      "id": "WO-0003",
+      "title": "MCB tang 5 bi trip lien tuc",
+      "description": "MCB so 7 tu dien tang 5 trip 3 lan trong sang nay. Khu vuc bep tang 5 mat dien.",
+      "assetId": "A0008",
+      "priority": "high",
+      "assignedTo": "Le Van Duc",
+      "type": "emergency",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.498Z",
+      "updatedAt": "2026-05-02T02:21:19.498Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.498Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0004",
+      "title": "Kiem tra he thong camera tang 1-3",
+      "priority": "low",
+      "assignedTo": "Pham Quoc Hung",
+      "dueDate": "2026-05-15",
+      "type": "inspection",
+      "status": "open",
+      "createdBy": "u1",
+      "createdAt": "2026-05-02T02:21:19.633Z",
+      "updatedAt": "2026-05-02T02:21:19.633Z",
+      "history": [
+        {
+          "action": "created",
+          "by": "admin",
+          "at": "2026-05-02T02:21:19.633Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0005",
+      "title": "Khởi tạo hệ thống",
+      "description": "Bản local sẵn sàng vận hành.",
+      "assetId": null,
+      "priority": "medium",
+      "assignedTo": "",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u1",
+      "opsSourceId": "40cf82112b315103989baeff3484f7ba",
+      "createdAt": "2026-04-30T02:16:01.703Z",
+      "updatedAt": "2026-04-30T02:16:01.703Z",
+      "history": [
+        {
+          "action": "imported from OPS system",
+          "by": "system",
+          "at": "2026-05-03T18:37:05.196Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0006",
+      "title": "Kiểm tra bơm hồ A",
+      "description": "Lưu lượng ổn định",
+      "assetId": null,
+      "priority": "medium",
+      "assignedTo": "",
+      "type": "corrective",
+      "status": "in-progress",
+      "createdBy": "u1",
+      "opsSourceId": "6e786ebaa16cc72f2381a31c616b9230",
+      "createdAt": "2026-04-30T02:16:08.187Z",
+      "updatedAt": "2026-04-30T02:16:08.187Z",
+      "history": [
+        {
+          "action": "imported from OPS system",
+          "by": "system",
+          "at": "2026-05-03T18:37:05.197Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0007",
+      "title": "Dò gioăng bơm 160kW tại hồ lán trại",
+      "description": "",
+      "assetId": null,
+      "priority": "medium",
+      "assignedTo": "",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u1",
+      "opsSourceId": "ce3ee52e982a6713f91c236a69f8853e",
+      "createdAt": "2026-04-30T10:30:20.481Z",
+      "updatedAt": "2026-04-30T10:30:20.481Z",
+      "history": [
+        {
+          "action": "imported from OPS system",
+          "by": "system",
+          "at": "2026-05-03T18:37:05.197Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0008",
+      "title": "Kéo dây nhôm lên 2 cột ngoài sân",
+      "description": "Thắng. Hoàng. Hậu. 4 nhân sự thuê ngoài 10tr. Máy lốp 140",
+      "assetId": null,
+      "priority": "medium",
+      "assignedTo": "",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u17778334250999528",
+      "opsSourceId": "dc185db90a1a17e460f381f5e9b0a0c6",
+      "createdAt": "2026-05-01T02:39:32.011Z",
+      "updatedAt": "2026-05-01T02:39:32.011Z",
+      "history": [
+        {
+          "action": "imported from OPS system",
+          "by": "system",
+          "at": "2026-05-03T18:37:05.197Z"
+        }
+      ]
+    },
+    {
+      "id": "WO-0009",
+      "title": "Sửa dò nước bể ngầm nhà tập",
+      "description": "Phong mở van xả nước\n1/5 Quang Vũ chống thấm lại\n3/5 cấp lại nước",
+      "assetId": null,
+      "priority": "medium",
+      "assignedTo": "",
+      "type": "corrective",
+      "status": "open",
+      "createdBy": "u1",
+      "opsSourceId": "d971920fb09695488177ae07fe397d22",
+      "createdAt": "2026-05-01T08:21:36.286Z",
+      "updatedAt": "2026-05-01T08:21:36.286Z",
+      "history": [
+        {
+          "action": "imported from OPS system",
+          "by": "system",
+          "at": "2026-05-03T18:37:05.197Z"
+        }
+      ]
+    }
+  ],
+  "nextId": {
+    "asset": 32,
+    "workOrder": 10
+  },
+  "checklists": [],
+  "checklistTemplates": [
+    {
+      "id": "tpl-pump",
+      "name": "Kiểm tra máy bơm nước",
+      "category": "PCCC",
+      "items": [
+        {
+          "id": 1,
+          "label": "Áp suất đầu ra",
+          "type": "number",
+          "unit": "bar"
+        },
+        {
+          "id": 2,
+          "label": "Nhiệt độ động cơ bình thường",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Không có tiếng ồn bất thường",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Không rò rỉ dầu/nước",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Đèn báo hoạt động bình thường",
+          "type": "status"
+        }
+      ]
+    },
+    {
+      "id": "tpl-elevator",
+      "name": "Kiểm tra thang máy",
+      "category": "Thang máy",
+      "items": [
+        {
+          "id": 1,
+          "label": "Cửa đóng/mở bình thường",
+          "type": "status"
+        },
+        {
+          "id": 2,
+          "label": "Không rung lắc khi vận hành",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Đèn và nút nhấn hoạt động",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Dừng tầng chính xác",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Nhiệt độ phòng máy",
+          "type": "number",
+          "unit": "°C"
+        }
+      ]
+    },
+    {
+      "id": "tpl-elec",
+      "name": "Kiểm tra tủ điện",
+      "category": "Hệ thống điện",
+      "items": [
+        {
+          "id": 1,
+          "label": "Điện áp pha A",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 2,
+          "label": "Điện áp pha B",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 3,
+          "label": "Điện áp pha C",
+          "type": "number",
+          "unit": "V"
+        },
+        {
+          "id": 4,
+          "label": "Không có MCB trip",
+          "type": "status"
+        },
+        {
+          "id": 5,
+          "label": "Không có mùi cháy/dây nóng",
+          "type": "status"
+        },
+        {
+          "id": 6,
+          "label": "Đèn nguồn bình thường",
+          "type": "status"
+        }
+      ]
+    },
+    {
+      "id": "tpl-general",
+      "name": "Kiểm tra tổng quát thiết bị",
+      "category": "Khác",
+      "items": [
+        {
+          "id": 1,
+          "label": "Thiết bị hoạt động bình thường",
+          "type": "status"
+        },
+        {
+          "id": 2,
+          "label": "Không có hư hỏng nhìn thấy",
+          "type": "status"
+        },
+        {
+          "id": 3,
+          "label": "Khu vực xung quanh sạch sẽ",
+          "type": "status"
+        },
+        {
+          "id": 4,
+          "label": "Ghi chú bổ sung",
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "maintenanceLogs": []
+}

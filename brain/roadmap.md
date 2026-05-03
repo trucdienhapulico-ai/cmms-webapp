@@ -32,16 +32,19 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
 
 - [x] **Advanced Dashboard & Analytics**:
     - KPI: MTTR, MTBF, PM Compliance rate (Tab 3.7.1).
-    - Biểu đồ xu hướng sự cố và chi phí bảo trì.
+    - Biểu đồ xu hướng sự cố và chi phí bảo trì (Issue #19).
 - [x] **HR & Scheduling**:
-    - Quản lý lịch trực ca, workload của kỹ thuật viên (Tab 4.15).
-    - Theo dõi giờ công thực tế qua Check-in/out GPS.
+    - Quản lý lịch trực ca, workload của kỹ thuật viên (Tab 4.15) (Issue #20).
+    - Theo dõi giờ công thực tế qua Check-in/out.
 - [ ] **Advanced Inventory**:
-    - Purchase Orders (PO) và quy trình phê duyệt mua hàng (Tab 4.16).
+    - Purchase Orders (PO) và quy trình phê duyệt mua hàng (Issue #22).
     - Quản lý nhà cung cấp (Vendor) và đánh giá chất lượng.
-- [ ] **System Integration**:
-    - Webhooks/API cho tích hợp BMS/IoT tương lai.
-    - Backup tự động và Audit log hệ thống.
+- [x] **System Integration (Part 1)**:
+    - Backup tự động và Audit log hệ thống (Issue #21).
+- [ ] **System Integration (Part 2)**:
+    - Webhooks/API cho tích hợp BMS/IoT tương lai (Issue #23).
+- [ ] **UI/UX Excellence**:
+    - Premium Polish & Dark Mode (Issue #24).
 
 ---
 

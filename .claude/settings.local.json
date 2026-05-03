@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($content = Get-Content \"C:\\\\Users\\\\vitmo.WINDOWS11PRO\\\\OneDrive - hapucomplex\\\\Claude\\\\01-CMMS\\\\RUN_NOW.txt\" -Encoding UTF8; Write-Host \"Lines: $\\($content.Count\\)\"; $content | ForEach-Object { Write-Host \"[$_]\" })",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\vitmo.WINDOWS11PRO\\\\OneDrive - hapucomplex\\\\Claude\\\\01-CMMS\\\\RUN_NOW.txt\"\\); Write-Host \"Bytes: $\\($bytes.Length\\)\"; [System.Text.Encoding]::UTF8.GetString\\($bytes\\))",
+      "PowerShell(gh issue *)",
+      "PowerShell(gh issue list --repo trucdienhapulico-ai/cmms-webapp --state all --limit 10 --json number,title,state | ConvertFrom-Json | ForEach-Object { Write-Host \"#$\\($_.number\\) [$\\($_.state\\)] $\\($_.title\\)\" })",
+      "PowerShell(gh issue list --repo trucdienhapulico-ai/cmms-webapp --state all --json number,title,state | ConvertFrom-Json | ForEach-Object { Write-Host \"#$\\($_.number\\) [$\\($_.state\\)] $\\($_.title\\)\" })",
+      "PowerShell(gh issue list --repo trucdienhapulico-ai/cmms-webapp --state open --json number,title,body | ConvertFrom-Json | ForEach-Object { Write-Host \"#$\\($_.number\\) $\\($_.title\\)\"; Write-Host $_.body; Write-Host \"---\" })",
+      "PowerShell(gh issue list --repo trucdienhapulico-ai/cmms-webapp --state all --json number,title,state,labels,createdAt | ConvertFrom-Json | Sort-Object -Property number -Descending | ForEach-Object { Write-Host \"#$\\($_.number\\) [$\\($_.state\\)] $\\(\\($_.labels | ForEach-Object { $_.name }\\) -join ','\\) | $\\($_.title\\)\" })",
+      "PowerShell(Receive-Job *)"
+    ]
+  }
+}
