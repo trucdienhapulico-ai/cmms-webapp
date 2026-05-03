@@ -55,6 +55,7 @@ function loadDB() {
   if (!db.checklists) { db.checklists = []; saveDB(db); }
   if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
   if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
+  if (!db.pmSchedules) { db.pmSchedules = []; saveDB(db); }
   return db;
 }
 function saveDB(db) {
@@ -73,6 +74,7 @@ function initDB() {
     checklists: [],
     checklistTemplates: getDefaultTemplates(),
     maintenanceLogs: [],
+    pmSchedules: [],
     nextId: { asset: 1, workOrder: 1 }
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -236,12 +238,19 @@ app.delete('/api/users/:id', requireAuth(['admin']), (req, res) => {
 // ─── Assets Routes ────────────────────────────────────────────
 app.get('/api/assets', requireAuth(), (req, res) => {
   const db = loadDB();
-  const { q, location, status } = req.query;
+  const { q, location, status, category } = req.query;
   let list = db.assets;
   if (q) list = list.filter(a => a.name.toLowerCase().includes(q.toLowerCase()) || a.code?.toLowerCase().includes(q.toLowerCase()));
   if (location) list = list.filter(a => a.location === location);
   if (status) list = list.filter(a => a.status === status);
+  if (category) list = list.filter(a => a.category === category);
   res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.get('/api/assets/categories', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const categories = [...new Set(db.assets.map(a => a.category).filter(Boolean))].sort();
+  res.json({ ok: 1, data: categories });
 });
 
 app.get('/api/assets/:id', requireAuth(), (req, res) => {
@@ -362,6 +371,8 @@ app.delete('/api/work-orders/:id', requireAuth(['admin']), (req, res) => {
 app.get('/api/stats', requireAuth(), (req, res) => {
   const db = loadDB();
   const wo = db.workOrders;
+  const todayStr = now().split('T')[0];
+  const pm = db.pmSchedules || [];
   res.json({
     ok: 1, data: {
       assets: { total: db.assets.length, active: db.assets.filter(a => a.status === 'active').length },
@@ -372,6 +383,11 @@ app.get('/api/stats', requireAuth(), (req, res) => {
         done: wo.filter(w => w.status === 'done').length,
         highPriority: wo.filter(w => w.priority === 'high' && w.status !== 'done').length,
         overdue: wo.filter(w => w.dueDate && w.status !== 'done' && new Date(w.dueDate) < new Date()).length
+      },
+      pm: {
+        total: pm.filter(p => p.status === 'active').length,
+        overdue: pm.filter(p => p.status === 'active' && p.nextDueDate && p.nextDueDate < todayStr).length,
+        dueToday: pm.filter(p => p.status === 'active' && p.nextDueDate === todayStr).length
       }
     }
   });
@@ -430,6 +446,45 @@ app.get('/api/checklist-templates', requireAuth(), (req, res) => {
   res.json({ ok: 1, data: list });
 });
 
+app.post('/api/checklist-templates', requireAuth(['admin', 'manager']), (req, res) => {
+  const { name, category, items } = req.body;
+  if (!name || !category) return res.json({ ok: 0, error: 'Thiếu tên hoặc danh mục' });
+  const db = loadDB();
+  const tpl = {
+    id: `tpl-${Date.now()}`,
+    name, category,
+    items: (items || []).map((it, i) => ({ id: i + 1, label: it.label, type: it.type || 'status', unit: it.unit || undefined })),
+    createdBy: req.session.username,
+    createdAt: now(), updatedAt: now()
+  };
+  if (!db.checklistTemplates) db.checklistTemplates = [];
+  db.checklistTemplates.push(tpl);
+  saveDB(db);
+  res.json({ ok: 1, data: tpl });
+});
+
+app.put('/api/checklist-templates/:id', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const tpl = (db.checklistTemplates || []).find(t => t.id === req.params.id);
+  if (!tpl) return res.json({ ok: 0, error: 'Không tìm thấy template' });
+  const { name, category, items } = req.body;
+  if (name !== undefined) tpl.name = name;
+  if (category !== undefined) tpl.category = category;
+  if (items !== undefined) tpl.items = items.map((it, i) => ({ id: i + 1, label: it.label, type: it.type || 'status', unit: it.unit || undefined }));
+  tpl.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: tpl });
+});
+
+app.delete('/api/checklist-templates/:id', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const idx = (db.checklistTemplates || []).findIndex(t => t.id === req.params.id);
+  if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy template' });
+  db.checklistTemplates.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
 // ─── Maintenance Logs ─────────────────────────────────────────
 app.get('/api/maintenance-logs', requireAuth(), (req, res) => {
   const db = loadDB();
@@ -455,6 +510,152 @@ app.post('/api/maintenance-logs', requireAuth(), (req, res) => {
   if (db.maintenanceLogs.length > 1000) db.maintenanceLogs = db.maintenanceLogs.slice(0, 1000);
   saveDB(db);
   res.json({ ok: 1, data: log });
+});
+
+// ─── PM Schedule Helpers ──────────────────────────────────────
+function calcNextDueDateStr(frequency, fromDateStr) {
+  const d = new Date(fromDateStr + 'T00:00:00');
+  switch (frequency) {
+    case 'daily':     d.setDate(d.getDate() + 1); break;
+    case 'weekly':    d.setDate(d.getDate() + 7); break;
+    case 'quarterly': d.setMonth(d.getMonth() + 3); break;
+    case 'yearly':    d.setFullYear(d.getFullYear() + 1); break;
+    default:          d.setMonth(d.getMonth() + 1); // monthly
+  }
+  return d.toISOString().split('T')[0];
+}
+
+// ─── PM Schedules Routes ──────────────────────────────────────
+app.get('/api/pm-schedules', requireAuth(), (req, res) => {
+  const db = loadDB();
+  const { status, assetId } = req.query;
+  let list = db.pmSchedules || [];
+  if (status) list = list.filter(p => p.status === status);
+  if (assetId) list = list.filter(p => p.assetId === assetId);
+  list = [...list].sort((a, b) => (a.nextDueDate || '').localeCompare(b.nextDueDate || ''));
+  res.json({ ok: 1, data: list, total: list.length });
+});
+
+app.post('/api/pm-schedules/run-due', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const today = now().split('T')[0];
+  const generated = [];
+  (db.pmSchedules || []).forEach(schedule => {
+    if (schedule.status !== 'active') return;
+    if (!schedule.nextDueDate || schedule.nextDueDate > today) return;
+    if (schedule.lastGeneratedDate === today) return;
+    const woId = `WO-${String(db.nextId.workOrder).padStart(4, '0')}`;
+    db.nextId.workOrder++;
+    db.workOrders.push({
+      id: woId,
+      title: `[PM] ${schedule.name}`,
+      description: `Tự động tạo từ lịch PM: ${schedule.id}${schedule.notes ? '\n' + schedule.notes : ''}`,
+      assetId: schedule.assetId || null,
+      priority: schedule.priority || 'medium',
+      assignedTo: schedule.assignedTo || null,
+      dueDate: schedule.nextDueDate,
+      type: 'preventive',
+      status: 'open',
+      pmScheduleId: schedule.id,
+      createdBy: 'system',
+      createdAt: now(), updatedAt: now(),
+      history: [{ action: 'created (PM auto-run)', by: 'system', at: now() }]
+    });
+    schedule.lastGeneratedDate = today;
+    schedule.nextDueDate = calcNextDueDateStr(schedule.frequency, schedule.nextDueDate);
+    schedule.generatedCount = (schedule.generatedCount || 0) + 1;
+    schedule.updatedAt = now();
+    generated.push({ scheduleId: schedule.id, woId });
+  });
+  saveDB(db);
+  res.json({ ok: 1, data: { generated, count: generated.length } });
+});
+
+app.post('/api/pm-schedules', requireAuth(['admin', 'manager']), (req, res) => {
+  const { name, assetId, templateId, frequency, startDate, assignedTo, priority, notes } = req.body;
+  if (!name || !frequency || !startDate) return res.json({ ok: 0, error: 'Thiếu thông tin bắt buộc' });
+  const db = loadDB();
+  const schedule = {
+    id: `PM-${Date.now()}`,
+    name, assetId: assetId || null, templateId: templateId || null,
+    frequency, startDate,
+    assignedTo: assignedTo || null,
+    priority: priority || 'medium',
+    notes: notes || '',
+    status: 'active',
+    nextDueDate: startDate,
+    lastGeneratedDate: null,
+    generatedCount: 0,
+    createdBy: req.session.username,
+    createdAt: now(), updatedAt: now()
+  };
+  if (!db.pmSchedules) db.pmSchedules = [];
+  db.pmSchedules.push(schedule);
+  saveDB(db);
+  res.json({ ok: 1, data: schedule });
+});
+
+app.put('/api/pm-schedules/:id', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const schedule = (db.pmSchedules || []).find(p => p.id === req.params.id);
+  if (!schedule) return res.json({ ok: 0, error: 'Không tìm thấy lịch PM' });
+  const { name, assetId, templateId, frequency, startDate, endDate, assignedTo, priority, notes, status } = req.body;
+  if (name !== undefined) schedule.name = name;
+  if (assetId !== undefined) schedule.assetId = assetId || null;
+  if (templateId !== undefined) schedule.templateId = templateId || null;
+  if (frequency !== undefined) schedule.frequency = frequency;
+  if (startDate !== undefined) {
+    if (startDate !== schedule.startDate && schedule.generatedCount === 0) schedule.nextDueDate = startDate;
+    schedule.startDate = startDate;
+  }
+  if (endDate !== undefined) schedule.endDate = endDate || null;
+  if (assignedTo !== undefined) schedule.assignedTo = assignedTo || null;
+  if (priority !== undefined) schedule.priority = priority;
+  if (notes !== undefined) schedule.notes = notes;
+  if (status !== undefined) schedule.status = status;
+  schedule.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: schedule });
+});
+
+app.delete('/api/pm-schedules/:id', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const idx = (db.pmSchedules || []).findIndex(p => p.id === req.params.id);
+  if (idx === -1) return res.json({ ok: 0, error: 'Không tìm thấy' });
+  db.pmSchedules.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: 1 });
+});
+
+app.post('/api/pm-schedules/:id/generate-wo', requireAuth(['admin', 'manager']), (req, res) => {
+  const db = loadDB();
+  const schedule = (db.pmSchedules || []).find(p => p.id === req.params.id);
+  if (!schedule) return res.json({ ok: 0, error: 'Không tìm thấy lịch PM' });
+  const today = now().split('T')[0];
+  const woId = `WO-${String(db.nextId.workOrder).padStart(4, '0')}`;
+  db.nextId.workOrder++;
+  const wo = {
+    id: woId,
+    title: `[PM] ${schedule.name}`,
+    description: `Tạo từ lịch PM: ${schedule.id}${schedule.notes ? '\n' + schedule.notes : ''}`,
+    assetId: schedule.assetId || null,
+    priority: schedule.priority || 'medium',
+    assignedTo: schedule.assignedTo || null,
+    dueDate: schedule.nextDueDate,
+    type: 'preventive',
+    status: 'open',
+    pmScheduleId: schedule.id,
+    createdBy: req.session.userId,
+    createdAt: now(), updatedAt: now(),
+    history: [{ action: 'created (PM manual)', by: req.session.username, at: now() }]
+  };
+  db.workOrders.push(wo);
+  schedule.lastGeneratedDate = today;
+  schedule.nextDueDate = calcNextDueDateStr(schedule.frequency, schedule.nextDueDate);
+  schedule.generatedCount = (schedule.generatedCount || 0) + 1;
+  schedule.updatedAt = now();
+  saveDB(db);
+  res.json({ ok: 1, data: { workOrder: wo, schedule } });
 });
 
 // ─── Health check ─────────────────────────────────────────────
