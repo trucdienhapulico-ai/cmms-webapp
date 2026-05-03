@@ -1,0 +1,12 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Implement Advanced Dashboard & Analytics with KPI metrics
+Priority: High
+Issue: #19
+Status: DONE
+
+## Completed
+- /api/stats: Added KPI (MTTR, MTBF, pmCompliance, overdueRate) + 6-month trending data
+- renderDashboard(): KPI cards with color thresholds + SVG bar chart for trending
+- renderUIMap(): Added [UI-Dash-KPI] and [UI-Dash-Charts] entries
+- brain/roadmap.md: Marked Advanced Dashboard & Analytics as [x]
+- Closed GitHub Issue #19
