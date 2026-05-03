@@ -1,13 +1,13 @@
 # claude-worker.ps1
-# Script tu dong hoa Claude Code (Builder) qua GitHub Issues
+# Script tu dong hoa Claude Code (Builder)
 # Chay moi 30 phut de tiet kiem token va khong can go lenh thu cong.
 
 $RepoOwner = "trucdienhapulico-ai"
 $RepoName = "cmms-webapp"
-$PollIntervalSeconds = 900 # 15 phut
+$PollIntervalSeconds = 1800 # 30 phut
 $TriggerFile = "RUN_NOW"
 
-Write-Host "🤖 Khoi dong Claude Worker. Quet task moi 15 phut hoặc khi co file '$TriggerFile'..." -ForegroundColor Cyan
+Write-Host "🤖 Khoi dong Claude Worker. Quet task moi 30 phut hoặc ngay khi co file '$TriggerFile'..." -ForegroundColor Cyan
 
 while ($true) {
     if (Test-Path $TriggerFile) {
