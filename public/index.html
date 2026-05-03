@@ -771,6 +771,102 @@ function renderUIMap() {
               </td>
               <td data-label="Mô tả">Bảng câu hỏi kiểm tra sau khi kỹ thuật viên quét mã QR</td>
             </tr>
+            <tr>
+              <td data-label="Khu vực">Đăng nhập</td>
+              <td data-label="Thành phần">Màn hình Login</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Login]'); toast('Đã copy mã: [UI-Login]')" style="font-family: monospace; font-size: 11px">[UI-Login] 📋</button></td>
+              <td data-label="Mô tả">Form nhập username/password khi chưa đăng nhập</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Thanh tiêu đề + nút hành động</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Topbar]'); toast('Đã copy mã: [UI-Topbar]')" style="font-family: monospace; font-size: 11px">[UI-Topbar] 📋</button></td>
+              <td data-label="Mô tả">Thanh ngang phía trên hiển thị tiêu đề trang và nút hành động</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Chuông thông báo</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Notif-Bell]'); toast('Đã copy mã: [UI-Notif-Bell]')" style="font-family: monospace; font-size: 11px">[UI-Notif-Bell] 📋</button></td>
+              <td data-label="Mô tả">Biểu tượng 🔔 với badge đỏ đếm số thông báo chưa đọc</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Bảng thông báo dropdown</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Notif-Panel]'); toast('Đã copy mã: [UI-Notif-Panel]')" style="font-family: monospace; font-size: 11px">[UI-Notif-Panel] 📋</button></td>
+              <td data-label="Mô tả">Panel dropdown danh sách thông báo khi bấm 🔔</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quản lý Người dùng</td>
+              <td data-label="Thành phần">Bảng danh sách tài khoản</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Users-Table]'); toast('Đã copy mã: [UI-Users-Table]')" style="font-family: monospace; font-size: 11px">[UI-Users-Table] 📋</button></td>
+              <td data-label="Mô tả">Bảng hiển thị tất cả tài khoản hệ thống (Admin mới thấy)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quản lý Người dùng</td>
+              <td data-label="Thành phần">Form Tạo tài khoản</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Users-Form]'); toast('Đã copy mã: [UI-Users-Form]')" style="font-family: monospace; font-size: 11px">[UI-Users-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal tạo tài khoản mới (username, password, vai trò)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Bảng danh sách vật tư</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Table]'); toast('Đã copy mã: [UI-Inv-Table]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Table] 📋</button></td>
+              <td data-label="Mô tả">Bảng hiển thị tồn kho, SKU, vị trí, cảnh báo sắp hết</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Form Thêm/Sửa vật tư</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Form]'); toast('Đã copy mã: [UI-Inv-Form]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal nhập thông tin vật tư mới hoặc chỉnh sửa</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Form Nhập/Xuất kho</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Tx]'); toast('Đã copy mã: [UI-Inv-Tx]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Tx] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ giao dịch nhập/xuất kho kèm lịch sử giao dịch</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Tenant Portal (Admin)</td>
+              <td data-label="Thành phần">Quản lý yêu cầu cư dân</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Tenant-Admin]'); toast('Đã copy mã: [UI-Tenant-Admin]')" style="font-family: monospace; font-size: 11px">[UI-Tenant-Admin] 📋</button></td>
+              <td data-label="Mô tả">Bảng xem/duyệt/từ chối yêu cầu sự cố từ cư dân</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Tenant Portal (Công khai)</td>
+              <td data-label="Thành phần">Trang /tenant báo sự cố</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Tenant-Public]'); toast('Đã copy mã: [UI-Tenant-Public]')" style="font-family: monospace; font-size: 11px">[UI-Tenant-Public] 📋</button></td>
+              <td data-label="Mô tả">Trang riêng biệt /tenant cho cư dân (không cần login)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Trang chi tiết thiết bị</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Detail]'); toast('Đã copy mã: [UI-Asset-Detail]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Detail] 📋</button></td>
+              <td data-label="Mô tả">Trang chi tiết thông số, mã QR, WO liên quan, lịch sử bảo trì</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Nhật ký Bảo trì</td>
+              <td data-label="Thành phần">Danh sách nhật ký</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-MLog-List]'); toast('Đã copy mã: [UI-MLog-List]')" style="font-family: monospace; font-size: 11px">[UI-MLog-List] 📋</button></td>
+              <td data-label="Mô tả">Danh sách các lần kiểm tra (checklist) đã nộp, lọc theo thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Nhật ký Bảo trì</td>
+              <td data-label="Thành phần">Chi tiết nhật ký</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-MLog-Detail]'); toast('Đã copy mã: [UI-MLog-Detail]')" style="font-family: monospace; font-size: 11px">[UI-MLog-Detail] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ xem kết quả checklist chi tiết (Đạt/Không đạt/Số liệu)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Tab Danh sách PM</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-List]'); toast('Đã copy mã: [UI-PM-List]')" style="font-family: monospace; font-size: 11px">[UI-PM-List] 📋</button></td>
+              <td data-label="Mô tả">Tab bảng danh sách tất cả lịch PM (active/paused)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Form Tạo/Sửa lịch PM</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Form]'); toast('Đã copy mã: [UI-PM-Form]')" style="font-family: monospace; font-size: 11px">[UI-PM-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal tạo/sửa kế hoạch bảo trì (tần suất, thiết bị, người phụ trách)</td>
+            </tr>
           </tbody>
         </table>
       </div>
