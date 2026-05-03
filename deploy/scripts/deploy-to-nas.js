@@ -46,8 +46,10 @@ async function run() {
     await ssh.execCommand(`chmod -R 777 ${remoteDir}`);
     
     console.log('🐳 5. Restarting Docker (No Cache)...');
-    const dockerCmd = `echo '${password}' | sudo -S env PATH=$PATH:/usr/local/bin:/var/packages/Docker/target/usr/bin ${dockerComposePath} -f ${remoteDir}/deploy/docker-compose.yml up -d --build --force-recreate --no-cache`;
-    await ssh.execCommand(dockerCmd, { cwd: remoteDir });
+    const dockerCmd = `echo '${password}' | sudo -S env PATH=$PATH:/usr/local/bin:/var/packages/Docker/target/usr/bin bash -c "${dockerComposePath} -f ${remoteDir}/deploy/docker-compose.yml build --no-cache && ${dockerComposePath} -f ${remoteDir}/deploy/docker-compose.yml up -d --force-recreate"`;
+    const dockerRes = await ssh.execCommand(dockerCmd, { cwd: remoteDir });
+    console.log(dockerRes.stdout);
+    if (dockerRes.stderr) console.error(dockerRes.stderr);
 
     console.log('✨ 6. DEPLOYMENT SUCCESSFUL!');
     ssh.dispose();
