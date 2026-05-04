@@ -289,7 +289,8 @@ app.post('/api/users/:id/reset-password', requireAuth(['admin']), (req, res) => 
   if (!u) return res.json({ ok: 0, error: 'Không tìm thấy người dùng' });
   
   // Mat khau mac dinh
-  u.passwordHash = hashPassword('DNHc4&982!cjhDB');
+  const defaultPass = process.env.ADMIN_RESET_PASSWORD || 'DNH@Default2026!';
+  u.passwordHash = hashPassword(defaultPass);
   saveDB(db);
   logAudit(req, 'reset_password', 'user', u.id, `Reset password for ${u.username}`);
   res.json({ ok: 1 });
