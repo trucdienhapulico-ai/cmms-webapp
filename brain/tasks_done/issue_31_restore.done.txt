@@ -1,4 +1,4 @@
-[DOCUMENTATION TASK]
+﻿[DOCUMENTATION TASK]
 Title: Disaster Recovery & Restore Guide
 Issue: #31
 Priority: HIGH
@@ -15,3 +15,4 @@ Provide a clear manual for restoring the system from the backups created in Issu
    - Simulate a "Clean Install" environment and verify the steps work.
 3. **Emergency Contacts**:
    - List critical service ports and credentials (environment variable names only).
+

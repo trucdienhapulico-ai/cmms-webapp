@@ -1,10 +1,26 @@
-# Hướng dẫn Thiết lập Máy chủ CMMS & AI (Dành cho máy Core i7 / RTX 3060)
+# Hướng dẫn Thiết lập Máy chủ CMMS & AI (Duy nhất 1 lệnh)
 
-Tài liệu này hướng dẫn cách biến máy tính Windows của bạn thành trung tâm điều hành CMMS, tích hợp AI cục bộ và tự động hóa với Claude Code.
+Tài liệu này cung cấp phương thức cài đặt tự động toàn bộ môi trường CMMS trên máy tính Windows Core i7 / RTX 3060.
 
 ---
 
-## 1. Cài đặt Môi trường (Prerequisites)
+## 🚀 Cách 1: Cài đặt tự động (Khuyên dùng)
+
+Bạn chỉ cần mở **PowerShell với quyền Administrator**, sao chép và dán lệnh sau:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/checkpoint-pre-phase4/init-pc.ps1'); Invoke-Expression $script
+```
+
+**Lệnh này sẽ tự động làm gì?**
+1. Cài đặt Node.js, Git, Docker Desktop và Ollama (qua winget).
+2. Tự động `git clone` dự án về Desktop.
+3. Tự động `npm install` và cài đặt Claude Code.
+4. Cấu hình sẵn sàng các file môi trường mẫu.
+
+---
+
+## 🚀 Cách 2: Cài đặt thủ công (Nếu cách 1 lỗi)
 
 Hãy tải và cài đặt các phần mềm sau theo thứ tự:
 
