@@ -44,12 +44,17 @@ if (-not (Test-Path "env")) { New-Item -ItemType Directory -Path "env" | Out-Nul
 if (-not (Test-Path "env\stable.env")) { Copy-Item "env\stable.env.template" "env\stable.env" -ErrorAction SilentlyContinue }
 if (-not (Test-Path "data\db.json")) { Copy-Item "data\db.json.template" "data\db.json" -ErrorAction SilentlyContinue }
 
-Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host "✅ HOAN TAT CAI DAT PHAN CUNG & MOI TRUONG!" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "👉 BUOC TIEP THEO (BAN CAN LAM THU CONG):" -ForegroundColor Cyan
+Write-Host "👉 BUOC TIEP THEO: XAC THUC AI (CHON 1 TRONG 2 CACH)" -ForegroundColor Cyan
+Write-Host "----------------------------------------------------------" -ForegroundColor Gray
+Write-Host "CACH A: DANG NHAP OAUTH (KHUYEN DUNG - DANG NHAP QUA TRINH DUYET)" -ForegroundColor Yellow
+Write-Host "   Go: claude auth login" -ForegroundColor White
+Write-Host ""
+Write-Host "CACH B: DUNG API KEY (NEU BAN CO KEY RIENG)" -ForegroundColor Yellow
+Write-Host "   Go: $env:ANTHROPIC_API_KEY='your-key-here'" -ForegroundColor White
+Write-Host "----------------------------------------------------------" -ForegroundColor Gray
 Write-Host "1. Chay Docker Desktop tu Start Menu." -ForegroundColor Yellow
 Write-Host "2. Dang nhap GitHub: gh auth login" -ForegroundColor Yellow
-Write-Host "3. Dang nhap Claude: claude auth login" -ForegroundColor Yellow
-Write-Host "4. Chay Worker: .\claude-worker.ps1" -ForegroundColor Yellow
+Write-Host "3. Chay Worker: .\claude-worker.ps1" -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Green

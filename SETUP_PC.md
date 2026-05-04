@@ -51,16 +51,20 @@ npm install
 
 ---
 
-## 3. Cài đặt Claude Code (AI Agent)
+## 3. Xác thực AI (Lựa chọn phương thức)
 
-Cài đặt công cụ hỗ trợ lập trình của Anthropic:
+Claude Code cần được xác thực để có thể bắt đầu làm việc. Bạn chọn một trong hai cách sau:
 
+### Cách A: Đăng nhập OAuth (Khuyên dùng cho người dùng cá nhân/Pro)
+Cách này không cần API Key, chỉ cần đăng nhập qua trình duyệt:
 ```powershell
-# Cài đặt toàn cục
-npm install -g @anthropic-ai/claude-code
-
-# Đăng nhập (Làm theo hướng dẫn hiện ra trên màn hình)
 claude auth login
+```
+
+### Cách B: Sử dụng API Key (Dành cho nhà phát triển)
+Nếu bạn có mã API Key từ Anthropic, hãy thiết lập biến môi trường:
+```powershell
+$env:ANTHROPIC_API_KEY="your_api_key_here"
 ```
 
 ---
