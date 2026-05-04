@@ -52,10 +52,12 @@ Write-Host "----------------------------------------------------------" -Foregro
 Write-Host "1. Test Claude Code (Sau khi login):" -ForegroundColor Yellow
 Write-Host "   claude -p 'Hay noi Hello World va gioi thieu ban la ai'" -ForegroundColor White
 Write-Host ""
-if ($installOllama -eq "Y" -or $installOllama -eq "y") {
-    Write-Host "2. Test AI Cuc bo (Ollama):" -ForegroundColor Yellow
+Write-Host "2. Test AI Cuc bo (Ollama):" -ForegroundColor Yellow
     Write-Host "   ollama run llama3 'Hello World, who are you?'" -ForegroundColor White
 }
+Write-Host ""
+Write-Host "3. Giao viec tu dong cho Worker (GitHub CLI):" -ForegroundColor Yellow
+Write-Host "   gh issue create --title 'issue_test' --body 'Hay tao file hello.txt'" -ForegroundColor White
 Write-Host "----------------------------------------------------------" -ForegroundColor Gray
 Write-Host "ME O: Go '.\claude-worker.ps1' de bat dau tu dong hoa Issue." -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Green
