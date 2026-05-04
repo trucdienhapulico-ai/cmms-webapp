@@ -1,16 +1,52 @@
-# CMMS Webapp
+# CMMS WebApp - Hệ thống Quản lý Bảo trì Cơ điện
 
-Web app CMMS nội bộ cho quản lý bảo trì hệ thống cơ điện.
+Hệ thống quản lý bảo trì nội bộ phục vụ vận hành tòa nhà và hệ thống kỹ thuật.
 
-## Truy cập Docker hiện tại
+## 🌐 Địa chỉ truy cập (Nội bộ)
 
-- **Stable LAN:** http://192.168.1.14:8080
-- **Test LAN:** http://192.168.1.14:8081
-- **Public URL stable qua Tailscale Funnel:** https://tocodien.tail030e1.ts.net/
-- **Public URL test:** chưa mở public; test `8081` chỉ dùng trong LAN.
+- **Bản TEST (Thử nghiệm):** [http://192.168.86.139:8081](http://192.168.86.139:8081)
+    - Dùng để kiểm tra tính năng mới, rà soát lỗi trước khi phát hành chính thức.
+- **Bản STABLE (Chính thức):** [http://192.168.86.139:8080](http://192.168.86.139:8080)
+    - Dùng cho vận hành thực tế. Dữ liệu được đồng bộ từ bản Test sau khi phê duyệt.
 
-## Ghi chú vận hành
+---
 
-- Public URL hiện đang trỏ về Docker stable `127.0.0.1:8080`.
-- Service cũ cổng `3080` không còn là chuẩn vận hành.
-- Domain/HTTPS riêng và PostgreSQL stable/test tách biệt để triển khai ở giai đoạn sau.
+## 🚀 Quy trình Phát hành (Release Workflow)
+
+Để đồng bộ các tính năng mới từ môi trường Phát triển sang môi trường Chính thức:
+
+1. **Phát hành từ Giao diện (One-Click):**
+   - Đăng nhập vào bản **TEST** (8081) với quyền Admin.
+   - Truy cập menu **"Phát hành (Staging)"**.
+   - Nhấn nút Mega Button: **"🚀 KÍCH HOẠT PHÁT HÀNH NGAY"**.
+   - Hệ thống sẽ tự động đồng bộ mã nguồn và khởi động lại bản Stable.
+
+2. **Phát hành từ Dòng lệnh (CLI):**
+   - Chạy lệnh: `node deploy.js --stable` từ máy bộ để ép buộc cập nhật bản Stable.
+
+---
+
+## 🧹 Hướng dẫn Xóa Cache Chrome (Khi gặp lỗi hiển thị)
+
+Nếu bạn vừa cập nhật hệ thống nhưng giao diện vẫn hiển thị bản cũ (hoặc bị lỗi bố cục), hãy thực hiện:
+
+1. **Làm mới cưỡng bức (Hard Refresh):**
+   - Nhấn tổ hợp phím `Ctrl` + `Shift` + `R` (Windows) hoặc `Cmd` + `Shift` + `R` (Mac).
+2. **Xóa Cache cụ thể cho trang web:**
+   - Nhấn `F12` (mở DevTools).
+   - Chuột phải vào nút **Làm mới** (Reload) của trình duyệt.
+   - Chọn **"Empty Cache and Hard Reload"**.
+3. **Tắt Cache khi phát triển:**
+   - Trong cửa sổ `F12` -> Tab **Network** -> Tích chọn **"Disable cache"**.
+
+---
+
+## 🛠️ Phát triển & Quản trị
+
+- **Backend:** Node.js + Express.
+- **Frontend:** Vanilla JS (Premium UI).
+- **Database:** JSON File (Dự kiến chuyển sang PostgreSQL ở Phase 4).
+- **Deployment:** Docker Compose trên Synology NAS.
+
+---
+© 2026 - CMMS Infrastructure Team

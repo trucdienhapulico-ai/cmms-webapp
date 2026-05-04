@@ -38,6 +38,9 @@ services:
       - ../env/test.env
     volumes:
       - test-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+      - /usr/local/bin/docker-compose:/usr/bin/docker-compose
     networks:
       - cmms-net
     healthcheck:
