@@ -105,3 +105,57 @@ All navigation routes are mapped:
 ## Overall Health: 🟡 READY WITH CAUTION
 
 5 bugs fixed. 1 overdue WO needs attention. Inventory needs population. Raw HTML insertion from user data warrants a sanitization review before go-live.
+
+---
+
+## Incident #29 — Stable Environment (Port 8080) DOWN
+**Date:** 2026-05-04  
+**Severity:** CRITICAL  
+**Status:** Code fixes committed — awaiting NAS redeploy
+
+### Root Causes Found
+
+| # | Issue | Impact | Fix |
+|---|---|---|---|
+| 1 | `secure: IS_PROD` cookie flag — sends `secure: true` in production but stable runs on HTTP (port 8080) | **CRITICAL**: Session cookie not stored by browser on HTTP → all authenticated routes return 401 → app unusable | Changed to `secure: IS_PROD && isHttps` (only secure over actual HTTPS) |
+| 2 | `loadDB()` had no error handling for corrupted `db.json` — `JSON.parse()` would throw unhandled exception | **HIGH**: If db.json was truncated on a crash mid-write, server would crash in a loop | Wrapped in try/catch; auto-reinitializes from clean state on corrupt file |
+| 3 | Nginx nginx.conf missing `proxy_set_header X-Forwarded-Proto $scheme` | **MEDIUM**: Protocol not propagated to app — HTTPS redirect middleware blind to actual connection type | Added `X-Forwarded-Proto $scheme` to both server blocks |
+
+### Recovery Steps for NAS
+
+Run from `/volume1/docker/cmms-webapp` via SSH:
+
+```bash
+# 1. Check container state
+docker ps -a --filter name=cmms-stable
+
+# 2. Read crash logs
+docker logs cmms-stable --tail 50
+
+# 3. Pull latest code (after git push)
+git pull origin task/go-live-security
+
+# 4. Rebuild and restart stable
+docker compose -f deploy/docker-compose.yml up -d --build --no-deps --force-recreate cmms-stable
+docker compose -f deploy/docker-compose.yml restart nginx
+
+# 5. Verify
+curl -I http://localhost:8080/api/health
+```
+
+### If db.json Is Corrupted
+
+```bash
+# Backup existing corrupted file first
+docker exec cmms-stable cp /app/data/db.json /app/data/db.json.corrupted
+
+# Delete it so loadDB() auto-reinitializes
+docker exec cmms-stable rm /app/data/db.json
+
+# Restart container
+docker restart cmms-stable
+```
+
+### Prevention
+- `db.json` writes should use atomic rename (`write to tmp → rename`) to prevent corruption on crash.
+- Next sprint: switch to SQLite for ACID-compliant writes.

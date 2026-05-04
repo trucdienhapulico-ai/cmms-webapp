@@ -52,7 +52,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ─── DB helpers ──────────────────────────────────────────────
 function loadDB() {
   if (!fs.existsSync(DB_PATH)) initDB();
-  const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  let db;
+  try {
+    db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  } catch (e) {
+    console.error('[CMMS] db.json corrupted, reinitializing:', e.message);
+    initDB();
+    db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  }
   if (!db.checklists) { db.checklists = []; saveDB(db); }
   if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
   if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
@@ -214,9 +221,10 @@ app.post('/api/login', (req, res) => {
   if (!user || !verifyPassword(password, user.passwordHash))
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
   const sid = createSession(user);
+  const isHttps = req.headers['x-forwarded-proto'] === 'https';
   res.cookie('sid', sid, {
     httpOnly: true,
-    secure: IS_PROD,
+    secure: IS_PROD && isHttps,
     sameSite: 'strict',
     maxAge: 8 * 60 * 60 * 1000
   });
