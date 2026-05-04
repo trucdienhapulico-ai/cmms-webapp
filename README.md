@@ -1,9 +1,9 @@
 # 🚀 CMMS WebApp - Hệ thống Quản lý Bảo trì Thông minh
 
-### 🛠️ Cài đặt nhanh (Dành cho máy i7/RTX 3060 - Duy nhất 1 lệnh)
-Mở PowerShell (Admin) và dán lệnh sau:
+### 🛠️ Cài đặt nhanh (Dành cho máy mới - Duy nhất 1 lệnh)
+Mở **PowerShell (Admin)** và dán lệnh sau:
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/master/setup-server.ps1'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; $f="$env:TEMP\setup-server.ps1"; (New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/master/setup-server.ps1',$f); & $f
 ```
 
 ---
