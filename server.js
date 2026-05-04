@@ -283,6 +283,18 @@ app.delete('/api/users/:id', requireAuth(['admin']), (req, res) => {
   res.json({ ok: 1 });
 });
 
+app.post('/api/users/:id/reset-password', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const u = db.users.find(u => u.id === req.params.id);
+  if (!u) return res.json({ ok: 0, error: 'Không tìm thấy người dùng' });
+  
+  // Mat khau mac dinh
+  u.passwordHash = hashPassword('DNHc4&982!cjhDB');
+  saveDB(db);
+  logAudit(req, 'reset_password', 'user', u.id, `Reset password for ${u.username}`);
+  res.json({ ok: 1 });
+});
+
 // ─── Assets Routes ────────────────────────────────────────────
 app.get('/api/assets', requireAuth(), (req, res) => {
   const db = loadDB();
@@ -1364,16 +1376,35 @@ app.get('/api/system/tasks', requireAuth(['admin']), (req, res) => {
   });
 });
 
-// Endpoint kích hoạt đồng bộ sang Stable (Chỉ dành cho Admin)
+// Promotion API (Test -> Stable)
 app.post('/api/system/promote', requireAuth(['admin']), (req, res) => {
-  // Trong thực tế, lệnh này sẽ gọi child_process.exec('node deploy.js --stable')
-  // Để an toàn, chúng ta log vào Audit Log và yêu cầu Admin chạy lệnh tay hoặc script tự động
-  logAudit(req, 'promote', 'system', null, `Admin initiated promotion to STABLE (v${APP_VERSION})`);
-  res.json({ ok: 1, message: 'Yêu cầu phát hành đã được ghi nhận vào hệ thống Audit Log.' });
+  if (process.env.NODE_ENV !== 'test') {
+    return res.status(403).json({ ok: 0, error: 'Chỉ có thể kích hoạt phát hành từ môi trường TEST' });
+  }
+
+  const { exec } = require('child_process');
+  console.log(`[PROMOTE] Admin ${req.session.username} initiated promotion to STABLE.`);
+  
+  // Docker command to rebuild stable
+  const cmd = 'docker-compose -f deploy/docker-compose.yml up -d --build cmms-stable';
+  
+  exec(cmd, { cwd: __dirname }, (err, stdout, stderr) => {
+    if (err) {
+      console.error('Promotion failed:', err);
+      return res.json({ ok: 0, error: 'Lỗi phát hành: ' + err.message });
+    }
+    logAudit(req, 'promote', 'system', 'all', `Promoted Test to Stable (v${APP_VERSION})`);
+    res.json({ ok: 1, message: 'Đã kích hoạt phát hành bản Stable thành công!' });
+  });
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: now(), version: APP_VERSION });
+  res.json({ 
+    status: 'ok', 
+    time: now(), 
+    version: APP_VERSION,
+    env: process.env.NODE_ENV || 'development'
+  });
 });
 
 // ─── SPA fallback ─────────────────────────────────────────────

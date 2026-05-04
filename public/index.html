@@ -54,7 +54,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #app { display: none; min-height: 100vh; }
 .sidebar {
   position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w);
-  background: #0f172a; color: white; overflow-y: auto; z-index: 100;
+  background: #0f172a; color: white; display: flex; flex-direction: column; z-index: 100;
 }
 .sidebar-logo { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .sidebar-logo h1 { font-size: 16px; font-weight: 800; color: white; }
@@ -173,7 +173,7 @@ tr:hover td { background: var(--blue-bg); }
 .bnav-label { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: 0.2px; }
 
 @media (max-width: 768px) {
-  .bottom-nav { display: flex; }
+  #app .bottom-nav { display: flex; }
   :root { --sidebar-w: 260px; }
   .sidebar {
     left: calc(-1 * var(--sidebar-w));
@@ -476,13 +476,17 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
     </div>
     <div class="form-group">
       <label>Tên đăng nhập</label>
-      <input type="text" id="login-username" placeholder="admin" autocomplete="username">
+      <input type="text" id="login-username" placeholder="Nhập tài khoản" autocomplete="username">
     </div>
     <div class="form-group">
       <label>Mật khẩu</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <div id="login-error" class="error-msg"></div>
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px;">
+      <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; cursor: pointer;">
+      <label for="login-remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
+    </div>
+    <div id="login-error" class="error-msg" style="display:none; color: var(--red); font-size: 12px; margin-top: 12px; font-weight: 600;"></div>
     <br>
     <button class="btn btn-primary btn-full" onclick="doLogin()">Đăng nhập</button>
   </div>
@@ -490,44 +494,53 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
 
 <!-- APP -->
 <div id="app">
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>🔧 CMMS</h1>
       <p>Bảo trì Cơ điện</p>
     </div>
-    <div class="sidebar-user">
-      <div class="sidebar-user-name" id="sidebar-name"></div>
-      <div class="sidebar-user-role" id="sidebar-role"></div>
+    <div class="sidebar-user" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div class="sidebar-user-name" id="sidebar-name" style="font-size: 13px; font-weight: 600;"></div>
+          <div class="sidebar-user-role" id="sidebar-role" style="font-size: 10px; color: rgba(255,255,255,0.5);"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+      </div>
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Tổng quan</div>
-      <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+    
+    <div style="flex: 1; overflow-y: auto;">
+      <div class="nav-section">
+        <div class="nav-section-title">Vận hành</div>
+        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
+        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
+        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
+        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
+        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
+        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
+        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
+        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
+        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
+      </div>
+      
+      <div class="nav-section" id="admin-menu" style="display:none">
+        <div class="nav-section-title">Quản trị</div>
+        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
+        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
+        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
+        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
+        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span>Phát hành (Staging)</span></div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Hỗ trợ</div>
+        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
+      </div>
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Vận hành</div>
-      <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
-      <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
-      <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
-      <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
-      <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
-      <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
-      <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
-      <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
-      <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
-    </div>
-    <div class="nav-section" id="admin-menu" style="display:none">
-      <div class="nav-section-title">Quản trị</div>
-      <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
-      <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
-      <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
-      <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Hỗ trợ</div>
-      <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
-    </div>
-    <div class="nav-logout">
-      <button class="btn btn-ghost btn-full btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)">Đăng xuất</button>
+
+    <div class="sidebar-footer" style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 9px; color: rgba(255,255,255,0.3);">
+      <span id="app-version">v1.3.5</span> <span id="env-tag"></span>
     </div>
   </div>
 
@@ -548,7 +561,6 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
       </div>
     </div>
     <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:320px;max-height:420px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:300;padding:12px"></div>
-    </div>
     <div class="page-body" id="page-body"></div>
   </div>
   <nav class="bottom-nav" id="bottom-nav">
@@ -621,12 +633,35 @@ function toast(msg, type = '') {
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
+  const remember = document.getElementById('login-remember').checked;
+  const errorEl = document.getElementById('login-error');
+  
+  errorEl.style.display = 'none';
   const r = await api('POST', '/api/login', { username, password });
+  
   if (r.ok) {
     currentUser = r.data;
+    localStorage.removeItem('cmms-p');
+    if (remember) {
+      localStorage.setItem('cmms-remember', 'true');
+      localStorage.setItem('cmms-u', username);
+    } else {
+      localStorage.removeItem('cmms-remember');
+      localStorage.removeItem('cmms-u');
+    }
     showApp();
   } else {
-    document.getElementById('login-error').textContent = r.error;
+    errorEl.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
+    errorEl.style.display = 'block';
+  }
+}
+
+function loadSavedCredentials() {
+  localStorage.removeItem('cmms-p');
+  if (localStorage.getItem('cmms-remember') === 'true') {
+    const u = localStorage.getItem('cmms-u');
+    if (u) document.getElementById('login-username').value = u;
+    document.getElementById('login-remember').checked = true;
   }
 }
 document.getElementById('login-password').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
@@ -657,8 +692,8 @@ async function showApp() {
   }
   
   // Fetch app meta info
-  const meta = await api('GET', '/api/meta');
-  console.log('Environment:', meta.env, 'Version:', meta.version);
+  const meta = await api('GET', '/api/system/info');
+  if (meta.ok) console.log('Environment:', meta.data.env, 'Version:', meta.data.version);
   
   if (pendingAssetId) {
     const id = pendingAssetId;
@@ -691,7 +726,8 @@ function navigate(page, param = null) {
     pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
     inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
     shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)',
-    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)'
+    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)',
+    integration: 'Kết nối BMS/IoT', release: 'Quản lý Phát hành (Staging & Release)'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
@@ -712,7 +748,7 @@ function navigate(page, param = null) {
     inventory: renderInventory, tenantportal: renderTenantPortal,
     shifts: renderShifts, auditlog: renderAuditLog,
     vendors: renderVendors, purchaseorders: renderPO,
-    integration: renderIntegration
+    integration: renderIntegration, release: renderRelease
   };
   (renders[page] || (() => {}))();
 
@@ -1196,6 +1232,10 @@ function renderUIMap() {
 // ─── DASHBOARD ───────────────────────────────────────────────
 async function renderDashboard() {
   const r = await api('GET', '/api/stats');
+  if (!r.ok || !r.data) {
+    document.getElementById('page-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Không tải được dữ liệu dashboard. ${r.error || ''}</p></div>`;
+    return;
+  }
   const s = r.data;
   const pm = s.pm || {};
   const kpi = s.kpi || {};
@@ -1591,7 +1631,14 @@ async function renderUsers() {
           <td data-label="Tài khoản"><code>${u.username}</code></td><td data-label="Họ tên">${u.name}</td>
           <td data-label="Vai trò">${roleLabel[u.role] || u.role}</td>
           <td data-label="Ngày tạo">${fmtDateShort(u.createdAt)}</td>
-          <td data-label="">${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
+          <td data-label="">
+            ${u.username !== 'admin' && currentUser.role === 'admin' ? `
+              <div style="display:flex;gap:5px;justify-content:flex-end">
+                <button class="btn btn-ghost btn-sm" onclick="resetPassword('${u.id}','${u.username}')" title="Reset mật khẩu">🔑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>
+              </div>
+            ` : ''}
+          </td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
@@ -1625,6 +1672,13 @@ async function deleteUser(id, name) {
   const r = await api('DELETE', `/api/users/${id}`);
   if (!r.ok) return toast(r.error, 'error');
   toast('Đã xóa tài khoản', 'success'); renderUsers();
+}
+
+async function resetPassword(id, username) {
+  if (!confirm(`Đặt lại mật khẩu cho [${username}] về mặc định của hệ thống?`)) return;
+  const r = await api('POST', `/api/users/${id}/reset-password`);
+  if (r.ok) toast('Đã đặt lại mật khẩu thành công', 'success');
+  else toast(r.error, 'error');
 }
 
 // ─── SCAN ────────────────────────────────────────────────────
@@ -3072,10 +3126,19 @@ async function deleteWebhook(id) {
 }
 
 async function renderRelease() {
-  const rTask = await api('GET', '/api/system/tasks');
-  const rInfo = await api('GET', '/api/system/info');
-  const tasks = rTask.data;
-  const info = rInfo.data;
+  let rTask = await api('GET', '/api/system/tasks');
+  let rInfo = await api('GET', '/api/system/info');
+  
+  // Fallback to public health API if system info is unauthorized
+  if (!rInfo.ok) {
+    const rHealth = await api('GET', '/api/health');
+    rInfo = rHealth;
+  }
+  
+  const tasks = rTask.data || { done: [], queue: [] };
+  const info = rInfo.data || rInfo || { version: '1.3.5', env: 'test' };
+  const envVal = (info.env || '').toLowerCase();
+  const isTest = envVal === 'test' || envVal === 'development';
 
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
@@ -3083,13 +3146,13 @@ async function renderRelease() {
         <div class="stat-icon">🏷️</div>
         <div class="stat-label">Phiên bản hiện tại</div>
         <div class="stat-value">v${info.version}</div>
-        <div class="stat-sub">Môi trường: <b>${info.env.toUpperCase()}</b></div>
+        <div class="stat-sub">Hệ thống: <b>${isTest ? 'TEST' : 'STABLE'}</b></div>
       </div>
-      <div class="stat-card ${info.env === 'test' ? 'stat-yellow' : 'stat-green'}">
-        <div class="stat-icon">🚀</div>
-        <div class="stat-label">Trạng thái Staging</div>
-        <div class="stat-value">${info.env === 'test' ? 'Đang Test' : 'Stable'}</div>
-        <div class="stat-sub">Đang chạy trên NAS</div>
+      <div class="stat-card ${isTest ? 'stat-yellow' : 'stat-green'}">
+        <div class="stat-icon">${isTest ? '🛠️' : '✅'}</div>
+        <div class="stat-label">Trạng thái vận hành</div>
+        <div class="stat-value">${isTest ? 'Đang thử nghiệm' : 'Sẵn sàng'}</div>
+        <div class="stat-sub">${isTest ? 'Cổng 8081' : 'Cổng 8080 (Chính thức)'}</div>
       </div>
     </div>
 
@@ -3100,40 +3163,59 @@ async function renderRelease() {
           <table>
             <thead><tr><th>Tên Task</th><th>Thời gian hoàn thành</th><th>Kích thước</th></tr></thead>
             <tbody>
-              ${tasks.done.map(t => `<tr><td><code>${t.name}</code></td><td>${new Date(t.time).toLocaleString('vi-VN')}</td><td>${Math.round(t.size/1024)} KB</td></tr>`).join('')}
+              ${(tasks.done || []).length > 0 ? tasks.done.map(t => `<tr><td><code>${t.name}</code></td><td>${new Date(t.time).toLocaleString('vi-VN')}</td><td>${Math.round(t.size/1024)} KB</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-dim)">Chưa có dữ liệu nhật ký</td></tr>'}
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:20px; border-top:4px solid var(--blue)">
-      <div class="card-title">🚀 Quy trình Phê duyệt & Phát hành</div>
-      <div style="margin-top:15px; font-size:14px; line-height:1.6">
-        <p>1. <b>Phát triển:</b> Mọi tính năng mới được deploy mặc định lên <b>TEST</b> (cổng 8081).</p>
-        <p>2. <b>Kiểm tra:</b> Admin kiểm tra tính năng tại bản TEST.</p>
-        <p>3. <b>Phê duyệt:</b> Nếu OK, nhấn nút "Yêu cầu phát hành" bên dưới.</p>
-      </div>
-      <div style="margin-top:20px; text-align:center">
-        <button class="btn btn-primary" onclick="promoteToStable()" ${info.env !== 'test' ? 'disabled' : ''}>
-          🚀 Yêu cầu phát hành sang Stable
+    <div class="card" style="margin-top:20px; border-top:4px solid var(--blue); padding: 40px 20px; text-align: center;">
+      <div class="card-title" style="font-size: 20px; margin-bottom: 8px;">🚀 Sẵn sàng để Phát hành?</div>
+      <p style="font-size: 14px; color: var(--text-dim); margin-bottom: 30px;">
+        Vui lòng đảm bảo bạn đã kiểm tra kỹ mọi tính năng trên bản <b>TEST (8081)</b> trước khi đồng bộ sang <b>STABLE (8080)</b>.
+      </p>
+      
+      ${info.env === 'test' ? `
+        <button class="btn" onclick="promoteToStable()" id="promote-btn" 
+          style="background: linear-gradient(135deg, var(--blue), #6366f1); color: white; padding: 20px 60px; font-size: 18px; font-weight: 800; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); transition: all 0.3s; width: 100%; max-width: 400px;">
+          🚀 KÍCH HOẠT PHÁT HÀNH NGAY
         </button>
+      ` : `
+        <div style="padding: 20px; background: var(--green-bg); color: var(--green); border-radius: 12px; font-weight: 700;">
+          ✅ HỆ THỐNG ĐANG Ở TRẠNG THÁI STABLE
+        </div>
+      `}
+      
+      <div style="margin-top: 24px; font-size: 12px; color: var(--text-dim); line-height: 1.6;">
+        <p>Hệ thống sẽ thực hiện Rebuild container bản Stable tự động.</p>
+        <p>Quá trình này mất khoảng <b>1-2 phút</b> để hoàn tất.</p>
       </div>
     </div>
   `;
 }
 
 async function promoteToStable() {
-  if (!confirm('Bạn có chắc chắn muốn phê duyệt bản TEST này để phát hành sang STABLE không?')) return;
+  if (!confirm('XÁC NHẬN: Phê duyệt bản TEST hiện tại và PHÁT HÀNH sang môi trường STABLE (Sản xuất)?')) return;
+  const btn = event.target;
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '🚀 Đang phát hành...';
+  
   const r = await api('POST', '/api/system/promote');
   if (r.ok) {
-    alert('Yêu cầu đã được gửi! Bạn có thể chạy "node deploy.js --stable" để hoàn tất đồng bộ.');
+    alert('ĐÃ KÍCH HOẠT! Bản Stable đang được rebuild tự động trên NAS. Vui lòng chờ 1-2 phút để bản Stable cập nhật.');
     renderRelease();
+  } else {
+    alert('Lỗi: ' + r.error);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
   }
 }
 
 // ─── Init ───────────────────────────────────────────────────
 (async () => {
+  loadSavedCredentials();
   const pathMatch = window.location.pathname.match(/^\/asset\/([^/?#]+)/);
   if (pathMatch) pendingAssetId = pathMatch[1];
   const r = await api('GET', '/api/me');
