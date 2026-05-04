@@ -9,7 +9,7 @@ Tài liệu này cung cấp phương thức cài đặt tự động toàn bộ 
 Bạn chỉ cần mở **PowerShell với quyền Administrator**, sao chép và dán lệnh sau:
 
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/checkpoint-pre-phase4/init-pc.ps1'); Invoke-Expression $script
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/master/setup-server.ps1'); Invoke-Expression $script
 ```
 
 **Lệnh này sẽ tự động làm gì?**

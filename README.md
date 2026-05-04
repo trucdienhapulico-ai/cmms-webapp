@@ -3,7 +3,7 @@
 ### 🛠️ Cài đặt nhanh (Dành cho máy i7/RTX 3060 - Duy nhất 1 lệnh)
 Mở PowerShell (Admin) và dán lệnh sau:
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/master/init-pc.ps1'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/trucdienhapulico-ai/cmms-webapp/master/setup-server.ps1'))
 ```
 
 ---
