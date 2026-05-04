@@ -1,0 +1,30 @@
+﻿[URGENT TASK]
+Target: Stable Environment (Port 8080) is DOWN
+Priority: CRITICAL
+Issue: #29
+
+## Context
+- The user reports that the STABLE environment (http://192.168.86.139:8080) is not working.
+- The TEST environment (8081) might still be working.
+
+## Specific Tasks
+1. **Diagnostic**:
+   - Check if `cmms-stable` container is running.
+   - Read the logs: `docker logs cmms-stable`.
+   - Check if the port 3090 is occupied inside the container.
+2. **Environment Check**:
+   - Verify `env/stable.env` exists on the NAS and is valid.
+   - Check if `NODE_ENV=production` is correctly set.
+3. **Connectivity**:
+   - Verify if Nginx is correctly proxying to `cmms-stable:3090`.
+4. **Fix**:
+   - If it's a crash, find the cause in `server.js`.
+   - Re-deploy or re-create the container if necessary.
+5. **Verify**:
+   - Use `curl -I http://localhost:8080` from the NAS to confirm it's back online.
+6. **Report**:
+   - Update `brain/health_report.md` with the incident details and fix.
+
+
+
+

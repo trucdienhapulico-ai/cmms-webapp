@@ -1,0 +1,17 @@
+[DOCUMENTATION TASK]
+Title: Disaster Recovery & Restore Guide
+Issue: #31
+Priority: HIGH
+
+## Objective
+Provide a clear manual for restoring the system from the backups created in Issue #30.
+
+## Tasks
+1. **Create RESTORE.md**:
+   - Step-by-step guide to cloning the repo.
+   - How to restore `db.json` and `.env` files from the backup folder.
+   - How to run `docker-compose up -d` to get the containers back online.
+2. **Verification**:
+   - Simulate a "Clean Install" environment and verify the steps work.
+3. **Emergency Contacts**:
+   - List critical service ports and credentials (environment variable names only).

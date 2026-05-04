@@ -49,6 +49,10 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
 - [x] **Health & Quality**:
     - Hệ thống Audit & Operational Health Check (Issue #26).
     - Premium Polish & Dark Mode (Issue #24).
+- [ ] **Emergency & Maintenance**:
+    - Emergency Stable Environment Debugging & Recovery (Issue #29).
+    - Full Project Backup & GitHub Checkpoint (Issue #30).
+    - Disaster Recovery & Restore Guide (Issue #31).
 
 ---
 
