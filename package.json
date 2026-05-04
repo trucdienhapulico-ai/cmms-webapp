@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "import-data": "node import.js --apply",
-    "import-data:dry": "node import.js"
+    "import-data:dry": "node import.js",
+    "backup": "node scripts/backup.js"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
