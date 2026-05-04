@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Báo Sự Cố – Cư Dân</title>
+<style>
+:root { --blue: #1e40af; --blue-light: #3b82f6; --green: #16a34a; --red: #dc2626; --border: #e2e8f0; --gray: #64748b; --text: #0f172a; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1e3a8a 0%, #0891b2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.card { background: white; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.logo { text-align: center; margin-bottom: 24px; }
+.logo h1 { font-size: 20px; font-weight: 800; color: var(--blue); }
+.logo p { font-size: 12px; color: var(--gray); margin-top: 4px; }
+.form-group { margin-bottom: 14px; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--gray); margin-bottom: 6px; }
+input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; font-family: inherit; }
+input:focus, select:focus, textarea:focus { border-color: var(--blue-light); }
+textarea { height: 90px; resize: vertical; }
+.btn { width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; background: var(--blue); color: white; margin-top: 8px; }
+.btn:hover { background: #1d3fa5; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.error { color: var(--red); font-size: 12px; margin-top: 6px; }
+.success-box { text-align: center; display: none; }
+.success-box .icon { font-size: 56px; margin-bottom: 16px; }
+.success-box h2 { color: var(--green); font-size: 20px; margin-bottom: 8px; }
+.success-box p { color: var(--gray); font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+.token-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-family: monospace; font-size: 14px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
+.track-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+.track-result { padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>🏗️ Báo Sự Cố</h1>
+    <p>Hệ thống báo sự cố cho cư dân – Hapucomplex</p>
+  </div>
+
+  <div id="form-section">
+    <div class="form-group">
+      <label>Họ tên *</label>
+      <input id="t-name" placeholder="Nguyễn Văn A" maxlength="80">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Số điện thoại</label>
+        <input id="t-phone" type="tel" placeholder="0901 234 567">
+      </div>
+      <div class="form-group">
+        <label>Căn hộ / Phòng</label>
+        <input id="t-unit" placeholder="A1201">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Loại sự cố *</label>
+      <select id="t-category">
+        <option value="">-- Chọn loại sự cố --</option>
+        <option>Điện</option>
+        <option>Nước</option>
+        <option>Thang máy</option>
+        <option>PCCC</option>
+        <option>Điều hòa</option>
+        <option>Cửa / Khóa</option>
+        <option>Internet / TV</option>
+        <option>Vệ sinh / Môi trường</option>
+        <option>Khác</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Mức độ khẩn cấp</label>
+      <select id="t-urgency">
+        <option value="normal">🟡 Bình thường (có thể chờ)</option>
+        <option value="urgent">🔴 Khẩn cấp (cần xử lý ngay)</option>
+        <option value="low">🟢 Không gấp</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Mô tả sự cố *</label>
+      <textarea id="t-desc" placeholder="Mô tả chi tiết vị trí và tình trạng sự cố..."></textarea>
+    </div>
+    <div id="form-error" class="error"></div>
+    <button class="btn" onclick="submitRequest()">📤 Gửi Yêu Cầu</button>
+
+    <div class="track-section">
+      <div style="font-size:13px;font-weight:600;color:var(--gray);margin-bottom:8px">🔍 Tra cứu trạng thái yêu cầu</div>
+      <div style="display:flex;gap:8px">
+        <input id="track-token" placeholder="Nhập mã theo dõi..." style="flex:1;font-size:13px">
+        <button onclick="trackRequest()" style="padding:10px 16px;border-radius:8px;border:none;background:var(--blue);color:white;font-weight:600;cursor:pointer;font-size:13px">Tra cứu</button>
+      </div>
+      <div id="track-result" class="track-result"></div>
+    </div>
+  </div>
+
+  <div class="success-box" id="success-section">
+    <div class="icon">✅</div>
+    <h2>Đã gửi yêu cầu!</h2>
+    <p>Đội kỹ thuật đã nhận được yêu cầu của bạn và sẽ xử lý sớm nhất có thể.</p>
+    <p>Mã theo dõi của bạn:</p>
+    <div class="token-box" id="result-token"></div>
+    <p style="font-size:12px;color:var(--gray)">Lưu mã này để tra cứu trạng thái yêu cầu phía trên.</p>
+    <button class="btn" onclick="resetForm()" style="margin-top:16px;background:#f1f5f9;color:var(--text)">Gửi yêu cầu khác</button>
+  </div>
+</div>
+
+<script>
+async function submitRequest() {
+  const name = document.getElementById('t-name').value.trim();
+  const phone = document.getElementById('t-phone').value.trim();
+  const unit = document.getElementById('t-unit').value.trim();
+  const category = document.getElementById('t-category').value;
+  const urgency = document.getElementById('t-urgency').value;
+  const description = document.getElementById('t-desc').value.trim();
+  const errEl = document.getElementById('form-error');
+  errEl.textContent = '';
+
+  if (!name) { errEl.textContent = 'Vui lòng nhập họ tên.'; return; }
+  if (!category) { errEl.textContent = 'Vui lòng chọn loại sự cố.'; return; }
+  if (!description) { errEl.textContent = 'Vui lòng mô tả sự cố.'; return; }
+
+  const btn = document.querySelector('.btn');
+  btn.disabled = true; btn.textContent = 'Đang gửi...';
+
+  try {
+    const res = await fetch('/api/tenant-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, unit, category, urgency, description })
+    });
+    const r = await res.json();
+    if (!r.ok) { errEl.textContent = r.error || 'Có lỗi xảy ra, thử lại sau.'; return; }
+    document.getElementById('result-token').textContent = r.data.token;
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-section').style.display = 'block';
+  } catch(e) {
+    errEl.textContent = 'Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.';
+  } finally {
+    btn.disabled = false; btn.textContent = '📤 Gửi Yêu Cầu';
+  }
+}
+
+async function trackRequest() {
+  const token = document.getElementById('track-token').value.trim();
+  const result = document.getElementById('track-result');
+  if (!token) return;
+  try {
+    const res = await fetch(`/api/tenant-requests/track/${token}`);
+    const r = await res.json();
+    if (!r.ok) {
+      result.style.display = 'block';
+      result.style.background = '#fef2f2';
+      result.style.border = '1px solid #fecaca';
+      result.innerHTML = '❌ Không tìm thấy yêu cầu với mã này.';
+      return;
+    }
+    const d = r.data;
+    const statusText = { pending: '🟡 Đang chờ xử lý', approved: '🟢 Đã tạo lệnh xử lý', rejected: '🔴 Không tiếp nhận' };
+    result.style.display = 'block';
+    result.style.background = '#f0fdf4';
+    result.style.border = '1px solid #bbf7d0';
+    result.innerHTML = `
+      <div style="font-weight:700;margin-bottom:6px">${statusText[d.status] || d.status}</div>
+      <div style="color:#475569"><b>Danh mục:</b> ${d.category}</div>
+      <div style="color:#475569;margin-top:4px"><b>Mô tả:</b> ${d.description}</div>
+      ${d.workOrderId ? `<div style="margin-top:6px;color:#16a34a"><b>Mã xử lý:</b> ${d.workOrderId}</div>` : ''}
+      <div style="font-size:11px;color:#64748b;margin-top:6px">Ngày gửi: ${new Date(d.createdAt).toLocaleDateString('vi-VN')}</div>
+    `;
+  } catch(e) {
+    result.style.display = 'block';
+    result.innerHTML = '❌ Lỗi kết nối.';
+  }
+}
+
+function resetForm() {
+  document.getElementById('form-section').style.display = 'block';
+  document.getElementById('success-section').style.display = 'none';
+  ['t-name','t-phone','t-unit','t-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('t-category').value = '';
+}
+</script>
+</body>
+</html>

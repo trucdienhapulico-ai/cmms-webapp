@@ -1,0 +1,27 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Comprehensive System Audit & Health Check
+Priority: High
+Issue: #26
+
+## Context
+- We have been developing very fast. We need to stop and re-check everything.
+- Use `server.js` and `public/index.html`.
+
+## Specific Tasks
+1. **Verification Loop**:
+   - Start the server locally.
+   - Use `curl` or automated scripts to verify:
+     - `/api/stats` returns valid JSON without `NaN`.
+     - `/api/work-orders` returns the list.
+     - `/api/inventory` shows correct stock levels.
+2. **UI Map Audit**:
+   - Open `renderUIMap()` and verify all links/codes work.
+3. **Bug Hunting**:
+   - Check the console for any Javascript errors.
+   - Fix any minor "undefined" or "null" display issues in the new KPI Dashboard.
+4. **Data Cleanup**:
+   - Ensure `db.json` doesn't have orphaned records (e.g., a WO pointing to a deleted asset).
+5. **Report**:
+   - Write a short summary of the "health status" in a new file `brain/health_report.md`.
+6. **Finish**:
+   - Commit any fixes, Push, Close Issue #26.

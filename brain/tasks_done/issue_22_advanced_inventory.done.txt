@@ -1,0 +1,31 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Implement Advanced Inventory - Purchase Orders & Vendors
+Priority: High
+Issue: #22
+
+## Context
+- Backend file: server.js
+- Frontend file: public/index.html
+- Data file: data/db.json
+
+## Specific Tasks
+1. **Backend - Schema**:
+   - In `initDB()` and `loadDB()`, add `vendors: []` and `purchaseOrders: []`.
+2. **Backend - APIs**:
+   - `GET /api/vendors`: List vendors.
+   - `POST /api/vendors`: Add vendor.
+   - `GET /api/purchase-orders`: List POs.
+   - `POST /api/purchase-orders`: Create PO.
+   - `PUT /api/purchase-orders/:id/status`: Update status (draft, sent, received).
+   - **Logic**: When status becomes 'received', iterate through `items` and update `inventory` stock levels (matching by SKU or Name).
+3. **Frontend - UI**:
+   - Update `navigate()` to include 'vendors' and 'purchaseorders'.
+   - Add "Mua hang" section in sidebar with two items: "Nha cung cap" and "Don mua hang".
+   - `renderVendors()`: CRUD for vendors.
+   - `renderPO()`: List and Create PO.
+4. **UI Map**:
+   - Add [UI-Inv-Vendors] and [UI-Inv-PO] to `renderUIMap()`.
+5. **Roadmap**:
+   - Check off "Advanced Inventory" in `brain/roadmap.md`.
+6. **Finish**:
+   - Commit, Push, Close Issue #22.

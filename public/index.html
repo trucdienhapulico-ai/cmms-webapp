@@ -14,13 +14,20 @@
   --gray: #64748b; --gray-bg: #f8fafc; --border: #e2e8f0;
   --text: #0f172a; --text2: #475569;
   --sidebar-w: 220px;
+  --surface: #ffffff; --surface-alt: #f8fafc; --border-row: #f1f5f9;
+}
+[data-theme='dark'] {
+  --gray-bg: #0f172a; --border: #334155;
+  --text: #f1f5f9; --text2: #94a3b8; --gray: #94a3b8;
+  --surface: #1e293b; --surface-alt: #0f172a; --border-row: #253047;
+  --blue-bg: #172554; --green-bg: #052e16; --red-bg: #450a0a; --yellow-bg: #451a03; --orange-light: #431407;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-bg); color: var(--text); font-size: 14px; }
 
 /* Login */
 #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e3a8a 0%, #0891b2 100%); }
-.login-box { background: white; border-radius: 16px; padding: 40px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.login-box { background: var(--surface); border-radius: 16px; padding: 40px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
 .login-logo { text-align: center; margin-bottom: 28px; }
 .login-logo h1 { font-size: 22px; font-weight: 800; color: var(--blue); }
 .login-logo p { font-size: 12px; color: var(--gray); margin-top: 4px; }
@@ -29,6 +36,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .form-group input, .form-group select, .form-group textarea {
   width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
   font-size: 14px; transition: border-color .2s; outline: none;
+  background: var(--surface); color: var(--text);
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue-light); }
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
@@ -46,7 +54,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #app { display: none; min-height: 100vh; }
 .sidebar {
   position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w);
-  background: #0f172a; color: white; overflow-y: auto; z-index: 100;
+  background: #0f172a; color: white; display: flex; flex-direction: column; z-index: 100;
 }
 .sidebar-logo { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .sidebar-logo h1 { font-size: 16px; font-weight: 800; color: white; }
@@ -63,18 +71,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .nav-logout { margin: 8px 12px; }
 
 .main { margin-left: var(--sidebar-w); min-height: 100vh; }
-.topbar { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
 .topbar-title { font-size: 18px; font-weight: 700; }
 .topbar-actions { display: flex; gap: 8px; }
 .page-body { padding: 24px 28px; }
 
 /* Cards */
-.card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 20px; }
+.card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 20px; }
 .card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
 
 /* Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
+.stat-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
 .stat-label { font-size: 11px; color: var(--gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-value { font-size: 32px; font-weight: 800; margin-top: 6px; }
 .stat-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
@@ -87,7 +95,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border-bottom: 2px solid var(--border); white-space: nowrap; }
-td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border-row); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--blue-bg); }
 
@@ -102,16 +110,17 @@ tr:hover td { background: var(--blue-bg); }
 .badge-low { background: #f0fdf4; color: var(--green); }
 .badge-active { background: var(--green-bg); color: var(--green); }
 .badge-inactive { background: #f1f5f9; color: var(--gray); }
+.badge-maintenance { background: #fef3c7; color: #d97706; }
 
 /* Filters */
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-.filter-bar input, .filter-bar select { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+.filter-bar input, .filter-bar select { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; background: var(--surface); color: var(--text); }
 .filter-bar input:focus, .filter-bar select:focus { border-color: var(--blue-light); }
 
 /* Modal */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-start; justify-content: center; padding-top: 60px; }
 .modal-overlay.open { display: flex; }
-.modal { background: white; border-radius: 14px; width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.modal { background: var(--surface); border-radius: 14px; width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
 .modal-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
 .modal-title { font-size: 16px; font-weight: 700; }
 .modal-close { cursor: pointer; font-size: 20px; color: var(--gray); background: none; border: none; }
@@ -122,7 +131,7 @@ tr:hover td { background: var(--blue-bg); }
 
 /* History */
 .history-list { list-style: none; }
-.history-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.history-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-row); font-size: 12px; }
 .history-item:last-child { border-bottom: none; }
 .history-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-light); margin-top: 4px; flex-shrink: 0; }
 .history-by { font-weight: 700; }
@@ -146,7 +155,7 @@ tr:hover td { background: var(--blue-bg); }
 /* ─── Bottom Navigation (mobile only) ───────────────────── */
 .bottom-nav {
   display: none; position: fixed; bottom: 0; left: 0; right: 0;
-  background: white; border-top: 1px solid var(--border);
+  background: var(--surface); border-top: 1px solid var(--border);
   z-index: 500; padding-bottom: env(safe-area-inset-bottom, 0px);
   box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
   height: 60px;
@@ -164,7 +173,7 @@ tr:hover td { background: var(--blue-bg); }
 .bnav-label { font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: 0.2px; }
 
 @media (max-width: 768px) {
-  .bottom-nav { display: flex; }
+  #app .bottom-nav { display: flex; }
   :root { --sidebar-w: 260px; }
   .sidebar {
     left: calc(-1 * var(--sidebar-w));
@@ -223,11 +232,11 @@ tr:hover td { background: var(--blue-bg); }
 }
 
 /* ─── Checklist Module ──────────────────────────────────────── */
-.cl-tabs { display:flex; background:#fff; border-bottom:2px solid var(--border); overflow-x:auto; -webkit-overflow-scrolling:touch; margin:-24px -28px 16px; }
+.cl-tabs { display:flex; background:var(--surface); border-bottom:2px solid var(--border); overflow-x:auto; -webkit-overflow-scrolling:touch; margin:-24px -28px 16px; }
 .cl-tab { flex:1; min-width:80px; padding:12px 8px; text-align:center; font-size:13px; font-weight:600; color:var(--gray); border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
 .cl-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
 .cl-tab span { font-size:18px; display:block; margin-bottom:3px; }
-.cl-summary-bar { background:#fff; border-radius:12px; border:1px solid var(--border); padding:14px 16px; margin-bottom:16px; display:flex; gap:8px; justify-content:space-around; }
+.cl-summary-bar { background:var(--surface); border-radius:12px; border:1px solid var(--border); padding:14px 16px; margin-bottom:16px; display:flex; gap:8px; justify-content:space-around; }
 .sum-item { text-align:center; }
 .sum-num { font-size:24px; font-weight:800; }
 .sum-label { font-size:11px; color:var(--gray); margin-top:2px; }
@@ -235,25 +244,25 @@ tr:hover td { background: var(--blue-bg); }
 .sum-caution .sum-num { color:var(--orange); }
 .sum-fail .sum-num { color:var(--red); }
 .sum-total .sum-num { color:var(--blue); }
-.checklist-card { background:#fff; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+.checklist-card { background:var(--surface); border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
 .checklist-card .card-header { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); background:var(--gray-bg); }
 .checklist-card .card-header h3 { font-size:14px; font-weight:700; color:var(--text); }
 .checklist-card .card-sub { font-size:12px; color:var(--gray); margin-top:2px; }
 .progress-ring { font-size:13px; font-weight:700; color:var(--blue); }
-.checklist-item { padding:12px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:flex-start; gap:10px; }
+.checklist-item { padding:12px 16px; border-bottom:1px solid var(--border-row); display:flex; align-items:flex-start; gap:10px; }
 .checklist-item:last-child { border-bottom:none; }
 .item-label { flex:1; font-size:14px; line-height:1.4; padding-top:2px; }
 .item-unit { font-size:12px; color:var(--gray); }
 .status-group { display:flex; gap:4px; flex-shrink:0; }
-.status-btn { padding:5px 10px; border-radius:20px; border:1.5px solid var(--border); background:#fff; font-size:12px; font-weight:600; color:var(--gray); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+.status-btn { padding:5px 10px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; color:var(--gray); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
 .status-btn:hover { border-color:var(--blue-light); color:var(--blue); }
 .status-btn.ok.selected { background:var(--green-bg); border-color:var(--green); color:var(--green); }
 .status-btn.caution.selected { background:var(--yellow-bg); border-color:var(--yellow); color:var(--yellow); }
 .status-btn.fail.selected { background:var(--red-bg); border-color:var(--red); color:var(--red); }
-.item-input { width:72px; padding:5px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; text-align:right; outline:none; }
+.item-input { width:72px; padding:5px 8px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; text-align:right; outline:none; background:var(--surface); color:var(--text); }
 .item-input:focus { border-color:var(--blue-light); }
-.cl-section-divider { padding:7px 16px; background:var(--gray-bg); border-bottom:1px solid #f1f5f9; font-size:11px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; }
-.cl-history-item { background:#fff; border-radius:10px; border:1px solid var(--border); padding:14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+.cl-section-divider { padding:7px 16px; background:var(--gray-bg); border-bottom:1px solid var(--border-row); font-size:11px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; }
+.cl-history-item { background:var(--surface); border-radius:10px; border:1px solid var(--border); padding:14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
 .cl-history-item:hover { border-color:var(--blue-light); }
 .cl-history-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
 .cl-history-date { font-weight:700; font-size:14px; }
@@ -267,7 +276,7 @@ tr:hover td { background: var(--blue-bg); }
 .equip-badge { font-size:11px; padding:2px 8px; border-radius:20px; background:var(--blue-bg); color:var(--blue); font-weight:600; }
 .detail-section { margin-bottom:16px; }
 .detail-section h4 { font-size:12px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-.detail-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
+.detail-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border-row); font-size:14px; }
 .detail-item:last-child { border-bottom:none; }
 .detail-item .di-label { flex:1; color:var(--text2); }
 .detail-status { font-size:12px; padding:3px 10px; border-radius:20px; font-weight:600; }
@@ -291,7 +300,7 @@ tr:hover td { background: var(--blue-bg); }
   .table-wrap table { min-width: 0; width: 100%; }
   .table-wrap table thead { display: none; }
   .table-wrap table tr {
-    display: block; background: white;
+    display: block; background: var(--surface);
     border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     border-left: none; border-right: none; border-radius: 0;
     margin-bottom: 8px;
@@ -299,7 +308,7 @@ tr:hover td { background: var(--blue-bg); }
   .table-wrap table tr:hover td { background: transparent; }
   .table-wrap table td {
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 9px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px;
+    padding: 9px 14px; border-bottom: 1px solid var(--border-row); font-size: 13px;
   }
   .table-wrap table td:last-child { border-bottom: none; }
   .table-wrap table td::before {
@@ -323,10 +332,10 @@ tr:hover td { background: var(--blue-bg); }
 
 /* ─── Asset Detail Page ──────────────────────────────────────── */
 .asset-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-.asset-detail-field { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.asset-detail-field { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
 .asset-detail-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .asset-detail-value { font-size: 14px; font-weight: 600; color: var(--text); }
-.qr-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
+.qr-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
 .qr-card svg { max-width: 180px; height: auto; }
 .qr-url { font-size: 11px; color: var(--gray); margin-top: 8px; word-break: break-all; }
 @media (max-width: 768px) {
@@ -337,7 +346,7 @@ tr:hover td { background: var(--blue-bg); }
 }
 
 /* ─── QR Scanner ─────────────────────────────────────────────── */
-.scanner-container { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+.scanner-container { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
 #qr-reader { width: 100%; }
 #qr-reader video { border-radius: 8px; }
 #html5-qrcode-button-camera-permission,
@@ -353,15 +362,15 @@ tr:hover td { background: var(--blue-bg); }
 .scan-hint { text-align: center; padding: 16px; color: var(--gray); font-size: 13px; }
 
 /* ─── Checklist Modal ────────────────────────────────────────── */
-.cl-modal-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 12px; }
+.cl-modal-item { padding: 12px 0; border-bottom: 1px solid var(--border-row); display: flex; align-items: flex-start; gap: 12px; }
 .cl-modal-item:last-child { border-bottom: none; }
 .cl-modal-label { flex: 1; font-size: 14px; padding-top: 8px; }
 .cl-modal-unit { font-size: 11px; color: var(--gray); }
-.cl-modal-input { width: 90px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; }
+.cl-modal-input { width: 90px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; background: var(--surface); color: var(--text); }
 .cl-modal-input:focus { border-color: var(--blue-light); outline: none; }
-.cl-text-input { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; margin-top: 4px; }
+.cl-text-input { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; margin-top: 4px; background: var(--surface); color: var(--text); }
 .cl-text-input:focus { border-color: var(--blue-light); outline: none; }
-.mlog-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.mlog-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
 .mlog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .mlog-title { font-weight: 700; font-size: 14px; }
 .mlog-meta { font-size: 11px; color: var(--gray); }
@@ -379,6 +388,80 @@ tr:hover td { background: var(--blue-bg); }
 }
 .bnav-scan-btn .bnav-icon { font-size: 22px; }
 .bnav-scan-btn.active { background: var(--blue-dark); }
+
+/* ─── PM Calendar ───────────────────────────────────────────── */
+.pm-tabs { display:flex; gap:8px; margin-bottom:20px; }
+.pm-tab { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); color:var(--text2); transition:all .15s; background:var(--surface); }
+.pm-tab.active { background:var(--blue); color:white; border-color:var(--blue); }
+.pm-cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.pm-cal-title { font-size:17px; font-weight:700; }
+.pm-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.pm-cal-header { font-size:11px; font-weight:700; color:var(--gray); text-align:center; padding:8px 0; text-transform:uppercase; }
+.pm-cal-cell { min-height:80px; border:1px solid var(--border); border-radius:8px; padding:6px; background:var(--surface); cursor:pointer; transition:border-color .15s; overflow:hidden; }
+.pm-cal-cell:hover { border-color:var(--blue-light); background:var(--blue-bg); }
+.pm-cal-cell.today { border-color:var(--blue); border-width:2px; }
+.pm-cal-cell.other-month { background:var(--gray-bg); opacity:0.5; cursor:default; }
+.pm-cal-cell.other-month:hover { border-color:var(--border); background:var(--gray-bg); }
+.pm-cal-day { font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text); }
+.pm-cal-cell.today .pm-cal-day { color:var(--blue); }
+.pm-badge { font-size:10px; padding:2px 5px; border-radius:10px; margin-bottom:2px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; display:block; line-height:1.4; }
+.pm-badge-upcoming { background:#dbeafe; color:#1e40af; }
+.pm-badge-overdue { background:#fee2e2; color:var(--red); font-weight:700; }
+.pm-badge-today { background:#dcfce7; color:var(--green); font-weight:700; }
+@media (max-width:768px) {
+  .pm-cal-cell { min-height:44px; padding:4px; }
+  .pm-badge { display:none; }
+  .pm-cal-cell.has-pm .pm-cal-day::after { content:' •'; color:var(--blue); }
+  .pm-cal-cell.has-overdue .pm-cal-day::after { color:var(--red); }
+}
+/* ─── Template Library ──────────────────────────────────────── */
+.tpl-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.tpl-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.tpl-card-name { font-weight:700; font-size:15px; margin-bottom:4px; }
+.tpl-card-cat { font-size:11px; color:var(--gray); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+.tpl-item-list { list-style:none; padding:0; margin:0 0 12px; }
+.tpl-item-list li { font-size:12px; color:var(--text2); padding:3px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px; }
+.tpl-item-list li:last-child { border-bottom:none; }
+.tpl-item-type { font-size:10px; padding:1px 5px; border-radius:8px; background:var(--gray-bg); color:var(--gray); font-weight:600; flex-shrink:0; }
+.tpl-form-items { border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.tpl-form-item { display:grid; grid-template-columns:1fr auto auto 28px; gap:6px; padding:8px; border-bottom:1px solid var(--border); align-items:center; }
+.tpl-form-item:last-child { border-bottom:none; }
+.tpl-form-item input, .tpl-form-item select { font-size:13px; }
+.tpl-add-item-btn { display:flex; align-items:center; gap:6px; padding:8px 12px; font-size:13px; color:var(--blue); cursor:pointer; background:none; border:none; }
+.tpl-add-item-btn:hover { background:var(--blue-bg); }
+.tpl-form-item input, .tpl-form-item select { background:var(--surface); color:var(--text); }
+#html5-qrcode-select-camera { background:var(--surface); color:var(--text); }
+
+/* ─── Theme Transitions ──────────────────────────────────────── */
+body { transition: background-color 0.3s ease, color 0.3s ease; }
+.topbar, .card, .stat-card, .modal, .bottom-nav,
+.checklist-card, .cl-summary-bar, .cl-tabs, .cl-history-item,
+.mlog-item, .pm-tab, .pm-cal-cell, .tpl-card,
+.asset-detail-field, .qr-card, .scanner-container,
+.form-group input, .form-group select, .form-group textarea,
+.filter-bar input, .filter-bar select {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ─── Card Hover Effects ─────────────────────────────────────── */
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.tpl-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.cl-history-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+/* ─── Dark Mode Extra Overrides ──────────────────────────────── */
+[data-theme='dark'] .checklist-card .card-header { background: var(--surface-alt); }
+[data-theme='dark'] .cl-section-divider { background: var(--surface-alt); }
+[data-theme='dark'] #notif-panel { background: var(--surface) !important; }
+[data-theme='dark'] .table-wrap table td[data-label=""] { background: var(--surface-alt); }
+[data-theme='dark'] .tpl-form-items { background: var(--surface); border-color: var(--border); }
+[data-theme='dark'] .tpl-item-list li { border-bottom-color: var(--border); }
+[data-theme='dark'] th { color: var(--text2); border-bottom-color: var(--border); }
+[data-theme='dark'] tr:hover td { background: var(--blue-bg); }
+[data-theme='dark'] .btn-ghost { color: var(--text2); border-color: var(--border); }
+[data-theme='dark'] .btn-ghost:hover { background: var(--surface-alt); }
+[data-theme='dark'] .modal-overlay { background: rgba(0,0,0,0.7); }
+[data-theme='dark'] .login-box { box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -393,13 +476,17 @@ tr:hover td { background: var(--blue-bg); }
     </div>
     <div class="form-group">
       <label>Tên đăng nhập</label>
-      <input type="text" id="login-username" placeholder="admin" autocomplete="username">
+      <input type="text" id="login-username" placeholder="Nhập tài khoản" autocomplete="username">
     </div>
     <div class="form-group">
       <label>Mật khẩu</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <div id="login-error" class="error-msg"></div>
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px;">
+      <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; cursor: pointer;">
+      <label for="login-remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
+    </div>
+    <div id="login-error" class="error-msg" style="display:none; color: var(--red); font-size: 12px; margin-top: 12px; font-weight: 600;"></div>
     <br>
     <button class="btn btn-primary btn-full" onclick="doLogin()">Đăng nhập</button>
   </div>
@@ -407,32 +494,53 @@ tr:hover td { background: var(--blue-bg); }
 
 <!-- APP -->
 <div id="app">
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>🔧 CMMS</h1>
       <p>Bảo trì Cơ điện</p>
     </div>
-    <div class="sidebar-user">
-      <div class="sidebar-user-name" id="sidebar-name"></div>
-      <div class="sidebar-user-role" id="sidebar-role"></div>
+    <div class="sidebar-user" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div class="sidebar-user-name" id="sidebar-name" style="font-size: 13px; font-weight: 600;"></div>
+          <div class="sidebar-user-role" id="sidebar-role" style="font-size: 10px; color: rgba(255,255,255,0.5);"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+      </div>
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Tổng quan</div>
-      <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+    
+    <div style="flex: 1; overflow-y: auto;">
+      <div class="nav-section">
+        <div class="nav-section-title">Vận hành</div>
+        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
+        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
+        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
+        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
+        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
+        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
+        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
+        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
+        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
+      </div>
+      
+      <div class="nav-section" id="admin-menu" style="display:none">
+        <div class="nav-section-title">Quản trị</div>
+        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
+        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
+        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
+        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
+        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span>Phát hành (Staging)</span></div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Hỗ trợ</div>
+        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
+      </div>
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Vận hành</div>
-      <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
-      <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
-      <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
-      <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
-    </div>
-    <div class="nav-section" id="admin-menu" style="display:none">
-      <div class="nav-section-title">Quản trị</div>
-      <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
-    </div>
-    <div class="nav-logout">
-      <button class="btn btn-ghost btn-full btn-sm" onclick="doLogout()" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)">Đăng xuất</button>
+
+    <div class="sidebar-footer" style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 9px; color: rgba(255,255,255,0.3);">
+      <span id="app-version">v1.3.5</span> <span id="env-tag"></span>
     </div>
   </div>
 
@@ -443,13 +551,22 @@ tr:hover td { background: var(--blue-bg); }
         <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none; padding:4px 8px; font-size:18px" onclick="toggleSidebar()">☰</button>
         <div class="topbar-title" id="page-title">Dashboard</div>
       </div>
-      <div class="topbar-actions" id="topbar-actions"></div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <button id="theme-toggle-btn" class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Giao diện Tối / Sáng" style="padding:4px 8px; font-size:18px; line-height:1; border-radius:8px;">🌙</button>
+        <div id="notif-bell" style="display:none; position:relative; cursor:pointer" onclick="toggleNotifPanel()">
+          <span style="font-size:20px">🔔</span>
+          <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">0</span>
+        </div>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </div>
     </div>
+    <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:320px;max-height:420px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:300;padding:12px"></div>
     <div class="page-body" id="page-body"></div>
   </div>
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
     <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
+    <div class="bnav-item" onclick="navigate('pm')"><span class="bnav-icon">📅</span><span class="bnav-label">PM</span></div>
     <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
     <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
   </nav>
@@ -470,6 +587,22 @@ tr:hover td { background: var(--blue-bg); }
 <div id="toast"></div>
 
 <script>
+// ─── Theme ───────────────────────────────────────────────────
+(function() {
+  const saved = localStorage.getItem('cmms-theme');
+  if (saved === 'dark') document.documentElement.dataset.theme = 'dark';
+})();
+
+function toggleTheme() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next === 'dark' ? 'dark' : '';
+  if (next === 'light') delete document.documentElement.dataset.theme;
+  localStorage.setItem('cmms-theme', next);
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
 // ─── State ───────────────────────────────────────────────────
 let currentUser = null;
 let currentPage = 'dashboard';
@@ -500,12 +633,35 @@ function toast(msg, type = '') {
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
+  const remember = document.getElementById('login-remember').checked;
+  const errorEl = document.getElementById('login-error');
+  
+  errorEl.style.display = 'none';
   const r = await api('POST', '/api/login', { username, password });
+  
   if (r.ok) {
     currentUser = r.data;
+    localStorage.removeItem('cmms-p');
+    if (remember) {
+      localStorage.setItem('cmms-remember', 'true');
+      localStorage.setItem('cmms-u', username);
+    } else {
+      localStorage.removeItem('cmms-remember');
+      localStorage.removeItem('cmms-u');
+    }
     showApp();
   } else {
-    document.getElementById('login-error').textContent = r.error;
+    errorEl.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
+    errorEl.style.display = 'block';
+  }
+}
+
+function loadSavedCredentials() {
+  localStorage.removeItem('cmms-p');
+  if (localStorage.getItem('cmms-remember') === 'true') {
+    const u = localStorage.getItem('cmms-u');
+    if (u) document.getElementById('login-username').value = u;
+    document.getElementById('login-remember').checked = true;
   }
 }
 document.getElementById('login-password').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
@@ -516,13 +672,29 @@ async function doLogout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
-
-function showApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+async function showApp() {
+  const loginScreen = document.getElementById('login-screen');
+  const appContainer = document.getElementById('app');
+  
+  if (loginScreen) loginScreen.style.setProperty('display', 'none', 'important');
+  if (appContainer) appContainer.style.display = 'flex';
+  
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
   document.getElementById('sidebar-name').textContent = currentUser.name;
   document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
-  if (['admin', 'manager'].includes(currentUser.role)) document.getElementById('admin-menu').style.display = 'block';
+  if (['admin', 'manager'].includes(currentUser.role)) {
+    document.getElementById('admin-menu').style.display = 'block';
+    // Show notification bell
+    document.getElementById('notif-bell').style.display = 'block';
+    loadNotifBell();
+    setInterval(loadNotifBell, 60000); // refresh every 60s
+  }
+  
+  // Fetch app meta info
+  const meta = await api('GET', '/api/system/info');
+  if (meta.ok) console.log('Environment:', meta.data.env, 'Version:', meta.data.version);
+  
   if (pendingAssetId) {
     const id = pendingAssetId;
     pendingAssetId = null;
@@ -550,20 +722,33 @@ function navigate(page, param = null) {
   const titles = {
     dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
     users: 'Quản lý Người dùng', scan: 'Quét QR',
-    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì'
+    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
+    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
+    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
+    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)',
+    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)',
+    integration: 'Kết nối BMS/IoT', release: 'Quản lý Phát hành (Staging & Release)'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
   const actions = {
     workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>',
     assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
     users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
-    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>'
+    inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
+    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>',
+    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>',
+    vendors: '<button class="btn btn-primary btn-sm" onclick="showVendorForm()">+ Thêm NCC</button>',
+    purchaseorders: '<button class="btn btn-primary btn-sm" onclick="showPOForm()">+ Tạo đơn mua</button>'
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
     dashboard: renderDashboard, workorders: renderWorkOrders, assets: renderAssets,
     users: renderUsers, scan: renderScan, assetDetail: () => renderAssetDetail(currentAssetId),
-    mlogs: renderMaintenanceLogs
+    mlogs: renderMaintenanceLogs, pm: renderPM, uimap: renderUIMap,
+    inventory: renderInventory, tenantportal: renderTenantPortal,
+    shifts: renderShifts, auditlog: renderAuditLog,
+    vendors: renderVendors, purchaseorders: renderPO,
+    integration: renderIntegration, release: renderRelease
   };
   (renders[page] || (() => {}))();
 
@@ -593,10 +778,477 @@ function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDat
 function fmtDateShort(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 function isOverdue(dueDate, status) { return dueDate && status !== 'done' && new Date(dueDate) < new Date(); }
 
+// ─── SHIFTS / HR ─────────────────────────────────────────────
+let _shiftsWeekOffset = 0;
+let _shiftsTab = 'calendar';
+
+function _weekBounds(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  d.setHours(0, 0, 0, 0);
+  const from = d.toISOString().slice(0, 10);
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  const to = end.toISOString().slice(0, 10);
+  const label = `${from.slice(8)}.${from.slice(5,7)} – ${to.slice(8)}.${to.slice(5,7)}`;
+  return { from, to, label };
+}
+
+function _dayLabel(dateStr) {
+  const days = ['CN','T2','T3','T4','T5','T6','T7'];
+  const d = new Date(dateStr + 'T12:00:00');
+  return days[d.getDay()] + ' ' + dateStr.slice(8) + '/' + dateStr.slice(5,7);
+}
+
+async function renderShifts() {
+  const wb = _weekBounds(_shiftsWeekOffset);
+  const today = new Date().toISOString().slice(0, 10);
+  let days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(wb.from + 'T12:00:00');
+    d.setDate(d.getDate() + i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  const calActive = _shiftsTab === 'calendar';
+  const wlActive = _shiftsTab === 'workload';
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn ${calActive ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="_shiftsTab='calendar';renderShifts()">📆 Lịch trực tuần</button>
+        <button class="btn ${wlActive ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="_shiftsTab='workload';renderShifts()">📊 Workload</button>
+      </div>
+    </div>
+    <div id="shifts-body"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải...</p></div></div>`;
+
+  if (_shiftsTab === 'calendar') {
+    const r = await api('GET', `/api/shifts?from=${wb.from}&to=${wb.to}`);
+    const shifts = r.data || [];
+    const shiftTypes = [
+      { key: 'morning', label: 'Sáng 6–14h' },
+      { key: 'afternoon', label: 'Chiều 14–22h' },
+      { key: 'night', label: 'Đêm 22–6h' }
+    ];
+    const isOp = currentUser.role === 'operator';
+    const canManage = ['admin', 'manager'].includes(currentUser.role);
+
+    const headerCells = days.map(d => {
+      const isToday = d === today;
+      return `<th style="${isToday ? 'background:rgba(59,130,246,0.08);font-weight:700' : ''}">${_dayLabel(d)}</th>`;
+    }).join('');
+
+    const rows = shiftTypes.map(st => {
+      const cells = days.map(d => {
+        const cell = shifts.filter(s => s.date === d && s.shiftType === st.key);
+        const content = cell.map(s => {
+          const isMe = s.userId === currentUser.id;
+          const badge = s.status === 'checked-in' ? '<span style="background:#16a34a;color:#fff;border-radius:4px;padding:1px 5px;font-size:10px">● Check-in</span>'
+            : s.status === 'checked-out' ? '<span style="background:#64748b;color:#fff;border-radius:4px;padding:1px 5px;font-size:10px">✓ Xong</span>'
+            : '<span style="background:#e2e8f0;color:#475569;border-radius:4px;padding:1px 5px;font-size:10px">Lịch</span>';
+          const actions = isOp && isMe
+            ? (s.status === 'scheduled' ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;margin-top:3px" onclick="shiftCheckIn('${s.id}')">Check-in</button>`
+              : s.status === 'checked-in' ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;margin-top:3px" onclick="shiftCheckOut('${s.id}')">Check-out</button>`
+              : '') : '';
+          const del = canManage ? `<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 4px;color:var(--red)" onclick="deleteShift('${s.id}')">✕</button>` : '';
+          return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:12px">
+            <div style="font-weight:600;display:flex;justify-content:space-between;align-items:center">${s.userName} ${del}</div>
+            <div>${badge}</div>${actions}</div>`;
+        }).join('');
+        const addBtn = canManage ? `<button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px;margin-top:2px;color:#3b82f6" onclick="showShiftForm({date:'${d}',shiftType:'${st.key}'})">+ Thêm</button>` : '';
+        return `<td style="vertical-align:top;min-width:110px;padding:6px 5px">${content}${addBtn}</td>`;
+      }).join('');
+      return `<tr><td style="white-space:nowrap;font-size:12px;font-weight:600;padding:8px 10px;background:#f1f5f9">${st.label}</td>${cells}</tr>`;
+    }).join('');
+
+    document.getElementById('shifts-body').innerHTML = `
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="_shiftsWeekOffset--;renderShifts()">← Tuần trước</button>
+          <span style="font-weight:700;font-size:15px">Tuần ${wb.label}</span>
+          <button class="btn btn-ghost btn-sm" onclick="_shiftsWeekOffset++;renderShifts()">Tuần sau →</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#f8fafc"><th style="text-align:left;padding:8px 10px;font-size:12px;min-width:80px">Ca / Ngày</th>${headerCells}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } else {
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const r = await api('GET', `/api/shifts/workload?month=${month}`);
+    const data = r.data || [];
+    const rows = data.map(u => {
+      const overStyle = u.totalHours > 160 ? 'background:#fee2e2' : u.totalHours < 80 && u.totalShifts > 0 ? 'background:#fef3c7' : '';
+      return `<tr style="${overStyle}">
+        <td data-label="Tên KTV" style="font-weight:600">${u.userName}</td>
+        <td data-label="Số ca">${u.totalShifts}</td>
+        <td data-label="Giờ công" style="color:${u.totalHours>160?'var(--red)':u.totalHours<80&&u.totalShifts>0?'#d97706':'inherit'}">${u.totalHours}h</td>
+        <td data-label="WO đang làm">${u.activeWOs}</td>
+        <td data-label="WO xong">${u.completedWOs}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('shifts-body').innerHTML = `
+      <div class="card">
+        <div class="card-title">📊 Workload KTV – Tháng ${month}</div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table><thead><tr><th>Tên KTV</th><th>Số ca</th><th>Giờ công</th><th>WO đang làm</th><th>WO xong</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:var(--text2)">Không có dữ liệu</td></tr>'}</tbody></table>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:12px">
+          <span style="display:inline-block;width:12px;height:12px;background:#fee2e2;border:1px solid #fca5a5;vertical-align:middle;margin-right:4px"></span>Quá tải (>160h) &nbsp;
+          <span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1px solid #fcd34d;vertical-align:middle;margin-right:4px"></span>Dưới mức (<80h)
+        </div>
+      </div>`;
+  }
+}
+
+async function showShiftForm(prefill = {}) {
+  const ur = await api('GET', '/api/users');
+  const operators = (ur.data || []).filter(u => u.role === 'operator' || u.role === 'admin' || u.role === 'manager');
+  const optUsers = operators.map(u => `<option value="${u.id}" data-name="${u.name||u.username}" ${prefill.userId===u.id?'selected':''}>${u.name||u.username} (${u.role})</option>`).join('');
+  const today = new Date().toISOString().slice(0, 10);
+  const body = `
+    <div class="form-group"><label>Kỹ thuật viên</label>
+      <select id="sf-user">${optUsers}</select></div>
+    <div class="form-group"><label>Ngày</label>
+      <input type="date" id="sf-date" value="${prefill.date || today}"></div>
+    <div class="form-group"><label>Loại ca</label>
+      <select id="sf-type">
+        <option value="morning" ${prefill.shiftType==='morning'?'selected':''}>Sáng (6:00–14:00)</option>
+        <option value="afternoon" ${prefill.shiftType==='afternoon'?'selected':''}>Chiều (14:00–22:00)</option>
+        <option value="night" ${prefill.shiftType==='night'?'selected':''}>Đêm (22:00–6:00)</option>
+      </select></div>
+    <div class="form-group"><label>Ghi chú</label>
+      <textarea id="sf-notes" rows="2" placeholder="Ghi chú (tùy chọn)"></textarea></div>`;
+  openModal('Tạo ca trực', body, `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">Hủy</button>
+    <button class="btn btn-primary btn-sm" onclick="_saveShift()">Lưu ca</button>`);
+}
+
+async function _saveShift() {
+  const sel = document.getElementById('sf-user');
+  const userId = sel.value;
+  const userName = sel.options[sel.selectedIndex]?.getAttribute('data-name') || userId;
+  const date = document.getElementById('sf-date').value;
+  const shiftType = document.getElementById('sf-type').value;
+  const notes = document.getElementById('sf-notes').value;
+  if (!userId || !date) return toast('Vui lòng điền đầy đủ thông tin');
+  const r = await api('POST', '/api/shifts', { userId, userName, date, shiftType, notes });
+  if (r.ok) { closeModal(); toast('Đã tạo ca trực'); renderShifts(); }
+  else toast('Lỗi: ' + r.error);
+}
+
+async function shiftCheckIn(id) {
+  const r = await api('POST', `/api/shifts/${id}/check-in`, {});
+  if (r.ok) { toast('Đã check-in'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
+
+async function shiftCheckOut(id) {
+  const r = await api('POST', `/api/shifts/${id}/check-out`, {});
+  if (r.ok) { toast('Đã check-out'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
+
+async function deleteShift(id) {
+  if (!confirm('Xóa ca trực này?')) return;
+  const r = await api('DELETE', `/api/shifts/${id}`);
+  if (r.ok) { toast('Đã xóa'); renderShifts(); } else toast('Lỗi: ' + r.error);
+}
+
+// ─── UI MAP ──────────────────────────────────────────────────
+function renderUIMap() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="card">
+      <div class="card-title">Sơ đồ Giao diện & Góp ý (UI Map)</div>
+      <p style="margin-bottom: 16px; color: var(--text2); line-height: 1.6; font-size: 13px;">
+        <strong>💡 Hướng dẫn góp ý:</strong> Nếu bạn muốn thay đổi hoặc sửa lỗi ở một khu vực nào trên web, vui lòng tìm khu vực đó trong bảng dưới đây và bấm <strong>Copy mã định vị</strong>. Hãy dán mã đó vào yêu cầu của bạn để AI (Antigravity/Claude) hiểu chính xác chỗ cần sửa nhé!
+      </p>
+      <div style="background: var(--blue-bg); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: var(--blue-dark); border: 1px dashed var(--blue-light);">
+        <strong>Quy ước nội bộ (Dành cho Dev/AI):</strong> Bất cứ khi nào bổ sung màn hình mới, thêm nút mới hoặc cấu trúc lại giao diện, BẮT BUỘC phải cập nhật bảng Sơ đồ UI này!
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Khu vực (View)</th>
+              <th>Thành phần (Component)</th>
+              <th>Mã định vị (Copy)</th>
+              <th>Mô tả / Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Khu vực">Menu Trái (Sidebar)</td>
+              <td data-label="Thành phần">Tất cả các nút điều hướng</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Sidebar-Nav]'); toast('Đã copy mã: [UI-Sidebar-Nav]')" style="font-family: monospace; font-size: 11px">[UI-Sidebar-Nav] 📋</button>
+              </td>
+              <td data-label="Mô tả">Menu chính bên trái màn hình (Dashboard, Thiết bị, PM...)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Menu Dưới (Bottom Nav)</td>
+              <td data-label="Thành phần">Các nút điều hướng (Mobile)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-BottomNav]'); toast('Đã copy mã: [UI-BottomNav]')" style="font-family: monospace; font-size: 11px">[UI-BottomNav] 📋</button>
+              </td>
+              <td data-label="Mô tả">Menu nằm dưới cùng khi xem trên điện thoại di động</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Dashboard</td>
+              <td data-label="Thành phần">Thống kê tổng quan</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Dash-Stats]'); toast('Đã copy mã: [UI-Dash-Stats]')" style="font-family: monospace; font-size: 11px">[UI-Dash-Stats] 📋</button>
+              </td>
+              <td data-label="Mô tả">Các ô màu vuông báo cáo tổng số Thiết bị, Work Order...</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Dashboard</td>
+              <td data-label="Thành phần">KPI Cards (MTTR, MTBF, PM Compliance, Overdue Rate)</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Dash-KPI]'); toast('Đã copy mã: [UI-Dash-KPI]')" style="font-family: monospace; font-size: 11px">[UI-Dash-KPI] 📋</button></td>
+              <td data-label="Mô tả">4 ô chỉ số KPI bảo trì: MTTR (giờ), MTBF (ngày), PM Compliance (%), Tỷ lệ WO quá hạn (%)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Dashboard</td>
+              <td data-label="Thành phần">Biểu đồ xu hướng 6 tháng</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Dash-Charts]'); toast('Đã copy mã: [UI-Dash-Charts]')" style="font-family: monospace; font-size: 11px">[UI-Dash-Charts] 📋</button></td>
+              <td data-label="Mô tả">Biểu đồ cột SVG hiển thị WO tạo, WO hoàn thành, sự cố theo tháng trong 6 tháng gần nhất</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lệnh Công việc</td>
+              <td data-label="Thành phần">Bảng danh sách Lệnh</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-WO-Table]'); toast('Đã copy mã: [UI-WO-Table]')" style="font-family: monospace; font-size: 11px">[UI-WO-Table] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng hiển thị các WO đang mở / hoàn thành / quá hạn</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lệnh Công việc</td>
+              <td data-label="Thành phần">Cửa sổ Tạo/Sửa Lệnh</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-WO-Form]'); toast('Đã copy mã: [UI-WO-Form]')" style="font-family: monospace; font-size: 11px">[UI-WO-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Cửa sổ Modal bật lên khi bấm nút + Tạo mới WO</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Danh sách thiết bị (Tree View)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Tree]'); toast('Đã copy mã: [UI-Asset-Tree]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Tree] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng danh sách thiết bị hiển thị theo thụt lề cấp bậc cha-con</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Cửa sổ Tạo/Sửa Thiết bị</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Form]'); toast('Đã copy mã: [UI-Asset-Form]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Cửa sổ bật lên khi bấm + Thêm hoặc Sửa thông tin thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Lịch Bảo trì (Calendar View)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Calendar]'); toast('Đã copy mã: [UI-PM-Calendar]')" style="font-family: monospace; font-size: 11px">[UI-PM-Calendar] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện lịch tháng hiển thị các kế hoạch PM sắp tới</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Thư viện Template Checklist</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Templates]'); toast('Đã copy mã: [UI-PM-Templates]')" style="font-family: monospace; font-size: 11px">[UI-PM-Templates] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện quản lý các biểu mẫu kiểm tra bảo trì chuẩn</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quét QR & Checklist</td>
+              <td data-label="Thành phần">Màn hình Quét Camera</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-QR-Scanner]'); toast('Đã copy mã: [UI-QR-Scanner]')" style="font-family: monospace; font-size: 11px">[UI-QR-Scanner] 📋</button>
+              </td>
+              <td data-label="Mô tả">Giao diện bật camera để quét mã vạch thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quét QR & Checklist</td>
+              <td data-label="Thành phần">Form Điền Checklist (Điện thoại)</td>
+              <td data-label="Mã định vị">
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Checklist-Form]'); toast('Đã copy mã: [UI-Checklist-Form]')" style="font-family: monospace; font-size: 11px">[UI-Checklist-Form] 📋</button>
+              </td>
+              <td data-label="Mô tả">Bảng câu hỏi kiểm tra sau khi kỹ thuật viên quét mã QR</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Đăng nhập</td>
+              <td data-label="Thành phần">Màn hình Login</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Login]'); toast('Đã copy mã: [UI-Login]')" style="font-family: monospace; font-size: 11px">[UI-Login] 📋</button></td>
+              <td data-label="Mô tả">Form nhập username/password khi chưa đăng nhập</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Thanh tiêu đề + nút hành động</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Topbar]'); toast('Đã copy mã: [UI-Topbar]')" style="font-family: monospace; font-size: 11px">[UI-Topbar] 📋</button></td>
+              <td data-label="Mô tả">Thanh ngang phía trên hiển thị tiêu đề trang và nút hành động</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Chuông thông báo</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Notif-Bell]'); toast('Đã copy mã: [UI-Notif-Bell]')" style="font-family: monospace; font-size: 11px">[UI-Notif-Bell] 📋</button></td>
+              <td data-label="Mô tả">Biểu tượng 🔔 với badge đỏ đếm số thông báo chưa đọc</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Bảng thông báo dropdown</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Notif-Panel]'); toast('Đã copy mã: [UI-Notif-Panel]')" style="font-family: monospace; font-size: 11px">[UI-Notif-Panel] 📋</button></td>
+              <td data-label="Mô tả">Panel dropdown danh sách thông báo khi bấm 🔔</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quản lý Người dùng</td>
+              <td data-label="Thành phần">Bảng danh sách tài khoản</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Users-Table]'); toast('Đã copy mã: [UI-Users-Table]')" style="font-family: monospace; font-size: 11px">[UI-Users-Table] 📋</button></td>
+              <td data-label="Mô tả">Bảng hiển thị tất cả tài khoản hệ thống (Admin mới thấy)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Quản lý Người dùng</td>
+              <td data-label="Thành phần">Form Tạo tài khoản</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Users-Form]'); toast('Đã copy mã: [UI-Users-Form]')" style="font-family: monospace; font-size: 11px">[UI-Users-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal tạo tài khoản mới (username, password, vai trò)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Bảng danh sách vật tư</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Table]'); toast('Đã copy mã: [UI-Inv-Table]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Table] 📋</button></td>
+              <td data-label="Mô tả">Bảng hiển thị tồn kho, SKU, vị trí, cảnh báo sắp hết</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Form Thêm/Sửa vật tư</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Form]'); toast('Đã copy mã: [UI-Inv-Form]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal nhập thông tin vật tư mới hoặc chỉnh sửa</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kho Vật tư (Inventory)</td>
+              <td data-label="Thành phần">Form Nhập/Xuất kho</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Tx]'); toast('Đã copy mã: [UI-Inv-Tx]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Tx] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ giao dịch nhập/xuất kho kèm lịch sử giao dịch</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Mua hàng - Nhà cung cấp</td>
+              <td data-label="Thành phần">Bảng danh sách & Form NCC</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-Vendors]'); toast('Đã copy mã: [UI-Inv-Vendors]')" style="font-family: monospace; font-size: 11px">[UI-Inv-Vendors] 📋</button></td>
+              <td data-label="Mô tả">Trang quản lý nhà cung cấp: danh sách, thêm/sửa/xóa NCC</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Mua hàng - Đơn mua hàng</td>
+              <td data-label="Thành phần">Bảng PO & Form tạo đơn</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Inv-PO]'); toast('Đã copy mã: [UI-Inv-PO]')" style="font-family: monospace; font-size: 11px">[UI-Inv-PO] 📋</button></td>
+              <td data-label="Mô tả">Trang đơn mua hàng (PO): tạo đơn, theo dõi trạng thái, tự động cập nhật tồn kho khi nhận hàng</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Tenant Portal (Admin)</td>
+              <td data-label="Thành phần">Quản lý yêu cầu cư dân</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Tenant-Admin]'); toast('Đã copy mã: [UI-Tenant-Admin]')" style="font-family: monospace; font-size: 11px">[UI-Tenant-Admin] 📋</button></td>
+              <td data-label="Mô tả">Bảng xem/duyệt/từ chối yêu cầu sự cố từ cư dân</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Tenant Portal (Công khai)</td>
+              <td data-label="Thành phần">Trang /tenant báo sự cố</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Tenant-Public]'); toast('Đã copy mã: [UI-Tenant-Public]')" style="font-family: monospace; font-size: 11px">[UI-Tenant-Public] 📋</button></td>
+              <td data-label="Mô tả">Trang riêng biệt /tenant cho cư dân (không cần login)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Thiết bị (Assets)</td>
+              <td data-label="Thành phần">Trang chi tiết thiết bị</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Asset-Detail]'); toast('Đã copy mã: [UI-Asset-Detail]')" style="font-family: monospace; font-size: 11px">[UI-Asset-Detail] 📋</button></td>
+              <td data-label="Mô tả">Trang chi tiết thông số, mã QR, WO liên quan, lịch sử bảo trì</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Nhật ký Bảo trì</td>
+              <td data-label="Thành phần">Danh sách nhật ký</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-MLog-List]'); toast('Đã copy mã: [UI-MLog-List]')" style="font-family: monospace; font-size: 11px">[UI-MLog-List] 📋</button></td>
+              <td data-label="Mô tả">Danh sách các lần kiểm tra (checklist) đã nộp, lọc theo thiết bị</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Nhật ký Bảo trì</td>
+              <td data-label="Thành phần">Chi tiết nhật ký</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-MLog-Detail]'); toast('Đã copy mã: [UI-MLog-Detail]')" style="font-family: monospace; font-size: 11px">[UI-MLog-Detail] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ xem kết quả checklist chi tiết (Đạt/Không đạt/Số liệu)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Tab Danh sách PM</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-List]'); toast('Đã copy mã: [UI-PM-List]')" style="font-family: monospace; font-size: 11px">[UI-PM-List] 📋</button></td>
+              <td data-label="Mô tả">Tab bảng danh sách tất cả lịch PM (active/paused)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Bảo trì Định kỳ (PM)</td>
+              <td data-label="Thành phần">Form Tạo/Sửa lịch PM</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-PM-Form]'); toast('Đã copy mã: [UI-PM-Form]')" style="font-family: monospace; font-size: 11px">[UI-PM-Form] 📋</button></td>
+              <td data-label="Mô tả">Cửa sổ Modal tạo/sửa kế hoạch bảo trì (tần suất, thiết bị, người phụ trách)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Lịch trực tuần (grid 7 ngày × 3 ca)</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Calendar]'); toast('Đã copy mã: [UI-Shifts-Calendar]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Calendar] 📋</button></td>
+              <td data-label="Mô tả">Grid 7 ngày x 3 ca (Sáng/Chiều/Đêm), xem KTV được phân công, check-in/out</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Bảng thống kê workload KTV</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Workload]'); toast('Đã copy mã: [UI-Shifts-Workload]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Workload] 📋</button></td>
+              <td data-label="Mô tả">Số ca, giờ công, WO đang làm/đã xong theo tháng, highlight quá tải/thiếu</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Lịch trực & Workload</td>
+              <td data-label="Thành phần">Form tạo/sửa ca trực</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Shifts-Form]'); toast('Đã copy mã: [UI-Shifts-Form]')" style="font-family: monospace; font-size: 11px">[UI-Shifts-Form] 📋</button></td>
+              <td data-label="Mô tả">Modal chọn KTV, ngày, loại ca (Sáng/Chiều/Đêm), ghi chú</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kết nối BMS/IoT</td>
+              <td data-label="Thành phần">Quản lý API Keys</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Int-ApiKeys]'); toast('Đã copy mã: [UI-Int-ApiKeys]')" style="font-family: monospace; font-size: 11px">[UI-Int-ApiKeys] 📋</button></td>
+              <td data-label="Mô tả">Trang tạo/thu hồi API Key cho BMS/IoT bên ngoài (Admin only)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Kết nối BMS/IoT</td>
+              <td data-label="Thành phần">Quản lý Webhooks</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Int-Webhooks]'); toast('Đã copy mã: [UI-Int-Webhooks]')" style="font-family: monospace; font-size: 11px">[UI-Int-Webhooks] 📋</button></td>
+              <td data-label="Mô tả">Đăng ký/xóa webhook nhận sự kiện từ CMMS (work_order.created, pm.due...)</td>
+            </tr>
+            <tr>
+              <td data-label="Khu vực">Topbar (Thanh trên)</td>
+              <td data-label="Thành phần">Nút chuyển Giao diện Tối / Sáng</td>
+              <td data-label="Mã định vị"><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('[UI-Theme-Toggle]'); toast('Đã copy mã: [UI-Theme-Toggle]')" style="font-family: monospace; font-size: 11px">[UI-Theme-Toggle] 📋</button></td>
+              <td data-label="Mô tả">Nút 🌙/☀️ ở góc phải topbar — chuyển dark/light mode, lưu vào localStorage</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 // ─── DASHBOARD ───────────────────────────────────────────────
 async function renderDashboard() {
   const r = await api('GET', '/api/stats');
+  if (!r.ok || !r.data) {
+    document.getElementById('page-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Không tải được dữ liệu dashboard. ${r.error || ''}</p></div>`;
+    return;
+  }
   const s = r.data;
+  const pm = s.pm || {};
+  const kpi = s.kpi || {};
+  const trending = s.trending || [];
+  const mttrC = kpi.mttr < 24 ? 'var(--green)' : kpi.mttr < 72 ? '#f59e0b' : 'var(--red)';
+  const mtbfC = kpi.mtbf > 30 ? 'var(--green)' : kpi.mtbf > 7 ? '#f59e0b' : 'var(--red)';
+  const pmcC = kpi.pmCompliance >= 90 ? 'var(--green)' : kpi.pmCompliance >= 70 ? '#f59e0b' : 'var(--red)';
+  const odrC = kpi.overdueRate < 5 ? 'var(--green)' : kpi.overdueRate < 15 ? '#f59e0b' : 'var(--red)';
+  const mx = Math.max(...trending.map(t => Math.max(t.woCreated, t.woDone, t.failures)), 1);
+  const bars = trending.map((t, i) => {
+    const x = i * 16.5 + 2;
+    return `<rect x="${x}%" y="${100 - t.woCreated/mx*100}%" width="4%" height="${t.woCreated/mx*100}%" fill="#3b82f6" rx="2" opacity="0.7"/><rect x="${x+4.5}%" y="${100 - t.woDone/mx*100}%" width="4%" height="${t.woDone/mx*100}%" fill="#16a34a" rx="2" opacity="0.7"/><rect x="${x+9}%" y="${100 - t.failures/mx*100}%" width="4%" height="${t.failures/mx*100}%" fill="#dc2626" rx="2" opacity="0.7"/><text x="${x+6}%" y="99%" text-anchor="middle" style="font-size:8px;fill:#64748b">${(t.label||t.month).split(' ')[0]}</text>`;
+  }).join('');
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
@@ -605,6 +1257,30 @@ async function renderDashboard() {
       <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
       <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM hoạt động</div><div class="stat-value">${pm.total||0}</div><div class="stat-sub">${pm.dueToday||0} đến hạn hôm nay</div></div>
+      <div class="stat-card ${(pm.overdue||0)>0?'stat-red':'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue||0}</div><div class="stat-sub">Cần tạo WO</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📊 Chỉ số KPI Bảo trì</div>
+      <div class="stats-grid" style="margin-top:12px">
+        <div class="stat-card" style="border-left:4px solid ${mttrC}"><div class="stat-icon">⏱️</div><div class="stat-label">MTTR</div><div class="stat-value" style="color:${mttrC}">${kpi.mttr}h</div><div class="stat-sub">TB thời gian sửa</div></div>
+        <div class="stat-card" style="border-left:4px solid ${mtbfC}"><div class="stat-icon">🔧</div><div class="stat-label">MTBF</div><div class="stat-value" style="color:${mtbfC}">${kpi.mtbf}d</div><div class="stat-sub">TB giữa 2 lần hỏng</div></div>
+        <div class="stat-card" style="border-left:4px solid ${pmcC}"><div class="stat-icon">✅</div><div class="stat-label">PM Compliance</div><div class="stat-value" style="color:${pmcC}">${kpi.pmCompliance}%</div><div class="stat-sub">Tỷ lệ PM đúng hạn</div></div>
+        <div class="stat-card" style="border-left:4px solid ${odrC}"><div class="stat-icon">⚠️</div><div class="stat-label">Overdue Rate</div><div class="stat-value" style="color:${odrC}">${kpi.overdueRate}%</div><div class="stat-sub">Tỷ lệ WO quá hạn</div></div>
+      </div>
+    </div>
+    ${(s.lowStockCount>0||s.pendingTenantReqs>0)?`<div class="stats-grid" style="margin-bottom:16px">
+      ${s.lowStockCount>0?`<div class="stat-card stat-red" style="cursor:pointer" onclick="navigate('inventory')"><div class="stat-icon">📦</div><div class="stat-label">Vật tư sắp hết</div><div class="stat-value">${s.lowStockCount}</div><div class="stat-sub">Cần đặt hàng</div></div>`:''}
+      ${s.pendingTenantReqs>0?`<div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigate('tenantportal')"><div class="stat-icon">🏠</div><div class="stat-label">Yêu cầu cư dân</div><div class="stat-value">${s.pendingTenantReqs}</div><div class="stat-sub">Chờ duyệt</div></div>`:''}
+    </div>`:''}
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📈 Xu hướng 6 tháng</div>
+      <div style="display:flex;gap:16px;margin:8px 0;font-size:12px">
+        <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Tạo</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Xong</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:3px;vertical-align:middle;margin-right:4px"></span>Sự cố</span>
+      </div>
+      <div style="width:100%;overflow-x:auto"><svg viewBox="0 0 100 50" preserveAspectRatio="none" style="width:100%;height:160px;border-bottom:1px solid var(--border)">${bars}</svg></div>
     </div>
     <div class="card">
       <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
@@ -746,7 +1422,8 @@ async function renderAssets() {
   document.getElementById('page-body').innerHTML = `
     <div class="filter-bar">
       <input id="asset-q" placeholder="🔍 Tìm thiết bị..." oninput="filterAssets()">
-      <select id="asset-status" onchange="filterAssets()"><option value="">Tất cả</option><option>active</option><option>inactive</option><option>maintenance</option></select>
+      <select id="asset-cat" onchange="filterAssets()"><option value="">Tất cả danh mục</option></select>
+      <select id="asset-status" onchange="filterAssets()"><option value="">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="inactive">Tạm dừng</option><option value="maintenance">Đang bảo trì</option></select>
     </div>
     <div class="card" style="padding:0">
       <div class="table-wrap"><table>
@@ -754,32 +1431,94 @@ async function renderAssets() {
         <tbody id="asset-tbody"></tbody>
       </table></div>
     </div>`;
+  const cr = await api('GET', '/api/assets/categories');
+  const catSel = document.getElementById('asset-cat');
+  if (catSel && cr.ok) {
+    (cr.data || []).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      catSel.appendChild(opt);
+    });
+  }
   filterAssets();
 }
 
 async function filterAssets() {
   const q = document.getElementById('asset-q')?.value || '';
   const status = document.getElementById('asset-status')?.value || '';
+  const cat = document.getElementById('asset-cat')?.value || '';
   let url = '/api/assets?';
   if (q) url += `q=${encodeURIComponent(q)}&`;
   if (status) url += `status=${status}&`;
+  if (cat) url += `category=${encodeURIComponent(cat)}&`;
   const r = await api('GET', url);
   const list = r.data || [];
   const tbody = document.getElementById('asset-tbody');
   if (!tbody) return;
-  tbody.innerHTML = list.length ? list.map(a => `
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
+    return;
+  }
+
+  if (q || status || cat) {
+    tbody.innerHTML = list.map(a => renderAssetRow(a, 0)).join('');
+    return;
+  }
+
+  const map = {};
+  const roots = [];
+  list.forEach(a => map[a.id] = { ...a, children: [] });
+  list.forEach(a => {
+    if (a.parentId && map[a.parentId]) {
+      map[a.parentId].children.push(map[a.id]);
+    } else {
+      roots.push(map[a.id]);
+    }
+  });
+
+  let html = '';
+  function buildTree(nodes, level) {
+    nodes.forEach(node => {
+      html += renderAssetRow(node, level);
+      if (node.children && node.children.length > 0) {
+        buildTree(node.children, level + 1);
+      }
+    });
+  }
+  buildTree(roots, 0);
+  tbody.innerHTML = html;
+}
+
+function renderAssetRow(a, level) {
+  const indent = level * 20;
+  const prefix = level > 0 ? `<span style="display:inline-block;width:${indent}px;text-align:right;color:var(--border);padding-right:8px;font-size:16px;">↳</span>` : '';
+  const typeLabel = { equipment: 'Thiết bị', system: 'Hệ thống', building: 'Tòa nhà' };
+  
+  return `
     <tr>
       <td data-label="Mã"><code style="font-size:12px">${a.id}</code></td>
-      <td data-label="Tên thiết bị" style="font-weight:600">${a.name}</td>
-      <td data-label="Danh mục">${a.category}</td>
-      <td data-label="Vị trí">${a.location}</td>
+      <td data-label="Tên thiết bị" style="font-weight:600">${prefix}${a.name} <span style="font-size:10px;color:var(--gray);font-weight:normal;background:var(--gray-bg);padding:2px 4px;border-radius:4px;margin-left:4px">${typeLabel[a.type] || 'Thiết bị'}</span></td>
+      <td data-label="Danh mục">${a.category || '—'}</td>
+      <td data-label="Vị trí">${a.location || '—'}</td>
       <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
       <td data-label="Trạng thái"><span class="badge badge-${a.status}">${a.status}</span></td>
       <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
-        ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+        ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick='showAssetForm(${JSON.stringify(a).replace(/'/g, "&#39;").replace(/"/g,"&quot;")})'>Sửa</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteAsset('${a.id}')">Xóa</button>` : ''}
       </td>
-    </tr>`).join('') : '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏗️</div><p>Chưa có thiết bị nào</p></div></td></tr>';
+    </tr>`;
+}
+
+async function deleteAsset(id) {
+  const r = await api('GET', `/api/assets/${id}`);
+  const name = r.ok ? r.data.name : id;
+  if (!confirm(`Xóa thiết bị "${name}"?\nHành động này không thể hoàn tác.`)) return;
+  const dr = await api('DELETE', `/api/assets/${id}`);
+  if (!dr.ok) return toast(dr.error, 'error');
+  toast('Đã xóa thiết bị', 'success');
+  renderAssets();
 }
 
 async function viewAsset(id) {
@@ -797,13 +1536,40 @@ async function viewAsset(id) {
   );
 }
 
-function showAssetForm(asset = {}) {
-  openModal(asset.id ? 'Sửa thiết bị' : 'Thêm thiết bị mới', `
-    <div class="form-group"><label>Tên thiết bị *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Máy bơm nước B1"></div>
+async function showAssetForm(asset = {}) {
+  const [ar, cr] = await Promise.all([
+    api('GET', '/api/assets'),
+    api('GET', '/api/assets/categories')
+  ]);
+  const allAssets = ar.data || [];
+  const parentOptions = allAssets
+    .filter(a => a.id !== asset.id)
+    .map(a => `<option value="${a.id}" ${asset.parentId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`)
+    .join('');
+
+  const defaultCats = ['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'];
+  const apiCats = cr.ok ? cr.data : [];
+  const cats = [...new Set([...apiCats, ...defaultCats])].sort();
+  const catOptions = cats.map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('');
+
+  openModal(asset.id ? 'Sửa thiết bị/Cấu trúc' : 'Thêm thiết bị/Cấu trúc mới', `
+    <div class="form-row">
+      <div class="form-group"><label>Loại *</label><select id="a-type">
+        <option value="equipment" ${(!asset.type || asset.type === 'equipment') ? 'selected' : ''}>Thiết bị (Equipment)</option>
+        <option value="system" ${asset.type === 'system' ? 'selected' : ''}>Hệ thống (System)</option>
+        <option value="building" ${asset.type === 'building' ? 'selected' : ''}>Tòa nhà (Building)</option>
+      </select></div>
+      <div class="form-group"><label>Thuộc cấp trên (Parent)</label><select id="a-parent">
+        <option value="">-- Không có (Cấp cao nhất) --</option>
+        ${parentOptions}
+      </select></div>
+    </div>
+    <div class="form-group"><label>Tên *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Bơm 1, Hệ thống Nước, Tòa A"></div>
     <div class="form-row">
       <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${asset.code || ''}" placeholder="Tự động nếu bỏ trống"></div>
-      <div class="form-group"><label>Danh mục *</label><select id="a-cat">
-        ${['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'].map(c => `<option ${asset.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+      <div class="form-group"><label>Danh mục</label><select id="a-cat">
+        <option value="">-- Chọn --</option>
+        ${catOptions}
       </select></div>
     </div>
     <div class="form-group"><label>Vị trí *</label><input id="a-loc" value="${asset.location || ''}" placeholder="VD: Tầng hầm B1, Phòng kỹ thuật"></div>
@@ -829,6 +1595,8 @@ async function saveAsset(id) {
   const body = {
     name: document.getElementById('a-name').value.trim(),
     code: document.getElementById('a-code').value.trim(),
+    type: document.getElementById('a-type').value,
+    parentId: document.getElementById('a-parent').value || null,
     category: document.getElementById('a-cat').value,
     location: document.getElementById('a-loc').value.trim(),
     manufacturer: document.getElementById('a-brand').value.trim(),
@@ -863,7 +1631,14 @@ async function renderUsers() {
           <td data-label="Tài khoản"><code>${u.username}</code></td><td data-label="Họ tên">${u.name}</td>
           <td data-label="Vai trò">${roleLabel[u.role] || u.role}</td>
           <td data-label="Ngày tạo">${fmtDateShort(u.createdAt)}</td>
-          <td data-label="">${u.username !== 'admin' && currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>` : ''}</td>
+          <td data-label="">
+            ${u.username !== 'admin' && currentUser.role === 'admin' ? `
+              <div style="display:flex;gap:5px;justify-content:flex-end">
+                <button class="btn btn-ghost btn-sm" onclick="resetPassword('${u.id}','${u.username}')" title="Reset mật khẩu">🔑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>
+              </div>
+            ` : ''}
+          </td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
@@ -897,6 +1672,13 @@ async function deleteUser(id, name) {
   const r = await api('DELETE', `/api/users/${id}`);
   if (!r.ok) return toast(r.error, 'error');
   toast('Đã xóa tài khoản', 'success'); renderUsers();
+}
+
+async function resetPassword(id, username) {
+  if (!confirm(`Đặt lại mật khẩu cho [${username}] về mặc định của hệ thống?`)) return;
+  const r = await api('POST', `/api/users/${id}/reset-password`);
+  if (r.ok) toast('Đã đặt lại mật khẩu thành công', 'success');
+  else toast(r.error, 'error');
 }
 
 // ─── SCAN ────────────────────────────────────────────────────
@@ -999,10 +1781,11 @@ async function renderAssetDetail(id) {
   if (!id) { navigate('assets'); return; }
   document.getElementById('page-body').innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
 
-  const [ar, qrr, logr] = await Promise.all([
+  const [ar, qrr, logr, wor] = await Promise.all([
     api('GET', `/api/assets/${id}`),
     api('GET', `/api/assets/${id}/qr`),
-    api('GET', `/api/maintenance-logs?assetId=${id}&limit=10`)
+    api('GET', `/api/maintenance-logs?assetId=${id}&limit=10`),
+    api('GET', `/api/work-orders?assetId=${id}`)
   ]);
 
   if (!ar.ok) {
@@ -1012,6 +1795,7 @@ async function renderAssetDetail(id) {
 
   const a = ar.data;
   const logs = logr.data || [];
+  const workOrders = wor.data || [];
 
   const statusLabel = { active: '🟢 Đang hoạt động', inactive: '⚪ Tạm dừng', maintenance: '🟡 Đang bảo trì' };
   const fields = [
@@ -1053,6 +1837,23 @@ async function renderAssetDetail(id) {
             <button class="btn btn-ghost" onclick="showWOForm({assetId:'${a.id}'})">+ Tạo Work Order</button>
             ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showAssetForm(${JSON.stringify(a).replace(/"/g,'&quot;')})">✏️ Sửa</button>` : ''}
           </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>📋 Lệnh công việc liên quan</span>
+            <button class="btn btn-ghost btn-sm" onclick="showWOForm({assetId:'${a.id}'})">+ Tạo mới</button>
+          </div>
+          ${workOrders.length ? `<div class="table-wrap"><table>
+            <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày hạn</th><th></th></tr></thead>
+            <tbody>${workOrders.map(w => `<tr>
+              <td data-label="Mã"><code style="font-size:12px">${w.id}</code></td>
+              <td data-label="Tiêu đề" style="font-weight:600">${w.title}</td>
+              <td data-label="Ưu tiên"><span class="badge badge-${w.priority}">${w.priority}</span></td>
+              <td data-label="Trạng thái"><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+              <td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate,w.status)?'var(--red)':'inherit'}">${fmtDateShort(w.dueDate)}</td>
+              <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+            </tr>`).join('')}</tbody>
+          </table></div>` : '<div class="empty-state" style="padding:24px"><p>Chưa có lệnh công việc nào</p></div>'}
         </div>
         <div class="card">
           <div class="card-title">📝 Lịch sử bảo trì gần đây</div>
@@ -1278,12 +2079,1161 @@ async function viewMLog(id) {
   );
 }
 
-// ─── Init ────────────────────────────────────────────────────
+// ─── PM MODULE ────────────────────────────────────────────────
+let pmViewMode = 'calendar';
+let pmCalYear = null;
+let pmCalMonth = null;
+let pmAssets = new Map();
+let pmTplItems = [];
+
+async function renderPM() {
+  if (['admin', 'manager'].includes(currentUser.role)) {
+    api('POST', '/api/pm-schedules/run-due').catch(() => {});
+  }
+  const ar = await api('GET', '/api/assets');
+  pmAssets = new Map((ar.data || []).map(a => [a.id, a]));
+  const now = new Date();
+  if (pmCalYear === null) pmCalYear = now.getFullYear();
+  if (pmCalMonth === null) pmCalMonth = now.getMonth();
+
+  const canManage = ['admin', 'manager'].includes(currentUser.role);
+  document.getElementById('topbar-actions').innerHTML = canManage
+    ? `<button class="btn btn-primary btn-sm" onclick="pmViewMode==='templates'?showTemplateForm():showPMForm()">+ ${pmViewMode==='templates'?'Tạo Template':'Tạo lịch PM'}</button>`
+    : '';
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="pm-tabs">
+      <button class="pm-tab ${pmViewMode === 'calendar' ? 'active' : ''}" onclick="setPMView('calendar')">📅 Lịch Tháng</button>
+      <button class="pm-tab ${pmViewMode === 'list' ? 'active' : ''}" onclick="setPMView('list')">📋 Danh sách</button>
+      <button class="pm-tab ${pmViewMode === 'templates' ? 'active' : ''}" onclick="setPMView('templates')">📂 Thư viện Template</button>
+    </div>
+    <div id="pm-content"></div>`;
+
+  if (pmViewMode === 'calendar') renderPMCalendar(pmCalYear, pmCalMonth);
+  else if (pmViewMode === 'list') renderPMList();
+  else renderPMTemplates();
+}
+
+function setPMView(mode) {
+  pmViewMode = mode;
+  document.querySelectorAll('.pm-tab').forEach(t => {
+    t.classList.toggle('active',
+      (mode === 'calendar' && t.textContent.includes('Lịch')) ||
+      (mode === 'list' && t.textContent.includes('Danh sách')) ||
+      (mode === 'templates' && t.textContent.includes('Template'))
+    );
+  });
+  if (mode === 'calendar') renderPMCalendar(pmCalYear, pmCalMonth);
+  else if (mode === 'list') renderPMList();
+  else renderPMTemplates();
+}
+
+function getPMsForDay(schedules, year, month, day) {
+  const date = new Date(year, month, day);
+  return schedules.filter(p => {
+    if (!p.startDate) return false;
+    const start = new Date(p.startDate + 'T00:00:00');
+    if (date < start) return false;
+    if (p.endDate && date > new Date(p.endDate + 'T00:00:00')) return false;
+    switch (p.frequency) {
+      case 'daily': return true;
+      case 'weekly': return date.getDay() === start.getDay();
+      case 'monthly': return date.getDate() === start.getDate();
+      case 'quarterly': {
+        const diff = (year - start.getFullYear()) * 12 + (month - start.getMonth());
+        return diff >= 0 && diff % 3 === 0 && date.getDate() === start.getDate();
+      }
+      case 'yearly': return month === start.getMonth() && date.getDate() === start.getDate();
+      default: return false;
+    }
+  });
+}
+
+async function renderPMCalendar(year, month) {
+  pmCalYear = year;
+  pmCalMonth = month;
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+
+  const r = await api('GET', '/api/pm-schedules?status=active');
+  const schedules = r.data || [];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevY = month === 0 ? year - 1 : year;
+  const prevM = month === 0 ? 11 : month - 1;
+  const nextY = month === 11 ? year + 1 : year;
+  const nextM = month === 11 ? 0 : month + 1;
+
+  let html = `
+    <div class="pm-cal-nav">
+      <button class="btn btn-ghost btn-sm" onclick="renderPMCalendar(${prevY},${prevM})">← Trước</button>
+      <div class="pm-cal-title">${monthNames[month]} ${year}</div>
+      <button class="btn btn-ghost btn-sm" onclick="renderPMCalendar(${nextY},${nextM})">Sau →</button>
+    </div>
+    <div class="pm-cal-grid">
+      ${dayNames.map(d => `<div class="pm-cal-header">${d}</div>`).join('')}`;
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="pm-cal-cell other-month"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const mm = String(month + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const dateStr = `${year}-${mm}-${dd}`;
+    const isToday = dateStr === todayStr;
+    const dayPMs = getPMsForDay(schedules, year, month, day);
+    const hasOverdue = dayPMs.some(() => dateStr < todayStr);
+    const badges = dayPMs.slice(0, 3).map(p => {
+      const cls = dateStr < todayStr ? 'pm-badge-overdue' : isToday ? 'pm-badge-today' : 'pm-badge-upcoming';
+      return `<span class="pm-badge ${cls}" onclick="event.stopPropagation();showPMsForDay('${dateStr}')" title="${p.name}">${p.name}</span>`;
+    }).join('');
+    const more = dayPMs.length > 3 ? `<span class="pm-badge pm-badge-upcoming">+${dayPMs.length - 3} nữa</span>` : '';
+    const cellClass = ['pm-cal-cell', isToday ? 'today' : '', dayPMs.length ? 'has-pm' : '', hasOverdue ? 'has-overdue' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cellClass}" onclick="showPMsForDay('${dateStr}')">
+      <div class="pm-cal-day">${day}</div>${badges}${more}
+    </div>`;
+  }
+
+  const trailing = (firstDay + daysInMonth) % 7;
+  if (trailing > 0) for (let i = trailing; i < 7; i++) html += `<div class="pm-cal-cell other-month"></div>`;
+
+  html += '</div>';
+  if (content) content.innerHTML = html;
+}
+
+async function renderPMList() {
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+
+  const r = await api('GET', '/api/pm-schedules');
+  const schedules = r.data || [];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const canManage = ['admin','manager'].includes(currentUser.role);
+
+  if (!schedules.length) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>Chưa có lịch bảo trì định kỳ nào</p></div>';
+    return;
+  }
+  content.innerHTML = `
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tên lịch PM</th><th>Thiết bị</th><th>Tần suất</th><th>Đến hạn tiếp</th><th>Phụ trách</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>${schedules.map(p => {
+          const overdue = p.nextDueDate && p.nextDueDate < todayStr && p.status === 'active';
+          const dueToday = p.nextDueDate === todayStr;
+          return `<tr>
+            <td data-label="Tên"><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--gray)">${p.id}</div></td>
+            <td data-label="Thiết bị">${p.assetId ? (pmAssets.get(p.assetId)?.name || p.assetId) : '—'}</td>
+            <td data-label="Tần suất">${freqLabel[p.frequency] || p.frequency}</td>
+            <td data-label="Đến hạn" style="color:${overdue ? 'var(--red)' : dueToday ? 'var(--green)' : 'inherit'};font-weight:${overdue || dueToday ? '700' : 'normal'}">
+              ${p.nextDueDate || '—'}${overdue ? ' ⚠️' : dueToday ? ' ✅' : ''}
+            </td>
+            <td data-label="Phụ trách">${p.assignedTo || '—'}</td>
+            <td data-label="Trạng thái"><span class="badge badge-${p.status === 'active' ? 'open' : 'cancelled'}">${p.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}</span></td>
+            <td data-label="">
+              <button class="btn btn-ghost btn-sm" onclick="viewPMSchedule('${p.id}')">Xem</button>
+              ${canManage ? `<button class="btn btn-primary btn-sm" onclick="generatePMWorkOrder('${p.id}')">+ WO</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
+async function showPMsForDay(dateStr) {
+  const r = await api('GET', '/api/pm-schedules?status=active');
+  const all = r.data || [];
+  const d = new Date(dateStr + 'T00:00:00');
+  const daySchedules = getPMsForDay(all, d.getFullYear(), d.getMonth(), d.getDate());
+  if (!daySchedules.length) return;
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const canManage = ['admin','manager'].includes(currentUser.role);
+  openModal(`📅 PM — ${fmtDateShort(dateStr + 'T00:00:00')}`,
+    daySchedules.map(p => `
+      <div style="padding:12px 0;border-bottom:1px solid #f1f5f9">
+        <div style="font-weight:700;margin-bottom:4px">${p.name}</div>
+        <div style="font-size:12px;color:var(--gray)">${p.assetId ? (pmAssets.get(p.assetId)?.name || p.assetId) : '—'} · ${freqLabel[p.frequency]} · ${p.assignedTo || 'Chưa giao'}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal();viewPMSchedule('${p.id}')">Chi tiết</button>
+          ${canManage ? `<button class="btn btn-primary btn-sm" onclick="closeModal();generatePMWorkOrder('${p.id}')">+ Tạo WO</button>` : ''}
+        </div>
+      </div>`).join(''),
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
+  );
+}
+
+async function viewPMSchedule(id) {
+  const r = await api('GET', '/api/pm-schedules');
+  const schedule = (r.data || []).find(p => p.id === id);
+  if (!schedule) return toast('Không tìm thấy lịch PM', 'error');
+  const freqLabel = { daily:'Hàng ngày', weekly:'Hàng tuần', monthly:'Hàng tháng', quarterly:'Hàng quý', yearly:'Hàng năm' };
+  const todayStr = new Date().toISOString().split('T')[0];
+  const overdue = schedule.nextDueDate && schedule.nextDueDate < todayStr;
+  const canManage = ['admin','manager'].includes(currentUser.role);
+  openModal(`📅 ${schedule.name}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      ${[
+        ['Mã lịch PM', `<code>${schedule.id}</code>`],
+        ['Tần suất', freqLabel[schedule.frequency] || schedule.frequency],
+        ['Thiết bị', schedule.assetId ? `${pmAssets.get(schedule.assetId)?.name || ''} <code style="font-size:11px">${schedule.assetId}</code>` : '—'],
+        ['Người phụ trách', schedule.assignedTo || '—'],
+        ['Ưu tiên', `<span class="badge badge-${schedule.priority}">${schedule.priority}</span>`],
+        ['Trạng thái', `<span class="badge badge-${schedule.status === 'active' ? 'open' : 'cancelled'}">${schedule.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}</span>`],
+        ['Ngày bắt đầu', schedule.startDate || '—'],
+        ['Ngày kết thúc', schedule.endDate || 'Không giới hạn'],
+        ['Đến hạn tiếp theo', `<span style="color:${overdue ? 'var(--red)' : 'inherit'};font-weight:${overdue ? '700' : 'normal'}">${schedule.nextDueDate || '—'}${overdue ? ' ⚠️' : ''}</span>`],
+        ['Số WO đã tạo', schedule.generatedCount || 0],
+        ['Tạo WO lần cuối', schedule.lastGeneratedDate || 'Chưa có']
+      ].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
+    </div>
+    ${schedule.notes ? `<div style="background:var(--gray-bg);padding:12px;border-radius:8px;font-size:13px;margin-bottom:8px">${schedule.notes}</div>` : ''}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+     ${canManage ? `
+     <button class="btn btn-ghost btn-sm" onclick="closeModal();showPMForm(${JSON.stringify(schedule).replace(/"/g,'&quot;')})">✏️ Sửa</button>
+     <button class="btn btn-primary" onclick="closeModal();generatePMWorkOrder('${schedule.id}')">+ Tạo Work Order</button>
+     <button class="btn btn-danger btn-sm" onclick="closeModal();deletePM('${schedule.id}')">Xóa</button>` : ''}`
+  );
+}
+
+async function showPMForm(pm = {}) {
+  const freqs = [['daily','Hàng ngày'],['weekly','Hàng tuần'],['monthly','Hàng tháng'],['quarterly','Hàng quý'],['yearly','Hàng năm']];
+  const assets = pmAssets.size ? [...pmAssets.values()] : (await api('GET', '/api/assets')).data || [];
+  const assetOpts = `<option value="">-- Không gắn thiết bị --</option>` +
+    assets.map(a => `<option value="${a.id}" ${pm.assetId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`).join('');
+  openModal(pm.id ? 'Sửa lịch PM' : 'Tạo lịch Bảo trì Định kỳ', `
+    <div class="form-group"><label>Tên lịch PM *</label><input id="pm-name" value="${pm.name || ''}" placeholder="VD: Kiểm tra máy bơm hàng tháng"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Tần suất *</label><select id="pm-freq">
+        ${freqs.map(([v, l]) => `<option value="${v}" ${pm.frequency === v ? 'selected' : ''}>${l}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Ưu tiên</label><select id="pm-priority">
+        <option value="low" ${pm.priority === 'low' ? 'selected' : ''}>Thấp</option>
+        <option value="medium" ${(!pm.priority || pm.priority === 'medium') ? 'selected' : ''}>Trung bình</option>
+        <option value="high" ${pm.priority === 'high' ? 'selected' : ''}>Cao</option>
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Thiết bị</label><select id="pm-assetId">${assetOpts}</select></div>
+      <div class="form-group"><label>Người phụ trách</label><input id="pm-assigned" value="${pm.assignedTo || ''}" placeholder="Tên kỹ thuật viên"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Ngày đến hạn đầu tiên *</label><input type="date" id="pm-start" value="${pm.startDate || pm.nextDueDate || ''}"></div>
+      <div class="form-group"><label>Ngày kết thúc</label><input type="date" id="pm-end" value="${pm.endDate || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Trạng thái</label><select id="pm-status">
+        <option value="active" ${(!pm.status || pm.status === 'active') ? 'selected' : ''}>Đang hoạt động</option>
+        <option value="paused" ${pm.status === 'paused' ? 'selected' : ''}>Tạm dừng</option>
+      </select></div>
+    </div>
+    <div class="form-group"><label>Ghi chú / Nội dung công việc</label><textarea id="pm-notes" placeholder="Mô tả công việc cần thực hiện...">${pm.notes || ''}</textarea></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="savePM('${pm.id || ''}')">Lưu</button>`
+  );
+}
+
+async function savePM(id) {
+  const body = {
+    name: document.getElementById('pm-name').value.trim(),
+    frequency: document.getElementById('pm-freq').value,
+    priority: document.getElementById('pm-priority').value,
+    assetId: document.getElementById('pm-assetId').value || null,
+    assignedTo: document.getElementById('pm-assigned').value.trim() || null,
+    startDate: document.getElementById('pm-start').value,
+    endDate: document.getElementById('pm-end').value || null,
+    status: document.getElementById('pm-status').value,
+    notes: document.getElementById('pm-notes').value.trim()
+  };
+  if (!body.name || !body.frequency || !body.startDate) return toast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+  const r = id ? await api('PUT', `/api/pm-schedules/${id}`, body) : await api('POST', '/api/pm-schedules', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật lịch PM' : 'Tạo lịch PM thành công!', 'success');
+  renderPM();
+}
+
+async function deletePM(id) {
+  if (!confirm('Xóa lịch bảo trì định kỳ này? Hành động không thể hoàn tác.')) return;
+  const r = await api('DELETE', `/api/pm-schedules/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa lịch PM', 'success');
+  renderPM();
+}
+
+async function generatePMWorkOrder(scheduleId) {
+  if (!confirm('Tạo Work Order từ lịch PM này?')) return;
+  const r = await api('POST', `/api/pm-schedules/${scheduleId}/generate-wo`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast(`✅ Đã tạo ${r.data.workOrder.id}`, 'success');
+  renderPM();
+}
+
+// ─── Template Library ─────────────────────────────────────────
+async function renderPMTemplates() {
+  const content = document.getElementById('pm-content');
+  if (!content) return;
+  content.innerHTML = '<div class="empty-state"><p>Đang tải...</p></div>';
+  const r = await api('GET', '/api/checklist-templates');
+  const templates = r.data || [];
+  const canManage = ['admin', 'manager'].includes(currentUser.role);
+  const canDelete = currentUser.role === 'admin';
+  const typeLabel = { status: 'Trạng thái', number: 'Số liệu', text: 'Văn bản' };
+  if (!templates.length) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>Chưa có template nào</p></div>';
+    return;
+  }
+  content.innerHTML = `<div class="tpl-grid">${templates.map(t => `
+    <div class="tpl-card">
+      <div class="tpl-card-name">${t.name}</div>
+      <div class="tpl-card-cat">${t.category}</div>
+      <ul class="tpl-item-list">${(t.items || []).map(it =>
+        `<li><span class="tpl-item-type">${typeLabel[it.type] || it.type}</span>${it.label}${it.unit ? ` <span style="color:var(--gray);font-size:10px">(${it.unit})</span>` : ''}</li>`
+      ).join('')}</ul>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="showTemplateForm(${JSON.stringify(t).replace(/"/g,'&quot;')})">✏️ Sửa</button>` : ''}
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteTemplate('${t.id}')">Xóa</button>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function tplRenderItems() {
+  const container = document.getElementById('tpl-items-container');
+  if (!container) return;
+  const typeLabel = { status: 'Trạng thái', number: 'Số liệu', text: 'Văn bản' };
+  container.innerHTML = pmTplItems.map((it, i) => `
+    <div class="tpl-form-item">
+      <input value="${it.label}" placeholder="Tên hạng mục" oninput="pmTplItems[${i}].label=this.value">
+      <select onchange="pmTplItems[${i}].type=this.value;tplRenderItems()">
+        ${Object.entries(typeLabel).map(([v,l]) => `<option value="${v}" ${it.type===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+      ${it.type === 'number' ? `<input value="${it.unit||''}" placeholder="Đơn vị" style="width:70px" oninput="pmTplItems[${i}].unit=this.value">` : '<div></div>'}
+      <button class="btn btn-ghost btn-sm" onclick="pmTplItems.splice(${i},1);tplRenderItems()" style="color:var(--red)">✕</button>
+    </div>`).join('');
+}
+
+function showTemplateForm(tpl = {}) {
+  pmTplItems = (tpl.items || [{ label: '', type: 'status' }]).map(it => ({ ...it }));
+  openModal(tpl.id ? 'Sửa Template Checklist' : 'Tạo Template Checklist', `
+    <div class="form-group"><label>Tên template *</label><input id="tpl-name" value="${tpl.name || ''}" placeholder="VD: Kiểm tra máy bơm PCCC"></div>
+    <div class="form-group"><label>Danh mục *</label><input id="tpl-cat" value="${tpl.category || ''}" placeholder="VD: PCCC, Thang máy, Hệ thống điện..."></div>
+    <div class="form-group"><label>Các hạng mục kiểm tra</label>
+      <div class="tpl-form-items">
+        <div id="tpl-items-container"></div>
+        <button class="tpl-add-item-btn" onclick="pmTplItems.push({label:'',type:'status'});tplRenderItems()">+ Thêm hạng mục</button>
+      </div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveTemplate('${tpl.id || ''}')">Lưu</button>`
+  );
+  tplRenderItems();
+}
+
+async function saveTemplate(id) {
+  const name = document.getElementById('tpl-name').value.trim();
+  const category = document.getElementById('tpl-cat').value.trim();
+  const items = pmTplItems.filter(it => it.label.trim());
+  if (!name || !category) return toast('Vui lòng điền tên và danh mục', 'error');
+  if (!items.length) return toast('Cần ít nhất 1 hạng mục kiểm tra', 'error');
+  const r = id
+    ? await api('PUT', `/api/checklist-templates/${id}`, { name, category, items })
+    : await api('POST', '/api/checklist-templates', { name, category, items });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(id ? 'Đã cập nhật template' : 'Tạo template thành công!', 'success');
+  renderPMTemplates();
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Xóa template này? Các checklist đã dùng template này sẽ không bị ảnh hưởng.')) return;
+  const r = await api('DELETE', `/api/checklist-templates/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa template', 'success');
+  renderPMTemplates();
+}
+
+// ─── NOTIFICATIONS BELL ──────────────────────────────────────
+async function loadNotifBell() {
+  if (!['admin','manager'].includes(currentUser?.role)) return;
+  const r = await api('GET', '/api/notifications');
+  if (!r.ok) return;
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  if (r.unread > 0) {
+    badge.textContent = r.unread > 9 ? '9+' : r.unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none') {
+    renderNotifPanel();
+    panel.style.display = 'block';
+    document.addEventListener('click', closeNotifPanelOutside, { once: true });
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function closeNotifPanelOutside(e) {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && !panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+}
+
+async function renderNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  panel.innerHTML = '<div style="color:var(--gray);font-size:12px">Đang tải...</div>';
+  const r = await api('GET', '/api/notifications');
+  const list = r.data || [];
+  const typeIcon = { low_stock: '📦', overdue_wo: '⏰', tenant_request: '🏠' };
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-weight:700;font-size:14px">🔔 Thông báo</div>
+      <button class="btn btn-ghost btn-sm" onclick="markAllRead()" style="font-size:11px">Đánh dấu đã đọc</button>
+    </div>
+    ${!list.length ? '<div class="empty-state" style="padding:24px"><p>Chưa có thông báo</p></div>' :
+      list.map(n => `
+        <div style="padding:10px 0;border-bottom:1px solid #f1f5f9;opacity:${n.read?0.5:1}">
+          <div style="font-size:12px;font-weight:600">${typeIcon[n.type]||'🔔'} ${n.title}</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px">${n.body}</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:3px">${fmtDate(n.createdAt)}</div>
+        </div>`).join('')}
+  `;
+}
+
+async function markAllRead() {
+  await api('POST', '/api/notifications/mark-read');
+  document.getElementById('notif-badge').style.display = 'none';
+  renderNotifPanel();
+}
+
+// ─── INVENTORY ────────────────────────────────────────────────
+async function renderInventory() {
+  document.getElementById('page-body').innerHTML = `
+    <div class="filter-bar">
+      <input id="inv-search" placeholder="🔍 Tìm tên / SKU..." oninput="filterInventory()">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="inv-lowstock" onchange="filterInventory()"> Chỉ vật tư sắp hết
+      </label>
+    </div>
+    <div id="inv-list"></div>`;
+  filterInventory();
+}
+
+async function filterInventory() {
+  const search = document.getElementById('inv-search')?.value || '';
+  const lowStock = document.getElementById('inv-lowstock')?.checked ? '1' : '';
+  let url = '/api/inventory';
+  const params = [];
+  if (search) params.push(`search=${encodeURIComponent(search)}`);
+  if (lowStock) params.push('lowStock=1');
+  if (params.length) url += '?' + params.join('&');
+
+  const r = await api('GET', url);
+  const list = r.data || [];
+  const container = document.getElementById('inv-list');
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>Kho trống. Hãy thêm vật tư đầu tiên!</p></div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tên vật tư</th><th>SKU</th><th>Đơn vị</th><th>Tồn kho</th><th>Tối thiểu</th><th>Vị trí</th><th></th></tr></thead>
+        <tbody>${list.map(item => {
+          const low = item.qty <= (item.minQty || 0) && item.minQty > 0;
+          return `<tr>
+            <td data-label="Tên vật tư" style="font-weight:600">${item.name}${low ? ' <span class="badge badge-high" style="font-size:10px">⚠ Sắp hết</span>' : ''}</td>
+            <td data-label="SKU"><code style="font-size:11px">${item.sku || '—'}</code></td>
+            <td data-label="Đơn vị">${item.unit}</td>
+            <td data-label="Tồn kho" style="font-weight:700;color:${low?'var(--red)':'var(--green)'}">${item.qty}</td>
+            <td data-label="Tối thiểu">${item.minQty || 0}</td>
+            <td data-label="Vị trí">${item.location || '—'}</td>
+            <td data-label="">
+              <button class="btn btn-ghost btn-sm" onclick="showInventoryTx('${item.id}','${item.name}')">Nhập/Xuất</button>
+              ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showInventoryForm(${JSON.stringify(item).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+function showInventoryForm(data = {}) {
+  openModal(data.id ? 'Sửa Vật tư' : 'Thêm Vật tư vào Kho', `
+    <div class="form-row">
+      <div class="form-group"><label>Tên vật tư *</label><input id="inv-name" value="${data.name||''}" placeholder="VD: Bóng đèn LED 20W"></div>
+      <div class="form-group"><label>Mã SKU</label><input id="inv-sku" value="${data.sku||''}" placeholder="VD: LED-20W-001"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Đơn vị tính</label><input id="inv-unit" value="${data.unit||'cái'}" placeholder="cái, lít, cuộn..."></div>
+      <div class="form-group"><label>Tồn kho hiện tại</label><input type="number" id="inv-qty" value="${data.qty||0}" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Mức tối thiểu (cảnh báo)</label><input type="number" id="inv-minqty" value="${data.minQty||0}" min="0"></div>
+      <div class="form-group"><label>Vị trí kho</label><input id="inv-loc" value="${data.location||''}" placeholder="VD: Kho B, kệ 3"></div>
+    </div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="inv-notes">${data.notes||''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteInventory('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveInventory('${data.id||''}')">Lưu</button>`);
+}
+
+async function saveInventory(id) {
+  const body = {
+    name: document.getElementById('inv-name').value.trim(),
+    sku: document.getElementById('inv-sku').value.trim(),
+    unit: document.getElementById('inv-unit').value.trim() || 'cái',
+    qty: Number(document.getElementById('inv-qty').value),
+    minQty: Number(document.getElementById('inv-minqty').value),
+    location: document.getElementById('inv-loc').value.trim(),
+    notes: document.getElementById('inv-notes').value.trim()
+  };
+  if (!body.name) return toast('Vui lòng nhập tên vật tư', 'error');
+  const r = id ? await api('PUT', `/api/inventory/${id}`, body) : await api('POST', '/api/inventory', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast(id ? 'Đã cập nhật' : 'Thêm vật tư thành công!', 'success'); filterInventory();
+}
+
+async function deleteInventory(id) {
+  if (!confirm('Xóa vật tư này?')) return;
+  const r = await api('DELETE', `/api/inventory/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Đã xóa', 'success'); filterInventory();
+}
+
+async function showInventoryTx(id, name) {
+  const r = await api('GET', `/api/inventory/${id}/transactions`);
+  const txList = r.data || [];
+  openModal(`📦 Nhập/Xuất kho: ${name}`, `
+    <div class="form-row" style="margin-bottom:16px">
+      <div class="form-group">
+        <label>Loại giao dịch</label>
+        <select id="tx-type">
+          <option value="in">📥 Nhập kho</option>
+          <option value="out">📤 Xuất kho</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Số lượng *</label><input type="number" id="tx-qty" min="1" value="1"></div>
+    </div>
+    <div class="form-group"><label>Ghi chú</label><input id="tx-note" placeholder="Lý do nhập/xuất..."></div>
+    <hr style="margin:16px 0;border-color:var(--border)">
+    <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px">Lịch sử giao dịch gần nhất</div>
+    <div style="max-height:200px;overflow-y:auto">
+      ${txList.length ? txList.map(t => `
+        <div style="padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;display:flex;justify-content:space-between">
+          <span>${t.type==='in'?'📥':'📤'} ${t.qty} ${t.note ? '· '+t.note : ''}</span>
+          <span style="color:${t.type==='in'?'var(--green)':'var(--red)'};font-weight:700">${t.type==='in'?'+':'-'}${t.qty} → ${t.balanceAfter}</span>
+        </div>`).join('') : '<div style="color:var(--gray);padding:8px">Chưa có giao dịch</div>'}
+    </div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+      <button class="btn btn-primary" onclick="submitInventoryTx('${id}')">Xác nhận</button>`);
+}
+
+async function submitInventoryTx(id) {
+  const type = document.getElementById('tx-type').value;
+  const qty = Number(document.getElementById('tx-qty').value);
+  const note = document.getElementById('tx-note').value.trim();
+  if (!qty || qty < 1) return toast('Số lượng phải lớn hơn 0', 'error');
+  const r = await api('POST', `/api/inventory/${id}/transaction`, { type, qty, note });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  toast(`${type==='in'?'Nhập':'Xuất'} kho thành công! Tồn kho mới: ${r.data.item.qty}`, 'success');
+  filterInventory();
+  loadNotifBell();
+}
+
+// ─── VENDORS ─────────────────────────────────────────────────
+async function renderVendors() {
+  const r = await api('GET', '/api/vendors');
+  const list = r.data || [];
+  document.getElementById('page-body').innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="icon">🏢</div><p>Chưa có nhà cung cấp. Nhấn "+ Thêm NCC" để bắt đầu!</p></div>`
+    : `<div class="card" style="padding:0"><div class="table-wrap"><table>
+        <thead><tr><th>Tên NCC</th><th>Liên hệ</th><th>Điện thoại</th><th>Email</th><th>Địa chỉ</th><th></th></tr></thead>
+        <tbody>${list.map(v => `<tr>
+          <td data-label="Tên NCC" style="font-weight:600">${v.name}</td>
+          <td data-label="Liên hệ">${v.contact || '—'}</td>
+          <td data-label="Điện thoại">${v.phone || '—'}</td>
+          <td data-label="Email">${v.email || '—'}</td>
+          <td data-label="Địa chỉ">${v.address || '—'}</td>
+          <td data-label="">
+            ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showVendorForm(${JSON.stringify(v).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div></div>`;
+}
+
+function showVendorForm(data = {}) {
+  openModal(data.id ? 'Sửa Nhà cung cấp' : 'Thêm Nhà cung cấp', `
+    <div class="form-row">
+      <div class="form-group"><label>Tên NCC *</label><input id="vnd-name" value="${data.name||''}" placeholder="VD: Công ty TNHH ABC"></div>
+      <div class="form-group"><label>Người liên hệ</label><input id="vnd-contact" value="${data.contact||''}" placeholder="Tên người liên hệ"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Điện thoại</label><input id="vnd-phone" value="${data.phone||''}" placeholder="0912..."></div>
+      <div class="form-group"><label>Email</label><input id="vnd-email" value="${data.email||''}" placeholder="abc@company.com"></div>
+    </div>
+    <div class="form-group"><label>Địa chỉ</label><input id="vnd-address" value="${data.address||''}" placeholder="Địa chỉ công ty"></div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="vnd-notes">${data.notes||''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteVendor('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveVendor('${data.id||''}')">Lưu</button>`);
+}
+
+async function saveVendor(id) {
+  const body = {
+    name: document.getElementById('vnd-name').value.trim(),
+    contact: document.getElementById('vnd-contact').value.trim(),
+    phone: document.getElementById('vnd-phone').value.trim(),
+    email: document.getElementById('vnd-email').value.trim(),
+    address: document.getElementById('vnd-address').value.trim(),
+    notes: document.getElementById('vnd-notes').value.trim()
+  };
+  if (!body.name) return toast('Vui lòng nhập tên nhà cung cấp', 'error');
+  const r = id ? await api('PUT', `/api/vendors/${id}`, body) : await api('POST', '/api/vendors', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast(id ? 'Đã cập nhật' : 'Thêm nhà cung cấp thành công!', 'success'); renderVendors();
+}
+
+async function deleteVendor(id) {
+  if (!confirm('Xóa nhà cung cấp này?')) return;
+  const r = await api('DELETE', `/api/vendors/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Đã xóa', 'success'); renderVendors();
+}
+
+// ─── PURCHASE ORDERS ─────────────────────────────────────────
+const PO_STATUS = { draft: '📝 Nháp', sent: '📤 Đã gửi', received: '✅ Đã nhận', cancelled: '❌ Đã hủy' };
+const PO_STATUS_COLOR = { draft: 'var(--gray)', sent: 'var(--blue)', received: 'var(--green)', cancelled: 'var(--red)' };
+
+async function renderPO() {
+  const r = await api('GET', '/api/purchase-orders');
+  const list = r.data || [];
+  document.getElementById('page-body').innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="icon">🛒</div><p>Chưa có đơn mua hàng. Nhấn "+ Tạo đơn mua" để bắt đầu!</p></div>`
+    : `<div class="card" style="padding:0"><div class="table-wrap"><table>
+        <thead><tr><th>Mã PO</th><th>Nhà cung cấp</th><th>Số mặt hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th></th></tr></thead>
+        <tbody>${list.map(po => `<tr>
+          <td data-label="Mã PO"><code style="font-size:11px">${po.id}</code></td>
+          <td data-label="Nhà cung cấp" style="font-weight:600">${po.vendorName}</td>
+          <td data-label="Số mặt hàng">${(po.items||[]).length} mặt hàng</td>
+          <td data-label="Tổng tiền" style="font-weight:700">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td>
+          <td data-label="Trạng thái"><span style="color:${PO_STATUS_COLOR[po.status]||'inherit'};font-weight:600">${PO_STATUS[po.status]||po.status}</span></td>
+          <td data-label="Ngày tạo">${fmtDateShort(po.createdAt)}</td>
+          <td data-label="">
+            <button class="btn btn-ghost btn-sm" onclick="showPODetail(${JSON.stringify(po).replace(/"/g,'&quot;')})">Xem</button>
+            ${['admin','manager'].includes(currentUser.role) && po.status !== 'received' && po.status !== 'cancelled' ? `<button class="btn btn-ghost btn-sm" onclick="showPOStatusMenu('${po.id}','${po.status}')">Cập nhật</button>` : ''}
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div></div>`;
+}
+
+function showPODetail(po) {
+  const itemRows = (po.items || []).map(i =>
+    `<tr><td>${i.name}</td><td><code style="font-size:11px">${i.sku||'—'}</code></td><td>${i.qty} ${i.unit}</td><td>${(i.unitPrice||0).toLocaleString('vi-VN')}đ</td><td style="font-weight:700">${((i.qty||0)*(i.unitPrice||0)).toLocaleString('vi-VN')}đ</td></tr>`
+  ).join('');
+  openModal(`📋 Chi tiết PO: ${po.id}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
+      <div><strong>Nhà cung cấp:</strong><br>${po.vendorName}</div>
+      <div><strong>Trạng thái:</strong><br><span style="color:${PO_STATUS_COLOR[po.status]};font-weight:600">${PO_STATUS[po.status]||po.status}</span></div>
+      <div><strong>Ngày tạo:</strong><br>${fmtDateShort(po.createdAt)}</div>
+      <div><strong>Ngày nhận dự kiến:</strong><br>${po.expectedDate ? fmtDateShort(po.expectedDate) : '—'}</div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tên hàng</th><th>SKU</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+      <tfoot><tr><td colspan="4" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td><td style="font-weight:700;color:var(--blue)">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td></tr></tfoot>
+    </table></div>
+    ${po.notes ? `<div style="margin-top:12px;font-size:13px"><strong>Ghi chú:</strong> ${po.notes}</div>` : ''}
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`);
+}
+
+function showPOStatusMenu(id, currentStatus) {
+  const nextStatuses = { draft: ['sent', 'cancelled'], sent: ['received', 'cancelled'], received: [], cancelled: [] };
+  const options = (nextStatuses[currentStatus] || []).map(s =>
+    `<button class="btn btn-primary btn-sm" style="margin:4px" onclick="updatePOStatus('${id}','${s}')">${PO_STATUS[s]}</button>`
+  ).join('');
+  openModal('Cập nhật trạng thái PO', `
+    <p style="font-size:13px;margin-bottom:12px">Trạng thái hiện tại: <strong style="color:${PO_STATUS_COLOR[currentStatus]}">${PO_STATUS[currentStatus]}</strong></p>
+    <p style="font-size:13px;margin-bottom:12px">Chuyển sang:</p>
+    <div>${options || '<p style="color:var(--gray)">Không có trạng thái tiếp theo khả dụng.</p>'}</div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>`);
+}
+
+async function updatePOStatus(id, status) {
+  const r = await api('PUT', `/api/purchase-orders/${id}/status`, { status });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  const msg = status === 'received' ? 'Đã nhận hàng và cập nhật tồn kho!' : 'Đã cập nhật trạng thái PO';
+  toast(msg, 'success');
+  renderPO();
+  if (status === 'received') loadNotifBell();
+}
+
+let _poItems = [];
+async function showPOForm() {
+  const rv = await api('GET', '/api/vendors');
+  const vendors = rv.data || [];
+  _poItems = [];
+  openModal('Tạo Đơn mua hàng (PO)', `
+    <div class="form-row">
+      <div class="form-group"><label>Nhà cung cấp *</label>
+        <select id="po-vendor">
+          <option value="">-- Chọn NCC --</option>
+          ${vendors.map(v => `<option value="${v.id}" data-name="${v.name}">${v.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>Ngày nhận dự kiến</label><input type="date" id="po-expected"></div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Danh sách hàng cần mua:</div>
+    <div id="po-items-list"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addPOItem()">+ Thêm mặt hàng</button>
+    <div class="form-group" style="margin-top:12px"><label>Ghi chú</label><textarea id="po-notes" placeholder="Ghi chú đơn hàng..."></textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      <button class="btn btn-primary" onclick="savePO()">Tạo đơn</button>`);
+  addPOItem();
+}
+
+function addPOItem() {
+  _poItems.push({ id: Date.now() });
+  renderPOItems();
+}
+
+function removePOItem(id) {
+  _poItems = _poItems.filter(i => i.id !== id);
+  renderPOItems();
+}
+
+function renderPOItems() {
+  const el = document.getElementById('po-items-list');
+  if (!el) return;
+  el.innerHTML = _poItems.map(item => `
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px" id="poi-${item.id}">
+      <div><input placeholder="Tên hàng *" id="poi-name-${item.id}" style="width:100%"></div>
+      <div><input placeholder="SKU" id="poi-sku-${item.id}" style="width:100%"></div>
+      <div><input type="number" placeholder="SL *" id="poi-qty-${item.id}" min="1" value="1" style="width:100%"></div>
+      <div><input type="number" placeholder="Đơn giá" id="poi-price-${item.id}" min="0" value="0" style="width:100%"></div>
+      <div><button class="btn btn-danger btn-sm" onclick="removePOItem(${item.id})">✕</button></div>
+    </div>`).join('');
+}
+
+async function savePO() {
+  const vendorEl = document.getElementById('po-vendor');
+  const vendorId = vendorEl.value;
+  const vendorName = vendorEl.options[vendorEl.selectedIndex]?.getAttribute('data-name') || '';
+  if (!vendorId) return toast('Vui lòng chọn nhà cung cấp', 'error');
+  const items = _poItems.map(item => ({
+    name: (document.getElementById(`poi-name-${item.id}`)?.value || '').trim(),
+    sku: (document.getElementById(`poi-sku-${item.id}`)?.value || '').trim(),
+    qty: Number(document.getElementById(`poi-qty-${item.id}`)?.value) || 1,
+    unit: 'cái',
+    unitPrice: Number(document.getElementById(`poi-price-${item.id}`)?.value) || 0
+  })).filter(i => i.name);
+  if (!items.length) return toast('Vui lòng thêm ít nhất 1 mặt hàng', 'error');
+  const body = {
+    vendorId, vendorName, items,
+    notes: document.getElementById('po-notes').value.trim(),
+    expectedDate: document.getElementById('po-expected').value || null
+  };
+  const r = await api('POST', '/api/purchase-orders', body);
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal(); toast('Tạo đơn mua hàng thành công!', 'success'); renderPO();
+}
+
+// ─── TENANT PORTAL (Admin View) ──────────────────────────────
+async function renderTenantPortal() {
+  const r = await api('GET', '/api/tenant-requests');
+  const list = r.data || [];
+  const statusLabel = { pending: '🟡 Chờ duyệt', approved: '🟢 Đã tạo WO', rejected: '🔴 Từ chối' };
+  const urgLabel = { urgent: '🔴 Khẩn cấp', normal: '🟡 Bình thường', low: '🟢 Không gấp' };
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px;background:var(--blue-bg);border-color:var(--blue-light)">
+      <div style="font-size:13px;color:var(--blue-dark)">
+        🏠 <strong>Tenant Portal</strong> – Link báo sự cố dành cho cư dân:
+        <a href="/tenant" target="_blank" style="color:var(--blue);font-weight:700;margin-left:8px">${window.location.origin}/tenant ↗</a>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      ${!list.length ? '<div class="empty-state" style="padding:32px"><div class="icon">🏠</div><p>Chưa có yêu cầu nào từ cư dân</p></div>' : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mã</th><th>Cư dân</th><th>Căn hộ</th><th>Danh mục</th><th>Mô tả</th><th>Mức độ</th><th>Trạng thái</th><th>Ngày gửi</th><th></th></tr></thead>
+        <tbody>${list.map(tr => `<tr>
+          <td data-label="Mã"><code style="font-size:11px">${tr.id}</code></td>
+          <td data-label="Cư dân"><strong>${tr.name}</strong><br><span style="font-size:11px;color:var(--gray)">${tr.phone||''}</span></td>
+          <td data-label="Căn hộ">${tr.unit||'—'}</td>
+          <td data-label="Danh mục">${tr.category}</td>
+          <td data-label="Mô tả" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tr.description}</td>
+          <td data-label="Mức độ">${urgLabel[tr.urgency]||tr.urgency}</td>
+          <td data-label="Trạng thái">${statusLabel[tr.status]||tr.status}${tr.workOrderId?`<br><code style="font-size:10px">${tr.workOrderId}</code>`:''}</td>
+          <td data-label="Ngày gửi">${fmtDateShort(tr.createdAt)}</td>
+          <td data-label="">
+            ${tr.status === 'pending' ? `
+              <button class="btn btn-success btn-sm" onclick="approveTenantReq('${tr.id}')">✅ Tạo WO</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectTenantReq('${tr.id}')">Từ chối</button>
+            ` : ''}
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+
+async function approveTenantReq(id) {
+  if (!confirm('Tạo Work Order từ yêu cầu này?')) return;
+  const r = await api('PUT', `/api/tenant-requests/${id}/approve`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast(`✅ Đã tạo ${r.data.workOrder.id}`, 'success');
+  renderTenantPortal();
+}
+
+async function rejectTenantReq(id) {
+  if (!confirm('Từ chối yêu cầu này?')) return;
+  const r = await api('PUT', `/api/tenant-requests/${id}/reject`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã từ chối yêu cầu', 'success');
+  renderTenantPortal();
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────────
+let _auditFilters = { entity: '', action: '', limit: 50 };
+
+const _auditActionBadge = {
+  create:  '<span style="background:#22c55e;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">create</span>',
+  update:  '<span style="background:#f59e0b;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">update</span>',
+  delete:  '<span style="background:#ef4444;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">delete</span>',
+  login:   '<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">login</span>',
+  logout:  '<span style="background:#6366f1;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">logout</span>',
+  export:  '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">export</span>',
+  approve: '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">approve</span>',
+  reject:  '<span style="background:#8b5cf6;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">reject</span>',
+  in:      '<span style="background:#22c55e;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">in</span>',
+  out:     '<span style="background:#f59e0b;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">out</span>'
+};
+
+function _auditBadge(action) {
+  return _auditActionBadge[action] || `<span style="background:#6b7280;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">${action}</span>`;
+}
+
+async function renderAuditLog(opts = {}) {
+  if (opts.entity !== undefined) _auditFilters.entity = opts.entity;
+  if (opts.action !== undefined) _auditFilters.action = opts.action;
+  if (opts.limit)  _auditFilters.limit  = opts.limit;
+
+  const params = new URLSearchParams({ limit: _auditFilters.limit });
+  if (_auditFilters.entity) params.set('entity', _auditFilters.entity);
+  if (_auditFilters.action) params.set('action', _auditFilters.action);
+
+  const r = await api('GET', `/api/audit-logs?${params}`);
+  const list  = r.data  || [];
+  const total = r.total || 0;
+
+  const entities = ['', 'user', 'asset', 'workOrder', 'pmSchedule', 'inventory', 'tenantRequest', 'backup', 'system'];
+  const actions  = ['', 'create', 'update', 'delete', 'login', 'logout', 'export', 'approve', 'reject', 'in', 'out'];
+
+  const entityOpts = entities.map(e => `<option value="${e}" ${_auditFilters.entity===e?'selected':''}>${e||'Tất cả đối tượng'}</option>`).join('');
+  const actionOpts = actions.map(a => `<option value="${a}" ${_auditFilters.action===a?'selected':''}>${a||'Tất cả hành động'}</option>`).join('');
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <select class="form-control" style="width:auto" onchange="renderAuditLog({entity:this.value})">
+          ${entityOpts}
+        </select>
+        <select class="form-control" style="width:auto" onchange="renderAuditLog({action:this.value})">
+          ${actionOpts}
+        </select>
+        ${_auditFilters.limit < total ? `<button class="btn btn-ghost btn-sm" onclick="renderAuditLog({limit:${_auditFilters.limit+50}})">Tải thêm (${total - _auditFilters.limit} còn lại)</button>` : `<span style="font-size:12px;color:var(--gray)">Hiển thị ${list.length} / ${total} mục</span>`}
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="exportDB()">📥 Xuất dữ liệu</button>
+          <button class="btn btn-ghost btn-sm" onclick="createBackup()">💾 Tạo Backup</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      ${!list.length ? `<div class="empty-state" style="padding:32px"><div class="icon">📜</div><p>Chưa có nhật ký nào</p></div>` : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Thời gian</th><th>Người thao tác</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th><th>IP</th></tr></thead>
+        <tbody>${list.map(l => `<tr>
+          <td data-label="Thời gian" style="white-space:nowrap;font-size:12px">${fmtDate(l.createdAt)}</td>
+          <td data-label="Người thao tác"><strong>${l.userName || '—'}</strong></td>
+          <td data-label="Hành động">${_auditBadge(l.action)}</td>
+          <td data-label="Đối tượng"><span style="font-size:12px;color:var(--gray)">${l.entity}</span>${l.entityId ? `<br><code style="font-size:10px">${l.entityId}</code>` : ''}</td>
+          <td data-label="Chi tiết" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${l.details || '—'}</td>
+          <td data-label="IP" style="font-size:11px;color:var(--gray)">${l.ip || '—'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+
+async function exportDB() {
+  window.location.href = '/api/export/db';
+}
+
+async function createBackup() {
+  const r = await api('POST', '/api/backup');
+  if (!r.ok) return toast(r.error || 'Lỗi backup', 'error');
+  toast(`✅ Backup thành công: ${r.data.filename}`, 'success');
+  renderAuditLog();
+}
+
+// ─── INTEGRATION (BMS/IoT) ───────────────────────────────────
+async function renderIntegration() {
+  document.getElementById('page-title').textContent = 'Kết nối BMS/IoT';
+  document.getElementById('page-body').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:4px">🔑 API Keys</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Dùng để xác thực các yêu cầu từ hệ thống BMS/IoT bên ngoài. Lưu key ngay sau khi tạo — sẽ không hiển thị lại toàn bộ.</p>
+      <div id="apikey-list" style="margin-bottom:12px"><div class="empty-state" style="padding:16px"><p>Đang tải...</p></div></div>
+      <button class="btn btn-primary btn-sm" onclick="showApiKeyForm()">+ Tạo API Key mới</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:4px">🪝 Webhooks</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Hệ thống sẽ gửi POST đến URL đăng ký khi có sự kiện (ví dụ: work_order.created).</p>
+      <div id="webhook-list" style="margin-bottom:12px"><div class="empty-state" style="padding:16px"><p>Đang tải...</p></div></div>
+      <button class="btn btn-primary btn-sm" onclick="showWebhookForm()">+ Đăng ký Webhook</button>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">📡 External Alert API</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:8px">Gửi cảnh báo từ BMS/IoT để tự động tạo Work Order:</p>
+      <pre style="background:var(--gray-bg);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto">POST /api/external/alert
+X-Api-Key: &lt;your-api-key&gt;
+Content-Type: application/json
+
+{
+  "assetId": "A0001",
+  "faultCode": "HVAC-TEMP-HIGH",
+  "description": "Nhiệt độ vượt ngưỡng 35°C",
+  "severity": "critical"   // critical→high, warning→medium, info→low
+}</pre>
+    </div>`;
+  await loadApiKeys();
+  await loadWebhooks();
+}
+
+async function loadApiKeys() {
+  const r = await api('GET', '/api/integration/api-keys');
+  const list = r.data || [];
+  document.getElementById('apikey-list').innerHTML = list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Nhãn</th><th>Key (ẩn)</th><th>Trạng thái</th><th>Tạo lúc</th><th></th></tr></thead><tbody>
+        ${list.map(k => `<tr>
+          <td data-label="Nhãn"><strong>${k.label}</strong></td>
+          <td data-label="Key"><code style="font-size:11px">${k.key}</code></td>
+          <td data-label="Trạng thái"><span class="badge badge-${k.active ? 'open' : 'done'}">${k.active ? 'Hoạt động' : 'Thu hồi'}</span></td>
+          <td data-label="Tạo lúc" style="font-size:12px">${fmtDate(k.createdAt)}</td>
+          <td data-label="">${k.active ? `<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="revokeApiKey('${k.id}')">Thu hồi</button>` : ''}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`
+    : `<div class="empty-state" style="padding:16px"><div class="icon">🔑</div><p>Chưa có API key nào</p></div>`;
+}
+
+async function loadWebhooks() {
+  const r = await api('GET', '/api/integration/webhooks');
+  const list = r.data || [];
+  document.getElementById('webhook-list').innerHTML = list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Nhãn</th><th>URL</th><th>Events</th><th>Tạo lúc</th><th></th></tr></thead><tbody>
+        ${list.map(w => `<tr>
+          <td data-label="Nhãn"><strong>${w.label}</strong></td>
+          <td data-label="URL"><code style="font-size:11px;word-break:break-all">${w.url}</code></td>
+          <td data-label="Events"><span style="font-size:11px">${(w.events || []).join(', ')}</span></td>
+          <td data-label="Tạo lúc" style="font-size:12px">${fmtDate(w.createdAt)}</td>
+          <td data-label=""><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteWebhook('${w.id}')">Xóa</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`
+    : `<div class="empty-state" style="padding:16px"><div class="icon">🪝</div><p>Chưa đăng ký webhook nào</p></div>`;
+}
+
+function showApiKeyForm() {
+  openModal('Tạo API Key mới', `
+    <div class="form-group"><label>Nhãn *</label><input id="apikey-label" placeholder="VD: BMS Tầng 1, SCADA Server..."></div>
+    <p style="font-size:12px;color:var(--text2)">Key sẽ được hiển thị <strong>một lần duy nhất</strong> sau khi tạo. Hãy sao chép và lưu ngay.</p>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+     <button class="btn btn-primary" onclick="createApiKey()">Tạo Key</button>`
+  );
+}
+
+async function createApiKey() {
+  const label = document.getElementById('apikey-label')?.value?.trim();
+  if (!label) return toast('Vui lòng nhập nhãn', 'error');
+  const r = await api('POST', '/api/integration/api-keys', { label });
+  if (!r.ok) return toast(r.error, 'error');
+  closeModal();
+  openModal('✅ API Key đã tạo — Sao chép ngay!', `
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Key chỉ hiển thị <strong>một lần</strong>. Hãy sao chép và lưu vào nơi an toàn.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <code id="new-key-val" style="font-size:13px;background:var(--gray-bg);padding:10px 14px;border-radius:8px;flex:1;word-break:break-all">${r.data.key}</code>
+      <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('new-key-val').textContent); toast('Đã sao chép!', 'success')">📋 Copy</button>
+    </div>`,
+    `<button class="btn btn-primary" onclick="closeModal(); loadApiKeys()">Đã lưu, đóng</button>`
+  );
+}
+
+async function revokeApiKey(id) {
+  if (!confirm('Thu hồi API key này? Các hệ thống đang dùng key này sẽ bị mất quyền truy cập.')) return;
+  const r = await api('DELETE', `/api/integration/api-keys/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã thu hồi key', 'success');
+  loadApiKeys();
+}
+
+function showWebhookForm() {
+  const eventOpts = ['work_order.created', 'work_order.updated', 'asset.alert', 'pm.due'];
+  openModal('Đăng ký Webhook', `
+    <div class="form-group"><label>Nhãn</label><input id="wh-label" placeholder="VD: Slack #alerts, SCADA Listener..."></div>
+    <div class="form-group"><label>URL *</label><input id="wh-url" placeholder="https://your-server.com/webhook"></div>
+    <div class="form-group"><label>Sự kiện *</label>
+      ${eventOpts.map(e => `<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px"><input type="checkbox" name="wh-events" value="${e}"> ${e}</label>`).join('')}
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+     <button class="btn btn-primary" onclick="saveWebhook()">Đăng ký</button>`
+  );
+}
+
+async function saveWebhook() {
+  const label = document.getElementById('wh-label')?.value?.trim();
+  const url = document.getElementById('wh-url')?.value?.trim();
+  const events = [...document.querySelectorAll('input[name="wh-events"]:checked')].map(el => el.value);
+  if (!url) return toast('Vui lòng nhập URL', 'error');
+  if (!events.length) return toast('Chọn ít nhất một sự kiện', 'error');
+  const r = await api('POST', '/api/integration/webhooks', { label, url, events });
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã đăng ký webhook', 'success');
+  closeModal();
+  loadWebhooks();
+}
+
+async function deleteWebhook(id) {
+  if (!confirm('Xóa webhook này?')) return;
+  const r = await api('DELETE', `/api/integration/webhooks/${id}`);
+  if (!r.ok) return toast(r.error, 'error');
+  toast('Đã xóa webhook', 'success');
+  loadWebhooks();
+}
+
+async function renderRelease() {
+  let rTask = await api('GET', '/api/system/tasks');
+  let rInfo = await api('GET', '/api/system/info');
+  
+  // Fallback to public health API if system info is unauthorized
+  if (!rInfo.ok) {
+    const rHealth = await api('GET', '/api/health');
+    rInfo = rHealth;
+  }
+  
+  const tasks = rTask.data || { done: [], queue: [] };
+  const info = rInfo.data || rInfo || { version: '1.3.5', env: 'test' };
+  const envVal = (info.env || '').toLowerCase();
+  const isTest = envVal === 'test' || envVal === 'development';
+
+  document.getElementById('page-body').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-label">Phiên bản hiện tại</div>
+        <div class="stat-value">v${info.version}</div>
+        <div class="stat-sub">Hệ thống: <b>${isTest ? 'TEST' : 'STABLE'}</b></div>
+      </div>
+      <div class="stat-card ${isTest ? 'stat-yellow' : 'stat-green'}">
+        <div class="stat-icon">${isTest ? '🛠️' : '✅'}</div>
+        <div class="stat-label">Trạng thái vận hành</div>
+        <div class="stat-value">${isTest ? 'Đang thử nghiệm' : 'Sẵn sàng'}</div>
+        <div class="stat-sub">${isTest ? 'Cổng 8081' : 'Cổng 8080 (Chính thức)'}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">📖 Nhật ký Task (Development Logs)</div>
+      <div style="margin-top:15px">
+        <div id="release-tab-content" class="table-wrap">
+          <table>
+            <thead><tr><th>Tên Task</th><th>Thời gian hoàn thành</th><th>Kích thước</th></tr></thead>
+            <tbody>
+              ${(tasks.done || []).length > 0 ? tasks.done.map(t => `<tr><td><code>${t.name}</code></td><td>${new Date(t.time).toLocaleString('vi-VN')}</td><td>${Math.round(t.size/1024)} KB</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-dim)">Chưa có dữ liệu nhật ký</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px; border-top:4px solid var(--blue); padding: 40px 20px; text-align: center;">
+      <div class="card-title" style="font-size: 20px; margin-bottom: 8px;">🚀 Sẵn sàng để Phát hành?</div>
+      <p style="font-size: 14px; color: var(--text-dim); margin-bottom: 30px;">
+        Vui lòng đảm bảo bạn đã kiểm tra kỹ mọi tính năng trên bản <b>TEST (8081)</b> trước khi đồng bộ sang <b>STABLE (8080)</b>.
+      </p>
+      
+      ${info.env === 'test' ? `
+        <button class="btn" onclick="promoteToStable()" id="promote-btn" 
+          style="background: linear-gradient(135deg, var(--blue), #6366f1); color: white; padding: 20px 60px; font-size: 18px; font-weight: 800; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); transition: all 0.3s; width: 100%; max-width: 400px;">
+          🚀 KÍCH HOẠT PHÁT HÀNH NGAY
+        </button>
+      ` : `
+        <div style="padding: 20px; background: var(--green-bg); color: var(--green); border-radius: 12px; font-weight: 700;">
+          ✅ HỆ THỐNG ĐANG Ở TRẠNG THÁI STABLE
+        </div>
+      `}
+      
+      <div style="margin-top: 24px; font-size: 12px; color: var(--text-dim); line-height: 1.6;">
+        <p>Hệ thống sẽ thực hiện Rebuild container bản Stable tự động.</p>
+        <p>Quá trình này mất khoảng <b>1-2 phút</b> để hoàn tất.</p>
+      </div>
+    </div>
+  `;
+}
+
+async function promoteToStable() {
+  if (!confirm('XÁC NHẬN: Phê duyệt bản TEST hiện tại và PHÁT HÀNH sang môi trường STABLE (Sản xuất)?')) return;
+  const btn = event.target;
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '🚀 Đang phát hành...';
+  
+  const r = await api('POST', '/api/system/promote');
+  if (r.ok) {
+    alert('ĐÃ KÍCH HOẠT! Bản Stable đang được rebuild tự động trên NAS. Vui lòng chờ 1-2 phút để bản Stable cập nhật.');
+    renderRelease();
+  } else {
+    alert('Lỗi: ' + r.error);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
+// ─── Init ───────────────────────────────────────────────────
 (async () => {
+  loadSavedCredentials();
   const pathMatch = window.location.pathname.match(/^\/asset\/([^/?#]+)/);
   if (pathMatch) pendingAssetId = pathMatch[1];
   const r = await api('GET', '/api/me');
-  if (r.ok) { currentUser = r.data; showApp(); }
+  if (r.ok) { 
+    currentUser = r.data; 
+    showApp(); 
+    const meta = await api('GET', '/api/system/info');
+    if (meta.ok) {
+      const vEl = document.getElementById('app-version');
+      if (vEl) vEl.innerText = 'v' + meta.data.version;
+      const tEl = document.getElementById('env-tag');
+      if (tEl) {
+        tEl.innerText = meta.data.env.toUpperCase();
+        tEl.style.backgroundColor = meta.data.env === 'test' ? '#f59e0b20' : '#16a34a20';
+        tEl.style.color = meta.data.env === 'test' ? 'var(--yellow)' : 'var(--green)';
+      }
+    }
+  }
 })();
 </script>
 </body>

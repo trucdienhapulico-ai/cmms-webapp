@@ -1,0 +1,26 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Premium UI/UX Polish & Theme Toggle
+Priority: Medium
+Issue: #24
+
+## Context
+- High-level aesthetic improvement.
+- Adhere to UI/UX CONVENTIONS: M&E OPERATIONS.
+
+## Specific Tasks
+1. **CSS Variables**:
+   - Extract all hardcoded colors in `public/index.html` (inside `<style>` tag) to CSS variables at `:root`.
+2. **Dark Mode**:
+   - Implement `[data-theme='dark']` styles for all components.
+   - Backgrounds should be dark navy/slate, cards slightly lighter, text white/gray.
+3. **Theme Toggle Logic**:
+   - Add a button in Topbar (near notification bell).
+   - `toggleTheme()`: Switch between 'light' and 'dark', update `document.documentElement.dataset.theme`, and save to `localStorage`.
+   - Ensure the theme persists on page reload.
+4. **Visual Excellence**:
+   - Add subtle `box-shadow` on hover for all cards.
+   - Smooth `transition: all 0.3s ease` for theme switching and hover effects.
+5. **UI Map**:
+   - Add [UI-Theme-Toggle] entry.
+6. **Finish**:
+   - Commit, Push, Close Issue #24.

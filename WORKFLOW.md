@@ -34,8 +34,110 @@ Bạn là Builder. Hãy thực hiện task này với phạm vi hẹp nhất có
 Sau khi xong, hãy run test, commit, push code và tự động đóng issue này.
 ```
 
-## ⚙️ Cơ chế Tự Động Hóa (Worker)
-Bạn hãy chạy file `claude-worker.ps1` ở thư mục gốc của dự án.
-- Cứ mỗi 30 phút, script sẽ tự động quét GitHub Issue.
-- Bất cứ khi nào bạn tạo một Issue có nhãn `claude-todo`, script sẽ báo động và tự khởi chạy Claude Code với context được thu hẹp tối đa vào nội dung Issue đó.
-- Code xong, hệ thống tự push và dọn dẹp. Bạn chỉ việc mở GitHub lên check kết quả.
+## ⚙️ Hệ thống Hàng đợi Tác vụ (Task Queue Protocol)
+
+Tất cả các tác vụ được quản lý bằng **file trong thư mục `brain/`**, không phải qua GitHub Issues trực tiếp. Quy trình này áp dụng cho **CẢ HAI** agent:
+
+### Cấu trúc thư mục
+```
+brain/
+  ├── roadmap.md          # Tiến độ tổng quát
+  ├── tasks_queue/        # Hàng đợi – bỏ file .txt vào đây để giao việc
+  └── tasks_done/         # Lịch sử – file đã xong hoặc lỗi
+```
+
+### Vòng đời của một tác vụ (Lifecycle)
+```
+[1] .txt        → Đang chờ trong hàng đợi (chưa ai nhận)
+[2] .working    → Đang được xử lý (một agent đã nhận)
+[3] .done.txt   → Hoàn thành (chuyển sang tasks_done/)
+[4] .failed.txt → Lỗi / bị hủy (chuyển sang tasks_done/)
+```
+
+### Quy tắc BẮT BUỘC cho cả Antigravity & Claude Code
+1. **Trước khi bắt đầu** một task: Đổi đuôi file từ `.txt` → `.working`
+2. **Sau khi hoàn thành** task: Di chuyển file sang `brain/tasks_done/` với đuôi `.done.txt`
+3. **Nếu gặp lỗi** hoặc bị hủy: Di chuyển sang `brain/tasks_done/` với đuôi `.failed.txt`
+4. **Khi khởi động lại**: Quét tìm file `.working` bị kẹt → đổi lại thành `.txt` (phục hồi)
+5. **Antigravity khi tự làm Issue thay Claude Code**: Cũng PHẢI tuân thủ đúng quy trình đổi đuôi file này để tránh Claude Code làm lại task đã xong.
+
+### Cách giao việc
+- **Cho Claude Code**: Tạo file `.txt` trong `brain/tasks_queue/`, sau đó chạy `.\claude-worker.ps1`
+- **Cho Antigravity tự làm**: USER yêu cầu trực tiếp. Antigravity tự đổi đuôi file tương ứng.
+- **Hẹn giờ**: Chạy `.\schedule-worker.ps1` để đặt alarm cho Claude Code thức dậy vào giờ chỉ định.
+
+### 🔄 Quy ước Bổ sung Hàng đợi (Pipeline Replenishment)
+Khi số lượng task trong `brain/tasks_queue/` **còn ≤ 1 file `.txt`**, agent đang làm việc (Antigravity hoặc Claude Code) **PHẢI**:
+1. Đọc `brain/roadmap.md` để xác định 3 hạng mục tiếp theo chưa làm.
+2. Tạo GitHub Issue tương ứng (gắn nhãn `claude-todo`).
+3. Tạo 3 file `.txt` **cực kỳ chi tiết** (ghi rõ file cần sửa, logic cần thêm, API endpoints) và thả vào `brain/tasks_queue/`.
+4. Mục đích: Đảm bảo pipeline không bao giờ cạn, worker luôn có việc chạy liên tục.
+
+## 🤝 Multi-Agent Protocol (Claude + Copilot)
+
+Hệ thống hỗ trợ hai agent AI phối hợp song song, mỗi agent nhận việc qua **header khác nhau** trong file task.
+
+### Task Prefixes (Tiền tố Bắt buộc)
+
+| Header trong file `.txt` | Agent xử lý | Script lắng nghe |
+|---|---|---|
+| `[TASK INSTRUCTION FOR CLAUDE]` | Claude Code CLI | `.\claude-worker.ps1` |
+| `[TASK INSTRUCTION FOR COPILOT]` | GitHub Copilot | `.\copilot-worker.ps1` |
+
+> **Lưu ý:** `claude-worker.ps1` chạy **tự động hoàn toàn**. `copilot-worker.ps1` hiển thị task và gợi ý lệnh `gh copilot suggest`, nhưng **yêu cầu xác nhận thủ công** do Copilot không tự áp dụng thay đổi.
+
+### Khi nào dùng Claude vs. Copilot?
+
+| Loại công việc | Nên dùng |
+|---|---|
+| Kiến trúc hệ thống, multi-file edits, logic phức tạp | **Claude Code** |
+| Unit tests, boilerplate, documentation, refactor nhỏ | **GitHub Copilot** |
+| Debug lỗi cụ thể trong 1 file | **GitHub Copilot** |
+| API mới, module mới, tích hợp service ngoài | **Claude Code** |
+
+### Setup Copilot lần đầu
+
+```powershell
+.\setup-copilot.ps1
+```
+
+Script sẽ tự động cài `gh extension install github/gh-copilot` và kiểm tra xác thực.
+
+### Ví dụ file task cho Copilot
+
+```
+[TASK INSTRUCTION FOR COPILOT]
+Target: Viết unit test cho hàm calculateOverdueDays
+File: public/js/workorders.js
+
+Hãy gợi ý unit test cho hàm calculateOverdueDays(dueDate) bằng Jest.
+Bao gồm: trường hợp quá hạn, đúng hạn, và ngày tương lai.
+```
+
+---
+
+## 🗺️ Quy ước Cập nhật Giao diện (Dành cho Cả Architect & Builder)
+Hệ thống có một chức năng nội bộ mang tên **Sơ đồ UI / Góp ý (UI Map)** được code sẵn tại hàm `renderUIMap()` trong file `public/index.html`.
+Bất cứ khi nào bạn thay đổi cấu trúc giao diện, thêm màn hình mới, thêm tính năng hoặc di chuyển vị trí các nút:
+- **BẮT BUỘC** phải tìm đến hàm `renderUIMap()` và cập nhật/bổ sung thông tin vào bảng Sơ đồ UI.
+- Thêm Mã định vị chuẩn xác (ví dụ: `[UI-TênKhuVực-TênThànhPhần]`) để người dùng (USER) có thể copy mã đó paste vào yêu cầu (Issue) lần sau.
+- Việc này giúp AI thế hệ sau luôn biết chính xác vị trí cần sửa khi USER cung cấp một mã UI thay vì phải diễn đạt mơ hồ.
+
+### 🎨 UI/UX CONVENTIONS: M&E OPERATIONS
+
+**1. Mobile-First & Phone-Native**
+- **Core:** One-hand operation, bottom sheets, gesture-based actions (swipe).
+- **Data Entry:** QR/NFC-first > AI Vision > Pickers > Manual input.
+- **Onboarding:** Rapid "Zero-Config" flow (Setup-to-Action < 60s).
+
+**2. Modern Design System**
+- **Layout:** Card-centric, clean typography, high-contrast status colors (Green/Amber/Red).
+- **Scalability:** Responsive logic for both SME (simple) and Enterprise (complex) assets.
+- **Performance:** Ultra-low latency; real-time telemetry focus.
+
+**3. AI-Powered Insights**
+- **Predictive:** Show "Next Failure Date" instead of just "Status OK."
+- **Search:** Natural Language Processing (NLP) for instant SOP & drawing retrieval.
+- **Smart Forms:** Autocomplete technical reports using historical operational data.
+
+**Principle:** Minimal Taps, Maximal Insight.

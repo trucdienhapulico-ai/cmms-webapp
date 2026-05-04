@@ -38,6 +38,9 @@ services:
       - ../env/test.env
     volumes:
       - test-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+      - /usr/local/bin/docker-compose:/usr/bin/docker-compose
     networks:
       - cmms-net
     healthcheck:
@@ -62,6 +65,17 @@ services:
     depends_on:
       - cmms-stable
       - cmms-test
+
+  # ─── Cloudflare Tunnel (Optional for Public HTTPS) ─────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cmms-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiMDdhYjVhMjE5YTZjZDg2NDA3ZTQ1NWM0OTQxOWVmYWEiLCJ0IjoiYzEyOTgwNGEtOWU5ZS00MzQ0LTgwZWItMjgwNTczMTdjNDcwIiwicyI6Ik1HWmxaREF4TXpZdE0yUTVOQzAwWXpBekxUazVNekl0WTJKak1HWXdOVE5rTm1KaSJ9
+    networks:
+      - cmms-net
 
 volumes:
   stable-data:

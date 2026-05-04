@@ -1,63 +1,93 @@
 # claude-worker.ps1
-# Script tu dong hoa Claude Code (Builder) qua GitHub Issues
-# Chay moi 30 phut de tiet kiem token va khong can go lenh thu cong.
+# Script tu dong hoa Claude Code - Ban V2.5 (Ultra Reliable Direct Call)
+# Chay task ngay ca khi file mo, dung lenh truc tiep de tranh loi Start-Process.
 
-$RepoOwner = "trucdienhapulico-ai"
-$RepoName = "cmms-webapp"
-$PollIntervalSeconds = 900 # 15 phut
-$TriggerFile = "RUN_NOW"
+$QueueDir = "brain\tasks_queue"
+$DoneDir = "brain\tasks_done"
+$ProposalDir = "brain\tasks_proposal"
+$PollIntervalSeconds = 5
+$MaxQueueSize = 5
 
-Write-Host "🤖 Khoi dong Claude Worker. Quet task moi 15 phut hoặc khi co file '$TriggerFile'..." -ForegroundColor Cyan
+# Tao cac thu muc
+if (-not (Test-Path $QueueDir)) { New-Item -ItemType Directory -Force -Path $QueueDir | Out-Null }
+if (-not (Test-Path $DoneDir)) { New-Item -ItemType Directory -Force -Path $DoneDir | Out-Null }
+if (-not (Test-Path $ProposalDir)) { New-Item -ItemType Directory -Force -Path $ProposalDir | Out-Null }
+
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "[*] CLAUDE WORKER (V2.5 - ULTRA RELIABLE) KICH HOAT!" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
+
+# PHUC HOI TASK TREO
+Get-ChildItem -Path $QueueDir -Filter "*.working" | ForEach-Object {
+    $newName = $_.FullName -replace '\.working$', '.txt'
+    Rename-Item $_.FullName $newName -Force -ErrorAction SilentlyContinue
+}
 
 while ($true) {
-    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Kiem tra GitHub Issue moi..." -ForegroundColor Yellow
-    
-    try {
-        # Su dung GitHub CLI de lay issue co label 'claude-todo'
-        $issuesJson = gh issue list --repo "$RepoOwner/$RepoName" --label "claude-todo" --state open --limit 1 --json "number,title,body"
-        $issues = $issuesJson | ConvertFrom-Json
-
-        if ($issues.Count -gt 0) {
-            $issue = $issues[0]
-            Write-Host "✅ Tim thay Task moi: #$($issue.number) - $($issue.title)" -ForegroundColor Green
-            Write-Host "🚀 Dang khoi chay Claude Code de xu ly..." -ForegroundColor Cyan
-
-            # Xay dung prompt sieu ngan de toi uu token cho Builder
-            # Builder khong can doc lai toan bo doc, chi doc dung Issue nay.
-            $prompt = @"
-Ban la Builder. Hay thuc hien ngay Task sau tu GitHub Issue #$($issue.number):
-Ten: $($issue.title)
-Mo ta: $($issue.body)
-
-Hay sua code tuong ung. Sau khi hoan thanh, hay commit, push va dong issue #$($issue.number) nay.
-Khong tu y phan tich cac file khong lien quan de tiet kiem token.
-"@
-
-            # Chay claude voi prompt truc tiep
-            # Tuy theo version cua claude-code, co thuong la -p hoac chay truc tiep
-            claude -p $prompt --dangerously-skip-permissions | Tee-Object -FilePath "claude-activity.log" -Append
-
-            Write-Host "✅ Da hoan tat phien lam viec cua Claude Code cho Issue #$($issue.number)." -ForegroundColor Green
-        }
-        else {
-            Write-Host "⏸ Khong co Task moi. Tiep tuc cho..." -ForegroundColor DarkGray
+    # 0. QUET DON HANG DOI
+    $allTasks = Get-ChildItem -Path $QueueDir -Filter "*.txt" | Sort-Object CreationTime
+    if ($allTasks.Count -gt $MaxQueueSize) {
+        for ($i = $MaxQueueSize; $i -lt $allTasks.Count; $i++) {
+            Move-Item $allTasks[$i].FullName "$ProposalDir\$($allTasks[$i].Name)" -Force -ErrorAction SilentlyContinue
         }
     }
-    catch {
-        Write-Host "❌ Loi khi kiem tra GitHub Issue. Hay dam bao ban da cai va dang nhap GitHub CLI (gh auth login)." -ForegroundColor Red
+
+    # 1. KIEM TRA RUN_NOW
+    if (Test-Path "RUN_NOW") {
+        $content = Get-Content "RUN_NOW" -Raw -ErrorAction SilentlyContinue
+        if ($content) {
+            $urgentFile = "$QueueDir\URGENT_$(Get-Date -Format 'HHmmss').txt"
+            $content | Out-File -FilePath $urgentFile -Encoding utf8
+        }
+        Remove-Item "RUN_NOW" -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Host "⏳ Doi 15 phut cho lan tiep theo (Hoac tao file '$TriggerFile' de chay ngay)..." -ForegroundColor DarkGray
-    
-    # Vong lap cho thong minh: Kiem tra file trigger moi 5 giay
-    $waited = 0
-    while ($waited -lt $PollIntervalSeconds) {
-        if (Test-Path $TriggerFile) {
-            Remove-Item $TriggerFile
-            Write-Host "🚀 Nhan duoc lenh CHAY NGAY!" -ForegroundColor Magenta
-            break
+    # 2. THUC THI TASK
+    $tasks = Get-ChildItem -Path $QueueDir -Filter "*.txt" | Sort-Object CreationTime
+    if ($tasks.Count -gt 0) {
+        $task = $tasks[0]
+        $taskName = $task.BaseName
+        $workingFile = "$QueueDir\$taskName.working"
+        
+        $prompt = Get-Content $task.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $prompt) { Start-Sleep -Seconds 2; continue }
+
+        try {
+            Rename-Item $task.FullName $workingFile -Force -ErrorAction Stop
+        } catch {
+            $prompt | Out-File -FilePath $workingFile -Encoding utf8
+            Rename-Item $task.FullName "$($task.FullName).locked" -Force -ErrorAction SilentlyContinue
         }
-        Start-Sleep -Seconds 5
-        $waited += 5
+
+        Write-Host "`n[>] DANG THUC HIEN: $taskName" -ForegroundColor Magenta
+        Write-Host "    -> Dang goi Claude AI... (Vui long cho doi)" -ForegroundColor Cyan
+        
+        # CHAY TRUC TIEP (Tin cay hon Start-Process tren Windows)
+        $exitCode = 0
+        try {
+            # Luu y: 'claude' o day se goi dung alias/cmd trong shell hien tai
+            claude -p $prompt --dangerously-skip-permissions
+            $exitCode = $LASTEXITCODE
+        } catch {
+            Write-Host "[X] LOI NGHIEP TRONG KHI CHAY CLAUDE." -ForegroundColor Red
+            $exitCode = 1
+        }
+
+        if (Test-Path $workingFile) { 
+            $dest = if ($exitCode -eq 0) { "$DoneDir\$taskName.done.txt" } else { "$DoneDir\$taskName.failed.txt" }
+            Move-Item $workingFile $dest -Force 
+        }
+        Remove-Item $task.FullName -Force -ErrorAction SilentlyContinue
+        Remove-Item "$($task.FullName).locked" -Force -ErrorAction SilentlyContinue
+        
+        Write-Host "[!] Hoan tat task voi ExitCode: $exitCode" -ForegroundColor Gray
+        Start-Sleep -Seconds 3
+        $global:isWaitingPrinted = $false
+    } else {
+        if (-not $global:isWaitingPrinted) {
+            Write-Host "`n[zZz] Dang cho Task moi tai: $QueueDir" -ForegroundColor DarkGray
+            $global:isWaitingPrinted = $true
+        }
+        Start-Sleep -Seconds $PollIntervalSeconds
     }
 }

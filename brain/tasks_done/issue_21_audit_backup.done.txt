@@ -1,0 +1,154 @@
+[TASK INSTRUCTION FOR CLAUDE]
+Target: Implement System Integration - Audit Log, Data Export, and Backup
+Priority: Medium
+Issue: #21
+
+## Context
+- Backend file: server.js (add audit middleware and routes before health check)
+- Frontend file: public/index.html (add renderAuditLog() function, update sidebar)
+- Backup directory: data/backup/ (auto-create if not exist)
+- IMPORTANT: When exporting data, ALWAYS strip passwordHash from user records
+
+## Step-by-Step Instructions
+
+### Step 1: Add DB schema in server.js
+
+In `loadDB()`:
+```javascript
+if (!db.auditLogs) { db.auditLogs = []; saveDB(db); }
+```
+
+In `initDB()`:
+```javascript
+auditLogs: []
+```
+
+### Step 2: Create audit logging helper function
+
+```javascript
+function logAudit(req, action, entity, entityId, details = '') {
+  const db = loadDB();
+  if (!db.auditLogs) db.auditLogs = [];
+  const session = getSession(req);
+  db.auditLogs.unshift({
+    id: `AUDIT-${Date.now()}`,
+    action,        // 'create', 'update', 'delete', 'login', 'logout', 'export', 'approve', 'reject'
+    entity,        // 'user', 'asset', 'workOrder', 'pmSchedule', 'inventory', 'tenantRequest'
+    entityId: entityId || null,
+    userId: session?.userId || null,
+    userName: session?.username || 'system',
+    details,       // free text description
+    ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
+    createdAt: now()
+  });
+  // Keep max 5000 audit logs
+  if (db.auditLogs.length > 5000) db.auditLogs = db.auditLogs.slice(0, 5000);
+  saveDB(db);
+}
+```
+
+### Step 3: Inject logAudit() calls at critical points
+
+Find these existing routes in server.js and ADD a logAudit() call after the successful operation:
+
+- POST /api/login (success) → `logAudit(req, 'login', 'user', user.id, 'Login successful')`
+- POST /api/logout → `logAudit(req, 'logout', 'user', ...)`
+- POST /api/assets → `logAudit(req, 'create', 'asset', asset.id, asset.name)`
+- PUT /api/assets/:id → `logAudit(req, 'update', 'asset', id, ...)`
+- DELETE /api/assets/:id → `logAudit(req, 'delete', 'asset', id, ...)`
+- POST /api/work-orders → `logAudit(req, 'create', 'workOrder', wo.id, wo.title)`
+- PUT /api/work-orders/:id → `logAudit(req, 'update', 'workOrder', id, ...)`
+- POST /api/users → `logAudit(req, 'create', 'user', newUser.id, newUser.username)`
+- DELETE /api/users/:id → `logAudit(req, 'delete', 'user', id, ...)`
+- POST /api/inventory → `logAudit(req, 'create', 'inventory', item.id, item.name)`
+- POST /api/inventory/:id/transaction → `logAudit(req, type, 'inventory', id, ...)`
+- PUT /api/tenant-requests/:id/approve → `logAudit(req, 'approve', 'tenantRequest', id, ...)`
+- PUT /api/tenant-requests/:id/reject → `logAudit(req, 'reject', 'tenantRequest', id, ...)`
+- POST /api/me/change-password → `logAudit(req, 'update', 'user', ..., 'Password changed')`
+
+### Step 4: Create API routes for audit/backup
+
+```javascript
+// GET /api/audit-logs?limit=50&entity=asset&action=create&userId=xxx (admin only)
+app.get('/api/audit-logs', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  let list = db.auditLogs || [];
+  const { entity, action, userId, limit } = req.query;
+  if (entity) list = list.filter(l => l.entity === entity);
+  if (action) list = list.filter(l => l.action === action);
+  if (userId) list = list.filter(l => l.userId === userId);
+  list = list.slice(0, Number(limit) || 50);
+  res.json({ ok: 1, data: list, total: (db.auditLogs||[]).length });
+});
+
+// GET /api/export/db (admin only) - Download sanitized DB
+app.get('/api/export/db', requireAuth(['admin']), (req, res) => {
+  const db = loadDB();
+  const safe = JSON.parse(JSON.stringify(db));
+  // STRIP all passwordHash fields from users
+  (safe.users || []).forEach(u => delete u.passwordHash);
+  res.setHeader('Content-Disposition', `attachment; filename=cmms-export-${now().split('T')[0]}.json`);
+  res.json(safe);
+  logAudit(req, 'export', 'system', null, 'Full DB export');
+});
+
+// POST /api/backup (admin only) - Create server-side backup
+app.post('/api/backup', requireAuth(['admin']), (req, res) => {
+  const backupDir = path.join(__dirname, 'data', 'backup');
+  fs.mkdirSync(backupDir, { recursive: true });
+  const filename = `db_${now().split('T')[0]}_${Date.now()}.json`;
+  const db = loadDB();
+  fs.writeFileSync(path.join(backupDir, filename), JSON.stringify(db, null, 2));
+  logAudit(req, 'create', 'backup', filename, 'Manual backup created');
+  res.json({ ok: 1, data: { filename } });
+});
+```
+
+### Step 5: Frontend - Sidebar & Navigation
+
+In sidebar QUAN TRI section, add (ONLY show for admin):
+```html
+<div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
+```
+
+In navigate():
+- titles: `auditlog: 'Nhật ký Hệ thống (Audit Log)'`
+- renders: `auditlog: renderAuditLog`
+
+### Step 6: Frontend - renderAuditLog() function
+
+```
+Layout:
+┌─────────────────────────────────────────────────┐
+│ Filter: [Entity ▼] [Action ▼] [Load more]       │
+│ [📥 Xuất dữ liệu]  [💾 Tạo Backup]             │
+├────────┬──────────┬─────────┬─────────┬─────────┤
+│ Giờ    │ Người    │ Hành    │ Đối     │ Chi     │
+│        │ thao tác │ động    │ tượng   │ tiết    │
+├────────┼──────────┼─────────┼─────────┼─────────┤
+│ 14:30  │ admin    │ 🟢create│ asset   │ Máy bơm │
+│ 14:25  │ admin    │ 🔵login │ user    │ Login OK│
+│ 14:20  │ op1      │ 🟡update│ workOrd │ Status..│
+│ 14:15  │ admin    │ 🔴delete│ user    │ Removed │
+└────────┴──────────┴─────────┴─────────┴─────────┘
+```
+
+Action color coding:
+- create → green badge
+- update → amber badge  
+- delete → red badge
+- login/logout → blue badge
+- export/approve/reject → purple badge
+
+Buttons:
+- "📥 Xuất dữ liệu" → window.open('/api/export/db') (triggers download)
+- "💾 Tạo Backup" → POST /api/backup, show success toast with filename
+
+### Step 7: Update renderUIMap()
+- [UI-Audit-Table] - Bảng Audit Log (lọc theo entity/action)
+- [UI-Backup-Actions] - Nút Xuất dữ liệu / Tạo Backup
+
+### Step 8: Roadmap & Finish
+- In brain/roadmap.md: change `- [ ] **System Integration**` to `- [x]`
+- Commit: "feat: Audit Log & Backup system (Closes #21)"
+- Push and run `gh issue close 21`
