@@ -1,59 +1,50 @@
-# init-pc.ps1
-# Super Script: Thiet lap CMMS & AI tu con so 0 (Windows) - Ban V2.2
-# Toi uu hoa cau truc de tranh loi cu phap khi chay qua mang.
+# setup-server.ps1
+# Super Script: Thiet lap CMMS & AI tu con so 0 (Windows) - Ban V2.4
+# Loai bo function de dam bao tuong thich tuyet doi.
 
 $ErrorActionPreference = "SilentlyContinue"
 Clear-Host
 
-$Apps = @(
-    @{ Name = "Git"; Id = "Git.Git"; Desc = "Quan ly ma nguon" },
-    @{ Name = "Node.js LTS"; Id = "OpenJS.NodeJS.LTS"; Desc = "Moi truong chay Backend" },
-    @{ Name = "Docker Desktop"; Id = "Docker.DockerDesktop"; Desc = "Chay Database & Container" },
-    @{ Name = "GitHub CLI"; Id = "Microsoft.GitHub.CLI"; Desc = "Dieu phoi Task tu Terminal" },
-    @{ Name = "Claude Code"; Id = "npm install -g"; Desc = "AI Coding Agent (Builder)" },
-    @{ Name = "Ollama (Option)"; Id = "Ollama.Ollama"; Desc = "AI Cuc bo (Dung cho RTX 3060)" }
-)
-
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "📋 DANH SACH PHAN MEM SE CAI DAT:" -ForegroundColor Cyan
+Write-Host "🚀 BAT DAU THIET LAP HE THONG CMMS & AI TU DONG" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-foreach ($app in $Apps) {
-    Write-Host ("- {0,-15} : {1}" -f $app.Name, $app.Desc) -ForegroundColor Gray
-}
+# 1. KIEU TRA VA CAI DAT (TUAN TU)
+Write-Host "[+] Dang kiem tra cac thanh phan..." -ForegroundColor Gray
 
-Write-Host "`n[*] He thong se tu dong kiem tra, neu co roi se bo qua." -ForegroundColor DarkGray
-Write-Host "==========================================================" -ForegroundColor Cyan
-$confirm = Read-Host "Nhan ENTER de bat dau cai dat hoac Ctrl+C de huy"
-Write-Host "`n🚀 Dang bat dau..." -ForegroundColor Green
+# Git
+if (Get-Command git -ErrorAction SilentlyContinue) { Write-Host "[✓] Git da co san." -ForegroundColor Green }
+else { Write-Host "[+] Dang cai Git..." -ForegroundColor Yellow; winget install --id Git.Git --silent --accept-package-agreements --accept-source-agreements }
 
-function Install-App($Name, $Id) {
-    if ($Id -eq "npm install -g") {
-        Write-Host "[+] Dang cai dat Claude Code qua npm..." -ForegroundColor Yellow
-        npm install -g @anthropic-ai/claude-code
-    }
-    elseif (Get-Command $Name -ErrorAction SilentlyContinue) {
-        Write-Host "[✓] $Name da co san." -ForegroundColor Green
-    }
-    else {
-        Write-Host "[+] Dang cai dat $Name..." -ForegroundColor Yellow
-        winget install --id $Id --silent --accept-package-agreements --accept-source-agreements
-    }
-}
+# Node.js
+if (Get-Command node -ErrorAction SilentlyContinue) { Write-Host "[✓] Node.js da co san." -ForegroundColor Green }
+else { Write-Host "[+] Dang cai Node.js..." -ForegroundColor Yellow; winget install --id OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements }
 
-Install-App "git" "Git.Git"
-Install-App "node" "OpenJS.NodeJS.LTS"
-Install-App "docker" "Docker.DockerDesktop"
-Install-App "gh" "Microsoft.GitHub.CLI"
-Install-App "claude" "npm install -g"
+# Docker
+if (Get-Command docker -ErrorAction SilentlyContinue) { Write-Host "[✓] Docker da co san." -ForegroundColor Green }
+else { Write-Host "[+] Dang cai Docker Desktop..." -ForegroundColor Yellow; winget install --id Docker.DockerDesktop --silent --accept-package-agreements --accept-source-agreements }
 
+# GitHub CLI
+if (Get-Command gh -ErrorAction SilentlyContinue) { Write-Host "[✓] GitHub CLI da co san." -ForegroundColor Green }
+else { Write-Host "[+] Dang cai GitHub CLI..." -ForegroundColor Yellow; winget install --id Microsoft.GitHub.CLI --silent --accept-package-agreements --accept-source-agreements }
+
+# Claude Code
+Write-Host "[+] Dang cai Claude Code..." -ForegroundColor Yellow
+npm install -g @anthropic-ai/claude-code
+
+# 2. LUA CHON CAI DAT OLLAMA
 $installOllama = Read-Host "`nBan co muon cai dat Ollama (AI Cuc bo cho RTX 3060) khong? (Y/N)"
 if ($installOllama -match "y|Y") {
-    Install-App "ollama" "Ollama.Ollama"
+    if (Get-Command ollama -ErrorAction SilentlyContinue) { Write-Host "[✓] Ollama da co san." -ForegroundColor Green }
+    else { 
+        Write-Host "[+] Dang cai Ollama..." -ForegroundColor Yellow
+        winget install --id Ollama.Ollama --silent --accept-package-agreements --accept-source-agreements 
+    }
     Write-Host "[+] Dang tai mo hinh Llama3..." -ForegroundColor Yellow
     start-process "ollama" -ArgumentList "run llama3 'Hello'" -NoNewWindow
 }
 
+# 3. KEO CODE VA THIET LAP DU AN
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 $ProjectDir = "$HOME\Desktop\cmms-webapp"
 if (-not (Test-Path $ProjectDir)) {
