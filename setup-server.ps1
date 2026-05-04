@@ -1,4 +1,4 @@
-# setup-server.ps1 V3.1 - ASCII Safe
+# setup-server.ps1 V3.2
 $ErrorActionPreference = "SilentlyContinue"
 Clear-Host
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -9,7 +9,6 @@ Write-Host "- Node.js LTS      : Moi truong chay Backend" -ForegroundColor Gray
 Write-Host "- Docker Desktop   : Chay Database va Container" -ForegroundColor Gray
 Write-Host "- GitHub CLI       : Dieu phoi Task tu Terminal" -ForegroundColor Gray
 Write-Host "- Claude Code      : AI Coding Agent" -ForegroundColor Gray
-Write-Host "- Ollama (Tuy chon): AI Cuc bo cho GPU" -ForegroundColor Gray
 Write-Host "==========================================================" -ForegroundColor Cyan
 $null = Read-Host "Nhan ENTER de bat dau hoac Ctrl+C de huy"
 Write-Host "[>] Dang bat dau..." -ForegroundColor Green
@@ -18,8 +17,6 @@ $cmd = Get-Command node -ErrorAction SilentlyContinue; if ($cmd) { Write-Host "[
 $cmd = Get-Command docker -ErrorAction SilentlyContinue; if ($cmd) { Write-Host "[OK] Docker da co." -ForegroundColor Green } else { winget install --id Docker.DockerDesktop --silent --accept-package-agreements --accept-source-agreements }
 $cmd = Get-Command gh -ErrorAction SilentlyContinue; if ($cmd) { Write-Host "[OK] GitHub CLI da co." -ForegroundColor Green } else { winget install --id Microsoft.GitHub.CLI --silent --accept-package-agreements --accept-source-agreements }
 Write-Host "[+] Dang cai Claude Code..." -ForegroundColor Yellow; npm install -g @anthropic-ai/claude-code
-$olla = Read-Host "Ban co muon cai Ollama cho GPU khong? (Y/N)"
-if ($olla -eq "Y" -or $olla -eq "y") { $cmd = Get-Command ollama -ErrorAction SilentlyContinue; if ($cmd) { Write-Host "[OK] Ollama da co." -ForegroundColor Green } else { winget install --id Ollama.Ollama --silent --accept-package-agreements --accept-source-agreements } }
 $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')
 $d = Join-Path $HOME 'Desktop\cmms-webapp'
 if (-not (Test-Path $d)) { Write-Host "[+] Dang keo code..." -ForegroundColor Yellow; git clone https://github.com/trucdienhapulico-ai/cmms-webapp.git $d }
