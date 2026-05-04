@@ -80,21 +80,21 @@ ollama run llama3
 
 ---
 
-## 5. Chạy Worker tự động hóa
+## 5. Ví dụ Giao việc (Hello World)
 
-Để máy tính tự động nhận việc và sửa code thông qua GitHub Issues:
+Để kiểm tra xem AI đã hoạt động đúng chưa, bạn hãy thử các lệnh sau trong Terminal:
 
+### Thử nghiệm Claude Code:
+Sau khi đã đăng nhập thành công, hãy chạy lệnh:
 ```powershell
-# Đảm bảo bạn đang ở trong thư mục cmms-webapp
-.\claude-worker.ps1
+claude -p "Hãy nói Hello World bằng tiếng Việt và cho biết bạn đã sẵn sàng hỗ trợ dự án CMMS chưa?"
 ```
 
----
-
-## 6. Địa chỉ truy cập cục bộ (Local Access)
-
-Sau khi chạy lệnh `npm start` hoặc `node server.js`, bạn có thể truy cập hệ thống tại:
-- **Địa chỉ:** `http://localhost:3090` hoặc `http://IP_CUA_MAY:3090`
+### Thử nghiệm AI cục bộ (Ollama):
+Nếu bạn đã cài đặt Ollama và tải mô hình Llama 3, hãy chạy lệnh:
+```powershell
+ollama run llama3 "Hello World, give me a short technical tip for maintaining a backup generator."
+```
 
 ---
 © 2026 - CMMS System Infrastructure Guide
