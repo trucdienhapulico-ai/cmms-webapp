@@ -1,15 +1,40 @@
 # init-pc.ps1
-# Super Script: Thiet lap CMMS & AI tu con so 0 (Windows) - Ban V2.0
-# Ho tro: Lua chon cai dat Ollama & Vi du giao viec Hello World.
+# Super Script: Thiet lap CMMS & AI tu con so 0 (Windows) - Ban V2.1
+# Tinh nang: Hien thi danh sach phan mem va cho xac nhan truoc khi cai.
 
 $ErrorActionPreference = "SilentlyContinue"
 Clear-Host
+
+# DANH SACH PHAN MEM DU KIEN
+$Apps = @(
+    @{ Name = "Git"; Id = "Git.Git"; Desc = "Quan ly ma nguon" },
+    @{ Name = "Node.js LTS"; Id = "OpenJS.NodeJS.LTS"; Desc = "Moi truong chay Backend" },
+    @{ Name = "Docker Desktop"; Id = "Docker.DockerDesktop"; Desc = "Chay Database & Container" },
+    @{ Name = "GitHub CLI"; Id = "Microsoft.GitHub.CLI"; Desc = "Dieu phoi Task tu Terminal" },
+    @{ Name = "Claude Code"; Id = "npm install -g"; Desc = "AI Coding Agent (Builder)" },
+    @{ Name = "Ollama (Option)"; Id = "Ollama.Ollama"; Desc = "AI Cuc bo (Dung cho RTX 3060)" }
+)
+
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "🚀 BAT DAU THIET LAP HE THONG CMMS & AI TU DONG" -ForegroundColor Cyan
+Write-Host "📋 DANH SACH PHAN MEM SE CAI DAT:" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+
+foreach ($app in $Apps) {
+    Write-Host ("- {0,-15} : {1}" -f $app.Name, $app.Desc) -ForegroundColor Gray
+}
+
+Write-Host "`n[*] He thong se tu dong kiem tra, neu co roi se bo qua." -ForegroundColor DarkGray
+Write-Host "==========================================================" -ForegroundColor Cyan
+$confirm = Read-Host "Nhan ENTER de bat dau cai dat hoac Ctrl+C de huy"
+Write-Host "`n🚀 Dang bat dau..." -ForegroundColor Green
 
 # 1. HAM CAI DAT PHAN MEM
 function Install-App($Name, $Id) {
+    if ($Id -eq "npm install -g") {
+        Write-Host "[+] Dang cai dat Claude Code qua npm..." -ForegroundColor Yellow
+        npm install -g @anthropic-ai/claude-code
+        return
+    }
     if (Get-Command $Name -ErrorAction SilentlyContinue) {
         Write-Host "[✓] $Name da co san." -ForegroundColor Green
     } else {
@@ -18,16 +43,18 @@ function Install-App($Name, $Id) {
     }
 }
 
-# 2. CAI DAT BAT BUOC
+# 2. THUC THI CAI DAT
 Install-App "git" "Git.Git"
 Install-App "node" "OpenJS.NodeJS.LTS"
 Install-App "docker" "Docker.DockerDesktop"
+Install-App "gh" "Microsoft.GitHub.CLI"
+Install-App "claude" "npm install -g"
 
-# 3. LUA CHON CAI DAT OLLAMA (AI CUC BO)
-$installOllama = Read-Host "Ban co muon cai dat Ollama de chay AI tren GPU RTX 3060 khong? (Y/N)"
+# 3. LUA CHON CAI DAT OLLAMA
+$installOllama = Read-Host "`nBan co muon cai dat Ollama (AI Cuc bo cho RTX 3060) khong? (Y/N)"
 if ($installOllama -eq "Y" -or $installOllama -eq "y") {
     Install-App "ollama" "Ollama.Ollama"
-    Write-Host "[+] Dang tai mo hinh Llama3 (Co the mat vai phut)..." -ForegroundColor Yellow
+    Write-Host "[+] Dang tai mo hinh Llama3..." -ForegroundColor Yellow
     start-process "ollama" -ArgumentList "run llama3 'Hello'" -NoNewWindow
 }
 
@@ -40,24 +67,13 @@ if (-not (Test-Path $ProjectDir)) {
 }
 Set-Location $ProjectDir
 npm install
-npm install -g @anthropic-ai/claude-code
 
-# 5. KET THUC & VI DU GIAO VIEC
-Clear-Host
+# 5. KET THUC
+Write-Host "`n==========================================================" -ForegroundColor Green
+Write-Host "✅ MOI TRUONG DA SAN SANG!" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "✅ HE THONG DA SAN SANG!" -ForegroundColor Green
-Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "👉 VI DU GIAO VIEC (HELLO WORLD):" -ForegroundColor Cyan
-Write-Host "----------------------------------------------------------" -ForegroundColor Gray
-Write-Host "1. Test Claude Code (Sau khi login):" -ForegroundColor Yellow
-Write-Host "   claude -p 'Hay noi Hello World va gioi thieu ban la ai'" -ForegroundColor White
-Write-Host ""
-Write-Host "2. Test AI Cuc bo (Ollama):" -ForegroundColor Yellow
-    Write-Host "   ollama run llama3 'Hello World, who are you?'" -ForegroundColor White
-}
-Write-Host ""
-Write-Host "3. Giao viec tu dong cho Worker (GitHub CLI):" -ForegroundColor Yellow
-Write-Host "   gh issue create --title 'issue_test' --body 'Hay tao file hello.txt'" -ForegroundColor White
-Write-Host "----------------------------------------------------------" -ForegroundColor Gray
-Write-Host "ME O: Go '.\claude-worker.ps1' de bat dau tu dong hoa Issue." -ForegroundColor Cyan
+Write-Host "👉 HAY THU CAC LENH SAU:" -ForegroundColor Cyan
+Write-Host "- gh auth login          (Dang nhap GitHub)" -ForegroundColor White
+Write-Host "- claude auth login      (Dang nhap AI)" -ForegroundColor White
+Write-Host "- .\claude-worker.ps1    (Chay Builder)" -ForegroundColor White
 Write-Host "==========================================================" -ForegroundColor Green
