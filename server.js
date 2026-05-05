@@ -43,6 +43,14 @@ app.use('/api/', rateLimit({
   message: { ok: 0, error: 'Quá nhiều request, thử lại sau.' }
 }));
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: 0, error: 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau 15 phút.' }
+});
+
 // ─── Middleware ───────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -214,7 +222,7 @@ function nextId(db, type) {
 }
 
 // ─── Auth Routes ──────────────────────────────────────────────
-app.post('/api/login', (req, res) => {
+app.post('/api/login', loginLimiter, (req, res) => {
   const { username, password } = req.body;
   const db = loadDB();
   const user = db.users.find(u => u.username === username);
@@ -226,7 +234,8 @@ app.post('/api/login', (req, res) => {
     httpOnly: true,
     secure: IS_PROD && isHttps,
     sameSite: 'strict',
-    maxAge: 8 * 60 * 60 * 1000
+    maxAge: 8 * 60 * 60 * 1000,
+    expires: new Date(Date.now() + 8 * 60 * 60 * 1000)
   });
   logAudit(req, 'login', 'user', user.id, 'Login successful');
   res.json({ ok: 1, data: { id: user.id, username: user.username, role: user.role, name: user.name } });
