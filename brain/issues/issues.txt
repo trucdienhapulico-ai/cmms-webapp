@@ -1,0 +1,19 @@
+DANH SÁCH ISSUE CẦN XỬ LÝ
+===========================
+
+Issue #1: Sửa README.md
+-----------------------
+Mô tả: Cập nhật địa chỉ truy cập cũ thành http://localhost:3090
+File cần sửa: README.md
+Logic cần thực hiện: Tìm tất cả các URL/địa chỉ cũ trong README.md và thay thế bằng http://localhost:3090
+
+Issue #2: Thêm tính năng đổi mật khẩu
+---------------------------------------
+Mô tả: Cho phép người dùng tự đổi mật khẩu của mình
+File cần sửa:
+  - server.js (thêm API endpoint PUT /api/users/me/password)
+  - public/js/ (thêm UI form đổi mật khẩu)
+Logic cần thực hiện:
+  - Backend: Xác thực mật khẩu cũ, hash mật khẩu mới bằng PBKDF2+SHA256, lưu vào db.json
+  - Frontend: Form gồm 3 trường (mật khẩu cũ, mật khẩu mới, xác nhận mật khẩu mới)
+  - Validation: Mật khẩu mới tối thiểu 8 ký tự, 2 trường mới phải khớp nhau
