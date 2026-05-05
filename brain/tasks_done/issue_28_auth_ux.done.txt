@@ -24,7 +24,16 @@ Issue: #28
 - Reset the user's `passwordHash` using the system default password.
 - Log to Audit: `Admin reset password for user: [username]`.
 
-### 3. Verification
+### 3. Dashboard UI Improvements [UI-Dash-Stats]
+- Make dashboard statistics cards clickable.
+- Clicking on a stat card should navigate to the relevant section or filtered view (e.g., Pending tasks, Completed tasks).
+
+### 4. User Password Change UI
+- Add a "Đổi mật khẩu" button or link in the user navigation/header or profile section.
+- Implement a modal or a dedicated view for the password change form (Mật khẩu cũ, Mật khẩu mới, Xác nhận).
+- Link this UI to the `PUT /api/users/me/password` endpoint.
+
+### 5. Verification
 - Test login with "Remember Me".
 - Test Admin resetting a user password.
 

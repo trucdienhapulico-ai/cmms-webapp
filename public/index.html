@@ -505,7 +505,10 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
           <div class="sidebar-user-name" id="sidebar-name" style="font-size: 13px; font-weight: 600;"></div>
           <div class="sidebar-user-role" id="sidebar-role" style="font-size: 10px; color: rgba(255,255,255,0.5);"></div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="showChangePassword()" title="Đổi mật khẩu" style="padding: 4px 8px; font-size: 14px;">🔑</button>
+          <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+        </div>
       </div>
     </div>
     
@@ -672,6 +675,60 @@ async function doLogout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
+
+function showChangePassword() {
+  document.getElementById('modal-title').textContent = '🔑 Đổi mật khẩu';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-group">
+      <label>Mật khẩu cũ *</label>
+      <input type="password" id="cp-old" placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu mới *</label>
+      <input type="password" id="cp-new" placeholder="Tối thiểu 5 ký tự" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label>Xác nhận mật khẩu mới *</label>
+      <input type="password" id="cp-confirm" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
+    </div>
+    <div id="cp-error" style="color:var(--red);font-size:13px;display:none"></div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+    <button class="btn btn-primary" onclick="submitChangePassword()">Lưu mật khẩu</button>`;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('cp-old').focus();
+}
+
+async function submitChangePassword() {
+  const oldPassword = document.getElementById('cp-old').value;
+  const newPassword = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const errEl = document.getElementById('cp-error');
+  errEl.style.display = 'none';
+  if (!oldPassword || !newPassword || !confirm) {
+    errEl.textContent = 'Vui lòng điền đầy đủ các trường.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (newPassword.length < 5) {
+    errEl.textContent = 'Mật khẩu mới phải ít nhất 5 ký tự.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (newPassword !== confirm) {
+    errEl.textContent = 'Mật khẩu xác nhận không khớp.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const r = await api('POST', '/api/me/change-password', { oldPassword, newPassword });
+  if (!r.ok) {
+    errEl.textContent = r.error || 'Đổi mật khẩu thất bại.';
+    errEl.style.display = 'block';
+    return;
+  }
+  closeModal();
+  toast('Đổi mật khẩu thành công!', 'success');
+}
 async function showApp() {
   const loginScreen = document.getElementById('login-screen');
   const appContainer = document.getElementById('app');
@@ -761,6 +818,12 @@ function navigate(page, param = null) {
 function toggleSidebar() {
   const isOpen = document.querySelector('.sidebar').classList.toggle('open');
   document.querySelector('.sidebar-overlay-bg').classList.toggle('show', isOpen);
+}
+
+let woPendingFilter = null;
+function navigateWO(filter) {
+  woPendingFilter = filter;
+  navigate('workorders');
 }
 
 // ─── Modal ───────────────────────────────────────────────────
@@ -1251,12 +1314,12 @@ async function renderDashboard() {
   }).join('');
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
-      <div class="stat-card stat-blue"><div class="stat-icon">📋</div><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
-      <div class="stat-card stat-yellow"><div class="stat-icon">⚙️</div><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
-      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
-      <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
-      <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('assets')"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigateWO({status:'open'})"><div class="stat-icon">📋</div><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
+      <div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigateWO({status:'in-progress'})"><div class="stat-icon">⚙️</div><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
+      <div class="stat-card stat-green" style="cursor:pointer" onclick="navigateWO({status:'done'})"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
+      <div class="stat-card stat-red" style="cursor:pointer" onclick="navigateWO({priority:'high'})"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
+      <div class="stat-card stat-red" style="cursor:pointer" onclick="navigateWO({status:'open'})"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
       <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM hoạt động</div><div class="stat-value">${pm.total||0}</div><div class="stat-sub">${pm.dueToday||0} đến hạn hôm nay</div></div>
       <div class="stat-card ${(pm.overdue||0)>0?'stat-red':'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue||0}</div><div class="stat-sub">Cần tạo WO</div></div>
     </div>
@@ -1307,6 +1370,11 @@ async function renderWorkOrders() {
         <tbody id="wo-tbody"></tbody>
       </table></div>
     </div>`;
+  if (woPendingFilter) {
+    if (woPendingFilter.status) document.getElementById('wo-status').value = woPendingFilter.status;
+    if (woPendingFilter.priority) document.getElementById('wo-priority').value = woPendingFilter.priority;
+    woPendingFilter = null;
+  }
   filterWO();
 }
 
