@@ -57,37 +57,58 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── DB helpers ──────────────────────────────────────────────
+// ─── DB Cache ─────────────────────────────────────────────────
+let _dbCache = null;
+let _dbMtime = 0;
+
 function loadDB() {
-  if (!fs.existsSync(DB_PATH)) initDB();
+  if (_dbCache) {
+    // Cheap stat check — detects external file edits without reading content
+    try {
+      const mtime = fs.statSync(DB_PATH).mtimeMs;
+      if (mtime === _dbMtime) return _dbCache;
+    } catch {}
+    _dbCache = null;
+  }
+
+  if (!fs.existsSync(DB_PATH)) { initDB(); return _dbCache; }
+
   let db;
   try {
     db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
   } catch (e) {
     console.error('[CMMS] db.json corrupted, reinitializing:', e.message);
     initDB();
-    db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+    return _dbCache;
   }
-  if (!db.checklists) { db.checklists = []; saveDB(db); }
-  if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
-  if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
-  if (!db.pmSchedules) { db.pmSchedules = []; saveDB(db); }
-  if (!db.inventory) { db.inventory = []; saveDB(db); }
-  if (!db.inventoryTx) { db.inventoryTx = []; saveDB(db); }
-  if (!db.notifications) { db.notifications = []; saveDB(db); }
-  if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
-  if (!db.shifts) { db.shifts = []; saveDB(db); }
-  if (!db.auditLogs) { db.auditLogs = []; saveDB(db); }
-  if (!db.vendors) { db.vendors = []; saveDB(db); }
-  if (!db.purchaseOrders) { db.purchaseOrders = []; saveDB(db); }
-  if (!db.apiKeys) { db.apiKeys = []; saveDB(db); }
-  if (!db.webhooks) { db.webhooks = []; saveDB(db); }
+
+  // Migrate missing collections — single save pass instead of one per field
+  let dirty = false;
+  const defaults = {
+    checklists: [], maintenanceLogs: [], pmSchedules: [],
+    inventory: [], inventoryTx: [], notifications: [],
+    tenantRequests: [], shifts: [], auditLogs: [],
+    vendors: [], purchaseOrders: [], apiKeys: [], webhooks: []
+  };
+  for (const [key, val] of Object.entries(defaults)) {
+    if (!db[key]) { db[key] = val; dirty = true; }
+  }
+  if (!db.checklistTemplates || db.checklistTemplates.length === 0) {
+    db.checklistTemplates = getDefaultTemplates();
+    dirty = true;
+  }
+  _dbCache = db;
+  if (dirty) saveDB(db);
   return db;
 }
+
 function saveDB(db) {
+  _dbCache = db;
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  try { _dbMtime = fs.statSync(DB_PATH).mtimeMs; } catch {}
 }
+
 function initDB() {
   const db = {
     users: [{
@@ -113,8 +134,7 @@ function initDB() {
     webhooks: [],
     nextId: { asset: 1, workOrder: 1 }
   };
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  saveDB(db);
 }
 
 function getDefaultTemplates() {
