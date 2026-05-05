@@ -113,7 +113,7 @@ function initDB() {
   const db = {
     users: [{
       id: 'u1', username: 'admin', role: 'admin',
-      passwordHash: hashPassword('admin123'),
+      passwordHash: hashPassword('admin'),
       name: 'Administrator', createdAt: now()
     }],
     assets: [],
@@ -276,8 +276,8 @@ app.get('/api/me', requireAuth(), (req, res) => {
 
 app.post('/api/me/change-password', requireAuth(), (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  if (!newPassword || newPassword.length < 6)
-    return res.json({ ok: 0, error: 'Mật khẩu mới phải ít nhất 6 ký tự' });
+  if (!newPassword || newPassword.length < 5)
+    return res.json({ ok: 0, error: 'Mật khẩu mới phải ít nhất 5 ký tự' });
   const db = loadDB();
   const user = db.users.find(u => u.id === req.session.userId);
   if (!verifyPassword(oldPassword, user.passwordHash))
