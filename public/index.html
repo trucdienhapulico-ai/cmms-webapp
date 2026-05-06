@@ -472,23 +472,23 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
   <div class="login-box">
     <div class="login-logo">
       <h1>🔧 CMMS</h1>
-      <p>Hệ thống Quản lý Bảo trì Cơ điện</p>
+      <p data-i18n="login.title">Hệ thống Quản lý Bảo trì Cơ điện</p>
     </div>
     <div class="form-group">
-      <label>Tên đăng nhập</label>
-      <input type="text" id="login-username" placeholder="Nhập tài khoản" autocomplete="username">
+      <label data-i18n="login.username">Tên đăng nhập</label>
+      <input type="text" id="login-username" placeholder="Nhập tài khoản" data-i18n-ph="login.username.placeholder" autocomplete="username">
     </div>
     <div class="form-group">
-      <label>Mật khẩu</label>
+      <label data-i18n="login.password">Mật khẩu</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
     </div>
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px;">
       <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; cursor: pointer;">
-      <label for="login-remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
+      <label for="login-remember" data-i18n="login.remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
     </div>
     <div id="login-error" class="error-msg" style="display:none; color: var(--red); font-size: 12px; margin-top: 12px; font-weight: 600;"></div>
     <br>
-    <button class="btn btn-primary btn-full" onclick="doLogin()">Đăng nhập</button>
+    <button class="btn btn-primary btn-full" data-i18n="login.btn" onclick="doLogin()">Đăng nhập</button>
   </div>
 </div>
 
@@ -497,7 +497,7 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
   <div class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>🔧 CMMS</h1>
-      <p>Bảo trì Cơ điện</p>
+      <p data-i18n="app.subtitle">Bảo trì Cơ điện</p>
     </div>
     <div class="sidebar-user" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
       <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -514,31 +514,31 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
     
     <div style="flex: 1; overflow-y: auto;">
       <div class="nav-section">
-        <div class="nav-section-title">Vận hành</div>
-        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
-        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
-        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
-        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
-        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
-        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
-        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
-        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
-        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
-        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.ops">Vận hành</div>
+        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span data-i18n="nav.dashboard">Dashboard</span></div>
+        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span data-i18n="nav.workorders">Lệnh Công việc</span></div>
+        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span data-i18n="nav.pm">Bảo trì Định kỳ</span></div>
+        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span data-i18n="nav.assets">Thiết bị</span></div>
+        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span data-i18n="nav.inventory">Kho Vật tư</span></div>
+        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span data-i18n="nav.vendors">Nhà cung cấp</span></div>
+        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span data-i18n="nav.purchaseorders">Đơn mua hàng</span></div>
+        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span data-i18n="nav.shifts">Lịch trực</span></div>
+        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span data-i18n="nav.mlogs">Nhật ký Bảo trì</span></div>
+        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span data-i18n="nav.scan">Quét QR</span></div>
       </div>
-      
+
       <div class="nav-section" id="admin-menu" style="display:none">
-        <div class="nav-section-title">Quản trị</div>
-        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
-        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
-        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
-        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
-        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span>Phát hành (Staging)</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.admin">Quản trị</div>
+        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span data-i18n="nav.users">Người dùng</span></div>
+        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span data-i18n="nav.tenantportal">Tenant Portal</span></div>
+        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span data-i18n="nav.auditlog">Audit Log</span></div>
+        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span data-i18n="nav.integration">Kết nối BMS/IoT</span></div>
+        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span data-i18n="nav.release">Phát hành (Staging)</span></div>
       </div>
-      
+
       <div class="nav-section">
-        <div class="nav-section-title">Hỗ trợ</div>
-        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.support">Hỗ trợ</div>
+        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span data-i18n="nav.uimap">Sơ đồ UI / Góp ý</span></div>
       </div>
     </div>
 
@@ -555,6 +555,7 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
         <div class="topbar-title" id="page-title">Dashboard</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px">
+        <button id="lang-toggle-btn" class="btn btn-ghost btn-sm" onclick="setLanguage(currentLang === 'vi' ? 'en' : 'vi')" title="Switch Language / Chuyển ngôn ngữ" style="padding:4px 10px; font-size:11px; font-weight:700; border-radius:8px; letter-spacing:0.8px;">EN</button>
         <button id="theme-toggle-btn" class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Giao diện Tối / Sáng" style="padding:4px 8px; font-size:18px; line-height:1; border-radius:8px;">🌙</button>
         <div id="notif-bell" style="display:none; position:relative; cursor:pointer" onclick="toggleNotifPanel()">
           <span style="font-size:20px">🔔</span>
@@ -594,6 +595,175 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
 (function() {
   const saved = localStorage.getItem('cmms-theme');
   if (saved === 'dark') document.documentElement.dataset.theme = 'dark';
+})();
+
+// ─── i18n ────────────────────────────────────────────────────
+const translations = {
+  vi: {
+    'login.title': 'Hệ thống Quản lý Bảo trì Cơ điện',
+    'login.username': 'Tên đăng nhập',
+    'login.username.placeholder': 'Nhập tài khoản',
+    'login.password': 'Mật khẩu',
+    'login.remember': 'Ghi nhớ mật khẩu',
+    'login.btn': 'Đăng nhập',
+    'login.error': 'Sai tên đăng nhập hoặc mật khẩu',
+    'nav.section.ops': 'Vận hành',
+    'nav.dashboard': 'Dashboard',
+    'nav.workorders': 'Lệnh Công việc',
+    'nav.pm': 'Bảo trì Định kỳ',
+    'nav.assets': 'Thiết bị',
+    'nav.inventory': 'Kho Vật tư',
+    'nav.vendors': 'Nhà cung cấp',
+    'nav.purchaseorders': 'Đơn mua hàng',
+    'nav.shifts': 'Lịch trực',
+    'nav.mlogs': 'Nhật ký Bảo trì',
+    'nav.scan': 'Quét QR',
+    'nav.section.admin': 'Quản trị',
+    'nav.users': 'Người dùng',
+    'nav.tenantportal': 'Tenant Portal',
+    'nav.auditlog': 'Audit Log',
+    'nav.integration': 'Kết nối BMS/IoT',
+    'nav.release': 'Phát hành (Staging)',
+    'nav.section.support': 'Hỗ trợ',
+    'nav.uimap': 'Sơ đồ UI / Góp ý',
+    'page.dashboard': 'Dashboard',
+    'page.workorders': 'Lệnh Công việc',
+    'page.assets': 'Thiết bị',
+    'page.users': 'Quản lý Người dùng',
+    'page.scan': 'Quét QR',
+    'page.assetDetail': 'Chi tiết Thiết bị',
+    'page.mlogs': 'Nhật ký Bảo trì',
+    'page.pm': 'Bảo trì Định kỳ (PM)',
+    'page.uimap': 'Sơ đồ UI / Góp ý',
+    'page.inventory': 'Kho Vật tư',
+    'page.tenantportal': 'Tenant Portal',
+    'page.shifts': 'Lịch trực & Workload',
+    'page.auditlog': 'Nhật ký Hệ thống (Audit Log)',
+    'page.vendors': 'Nhà cung cấp',
+    'page.purchaseorders': 'Đơn mua hàng (PO)',
+    'page.integration': 'Kết nối BMS/IoT',
+    'page.release': 'Quản lý Phát hành (Staging & Release)',
+    'action.create': '+ Tạo',
+    'action.add': '+ Thêm',
+    'action.addMaterial': '+ Nhập vật tư',
+    'action.addVendor': '+ Thêm NCC',
+    'action.createPO': '+ Tạo đơn mua',
+    'action.createShift': '+ Tạo ca',
+    'action.backAssets': '← Thiết bị',
+    'role.admin': 'Quản trị viên',
+    'role.manager': 'Quản lý',
+    'role.operator': 'Kỹ thuật viên',
+    'role.viewer': 'Xem',
+  },
+  en: {
+    'login.title': 'M&E Maintenance Management System',
+    'login.username': 'Username',
+    'login.username.placeholder': 'Enter username',
+    'login.password': 'Password',
+    'login.remember': 'Remember me',
+    'login.btn': 'Login',
+    'login.error': 'Incorrect username or password',
+    'nav.section.ops': 'Operations',
+    'nav.dashboard': 'Dashboard',
+    'nav.workorders': 'Work Orders',
+    'nav.pm': 'Preventive Maintenance',
+    'nav.assets': 'Assets',
+    'nav.inventory': 'Inventory',
+    'nav.vendors': 'Vendors',
+    'nav.purchaseorders': 'Purchase Orders',
+    'nav.shifts': 'Shift Schedule',
+    'nav.mlogs': 'Maintenance Logs',
+    'nav.scan': 'QR Scan',
+    'nav.section.admin': 'Administration',
+    'nav.users': 'Users',
+    'nav.tenantportal': 'Tenant Portal',
+    'nav.auditlog': 'Audit Log',
+    'nav.integration': 'BMS/IoT Integration',
+    'nav.release': 'Release (Staging)',
+    'nav.section.support': 'Support',
+    'nav.uimap': 'UI Map / Feedback',
+    'page.dashboard': 'Dashboard',
+    'page.workorders': 'Work Orders',
+    'page.assets': 'Assets',
+    'page.users': 'User Management',
+    'page.scan': 'QR Scan',
+    'page.assetDetail': 'Asset Detail',
+    'page.mlogs': 'Maintenance Logs',
+    'page.pm': 'Preventive Maintenance (PM)',
+    'page.uimap': 'UI Map / Feedback',
+    'page.inventory': 'Inventory',
+    'page.tenantportal': 'Tenant Portal',
+    'page.shifts': 'Shift Schedule & Workload',
+    'page.auditlog': 'System Audit Log',
+    'page.vendors': 'Vendors',
+    'page.purchaseorders': 'Purchase Orders (PO)',
+    'page.integration': 'BMS/IoT Integration',
+    'page.release': 'Release Management (Staging & Release)',
+    'action.create': '+ Create',
+    'action.add': '+ Add',
+    'action.addMaterial': '+ Add Material',
+    'action.addVendor': '+ Add Vendor',
+    'action.createPO': '+ Create PO',
+    'action.createShift': '+ Create Shift',
+    'action.backAssets': '← Assets',
+    'role.admin': 'Administrator',
+    'role.manager': 'Manager',
+    'role.operator': 'Technician',
+    'role.viewer': 'Viewer',
+  }
+};
+
+let currentLang = localStorage.getItem('cmms-lang') || 'vi';
+
+function t(key) {
+  return (translations[currentLang] || {})[key] || (translations.vi || {})[key] || key;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('cmms-lang', lang);
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+
+  const langBtn = document.getElementById('lang-toggle-btn');
+  if (langBtn) langBtn.textContent = lang === 'vi' ? 'EN' : 'VI';
+
+  if (currentPage) {
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.textContent = t('page.' + currentPage) || currentPage;
+
+    const actionsMap = {
+      workorders: `<button class="btn btn-primary btn-sm" onclick="showWOForm()">${t('action.create')}</button>`,
+      assets: `<button class="btn btn-primary btn-sm" onclick="showAssetForm()">${t('action.add')}</button>`,
+      users: `<button class="btn btn-primary btn-sm" onclick="showUserForm()">${t('action.add')}</button>`,
+      inventory: `<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">${t('action.addMaterial')}</button>`,
+      assetDetail: `<button class="btn btn-ghost btn-sm" onclick="navigate('assets')">${t('action.backAssets')}</button>`,
+      shifts: `<button class="btn btn-primary btn-sm" onclick="showShiftForm()">${t('action.createShift')}</button>`,
+      vendors: `<button class="btn btn-primary btn-sm" onclick="showVendorForm()">${t('action.addVendor')}</button>`,
+      purchaseorders: `<button class="btn btn-primary btn-sm" onclick="showPOForm()">${t('action.createPO')}</button>`
+    };
+    const actionsEl = document.getElementById('topbar-actions');
+    if (actionsEl && actionsMap[currentPage]) actionsEl.innerHTML = actionsMap[currentPage];
+  }
+
+  if (currentUser) {
+    const roleEl = document.getElementById('sidebar-role');
+    if (roleEl) roleEl.textContent = t('role.' + currentUser.role) || currentUser.role;
+  }
+}
+
+// Initialize language
+(function() {
+  currentLang = localStorage.getItem('cmms-lang') || 'vi';
+  document.documentElement.lang = currentLang;
+  const langBtn = document.getElementById('lang-toggle-btn');
+  if (langBtn) langBtn.textContent = currentLang === 'vi' ? 'EN' : 'VI';
 })();
 
 function toggleTheme() {
@@ -654,7 +824,7 @@ async function doLogin() {
     }
     showApp();
   } else {
-    errorEl.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
+    errorEl.textContent = t('login.error');
     errorEl.style.display = 'block';
   }
 }
@@ -738,8 +908,9 @@ async function showApp() {
   
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  setLanguage(currentLang);
   document.getElementById('sidebar-name').textContent = currentUser.name;
-  document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
+  document.getElementById('sidebar-role').textContent = t('role.' + currentUser.role) || currentUser.role;
   if (['admin', 'manager'].includes(currentUser.role)) {
     document.getElementById('admin-menu').style.display = 'block';
     // Show notification bell
@@ -776,26 +947,16 @@ function navigate(page, param = null) {
   document.querySelectorAll('.bnav-item').forEach(el => {
     el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
   });
-  const titles = {
-    dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
-    users: 'Quản lý Người dùng', scan: 'Quét QR',
-    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
-    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
-    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
-    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)',
-    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)',
-    integration: 'Kết nối BMS/IoT', release: 'Quản lý Phát hành (Staging & Release)'
-  };
-  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('page-title').textContent = t('page.' + page) || page;
   const actions = {
-    workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>',
-    assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
-    users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
-    inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
-    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>',
-    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>',
-    vendors: '<button class="btn btn-primary btn-sm" onclick="showVendorForm()">+ Thêm NCC</button>',
-    purchaseorders: '<button class="btn btn-primary btn-sm" onclick="showPOForm()">+ Tạo đơn mua</button>'
+    workorders: `<button class="btn btn-primary btn-sm" onclick="showWOForm()">${t('action.create')}</button>`,
+    assets: `<button class="btn btn-primary btn-sm" onclick="showAssetForm()">${t('action.add')}</button>`,
+    users: `<button class="btn btn-primary btn-sm" onclick="showUserForm()">${t('action.add')}</button>`,
+    inventory: `<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">${t('action.addMaterial')}</button>`,
+    assetDetail: `<button class="btn btn-ghost btn-sm" onclick="navigate('assets')">${t('action.backAssets')}</button>`,
+    shifts: `<button class="btn btn-primary btn-sm" onclick="showShiftForm()">${t('action.createShift')}</button>`,
+    vendors: `<button class="btn btn-primary btn-sm" onclick="showVendorForm()">${t('action.addVendor')}</button>`,
+    purchaseorders: `<button class="btn btn-primary btn-sm" onclick="showPOForm()">${t('action.createPO')}</button>`
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
