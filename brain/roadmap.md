@@ -56,6 +56,29 @@ Mục tiêu: Tối ưu hóa hiệu suất qua dữ liệu và mở rộng tính 
 
 ---
 
+## Phase 3.5: Hardening & Optimization (Current Focus)
+Mục tiêu: Củng cố bảo mật, an toàn dữ liệu và tối ưu hóa hệ thống hiện tại.
+
+- [ ] **Secret Management**:
+    - Gỡ bỏ thông tin SSH/Sudo và Cloudflare Token khỏi code (deploy.js, scripts).
+    - Sử dụng biến môi trường (Environment Variables) cho các thông tin nhạy cảm.
+- [ ] **Data Sanitization**:
+    - Cập nhật `.gitignore` để loại bỏ hoàn toàn tracking `data/*.json` và các bản backup.
+    - Xóa các file backup cũ đã lỡ commit lên GitHub.
+- [ ] **Stored XSS Prevention**:
+    - Triển khai helper `escapeHtml` cho toàn bộ các trường nhập liệu (Work Orders, Assets, v.v.).
+    - Rà soát các vị trí sử dụng `innerHTML` để chuyển sang render an toàn.
+- [ ] **Security Bootstrap**:
+    - Yêu cầu cấu hình mật khẩu Admin ban đầu qua biến môi trường thay vì mặc định `admin`.
+    - Thêm cờ `mustChangePassword` cho tài khoản mới khởi tạo.
+- [ ] **Logic Fixes**:
+    - Sửa lỗi phân quyền Check-in/out ca làm việc (Issue #26).
+    - Triển khai ghi file Database theo cơ chế Atomic (ghi file tạm rồi mới đổi tên) để tránh corrupt data.
+- [ ] **Project Refactoring**:
+    - Chia nhỏ `server.js` và `public/index.html` thành các module nhỏ hơn để dễ quản lý.
+
+---
+
 ## 🚀 Phase 4: Scaling & High Performance (Next Steps)
 Mục tiêu: Chuyển đổi công nghệ để chịu tải lớn và đa nền tảng.
 
