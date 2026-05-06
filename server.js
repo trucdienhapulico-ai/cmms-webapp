@@ -12,7 +12,7 @@ const app = express();
 const PORT = 3090;
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
 const IS_PROD = process.env.NODE_ENV === 'production';
-const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_BOOTSTRAP_PASSWORD || process.env.ADMIN_RESET_PASSWORD || '123456';
+const DEFAULT_ADMIN_PASSWORD = process.env.INITIAL_ADMIN_PASSWORD || process.env.ADMIN_BOOTSTRAP_PASSWORD || process.env.ADMIN_RESET_PASSWORD || '123456';
 
 // ─── Trust proxy (Synology Reverse Proxy / Cloudflare Tunnel) ─
 app.set('trust proxy', 1);
@@ -111,11 +111,16 @@ function saveDB(db) {
 }
 
 function initDB() {
+  if (IS_PROD && !process.env.INITIAL_ADMIN_PASSWORD && !process.env.ADMIN_BOOTSTRAP_PASSWORD) {
+    console.error('[CMMS] FATAL: Set INITIAL_ADMIN_PASSWORD env var before initializing the database in production.');
+    process.exit(1);
+  }
   const db = {
     users: [{
       id: 'u1', username: 'admin', role: 'admin',
       passwordHash: hashPassword(DEFAULT_ADMIN_PASSWORD),
-      name: 'Administrator', createdAt: now()
+      name: 'Administrator', createdAt: now(),
+      mustChangePassword: true
     }],
     assets: [],
     workOrders: [],
