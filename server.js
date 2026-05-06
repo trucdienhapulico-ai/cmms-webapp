@@ -12,6 +12,7 @@ const app = express();
 const PORT = 3090;
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
 const IS_PROD = process.env.NODE_ENV === 'production';
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_BOOTSTRAP_PASSWORD || process.env.ADMIN_RESET_PASSWORD || '123456';
 
 // ─── Trust proxy (Synology Reverse Proxy / Cloudflare Tunnel) ─
 app.set('trust proxy', 1);
@@ -113,7 +114,7 @@ function initDB() {
   const db = {
     users: [{
       id: 'u1', username: 'admin', role: 'admin',
-      passwordHash: hashPassword('admin'),
+      passwordHash: hashPassword(DEFAULT_ADMIN_PASSWORD),
       name: 'Administrator', createdAt: now()
     }],
     assets: [],
@@ -216,17 +217,19 @@ function requireAuth(roles = []) {
 
 function now() { return new Date().toISOString(); }
 
-function logAudit(req, action, entity, entityId, details = '') {
+function logAudit(req, action, entity, entityId, details = '', actor = null) {
   const db = loadDB();
   if (!db.auditLogs) db.auditLogs = [];
   const session = getSession(req);
+  const userId = actor?.userId || session?.userId || null;
+  const userName = actor?.username || session?.username || 'system';
   db.auditLogs.unshift({
     id: `AUDIT-${Date.now()}`,
     action,
     entity,
     entityId: entityId || null,
-    userId: session?.userId || null,
-    userName: session?.username || 'system',
+    userId,
+    userName,
     details,
     ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
     createdAt: now()
@@ -243,11 +246,17 @@ function nextId(db, type) {
 
 // ─── Auth Routes ──────────────────────────────────────────────
 app.post('/api/login', loginLimiter, (req, res) => {
-  const { username, password } = req.body;
+  const username = String(req.body?.username || '').trim();
+  const password = String(req.body?.password || '');
   const db = loadDB();
-  const user = db.users.find(u => u.username === username);
-  if (!user || !verifyPassword(password, user.passwordHash))
+  const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    logAudit(req, 'login_failed', 'user', user?.id || null, `Failed login attempt for username: "${username}"`, {
+      userId: user?.id || null,
+      username: username || 'unknown'
+    });
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
+  }
   const sid = createSession(user);
   const isHttps = req.headers['x-forwarded-proto'] === 'https';
   res.cookie('sid', sid, {
@@ -257,7 +266,10 @@ app.post('/api/login', loginLimiter, (req, res) => {
     maxAge: 8 * 60 * 60 * 1000,
     expires: new Date(Date.now() + 8 * 60 * 60 * 1000)
   });
-  logAudit(req, 'login', 'user', user.id, 'Login successful');
+  logAudit(req, 'login', 'user', user.id, 'Login successful', {
+    userId: user.id,
+    username: user.username
+  });
   res.json({ ok: 1, data: { id: user.id, username: user.username, role: user.role, name: user.name } });
 });
 
@@ -326,7 +338,7 @@ app.post('/api/users/:id/reset-password', requireAuth(['admin']), (req, res) => 
   if (!u) return res.json({ ok: 0, error: 'Không tìm thấy người dùng' });
   
   // Mat khau mac dinh
-  const defaultPass = process.env.ADMIN_RESET_PASSWORD || 'DNH@Default2026!';
+  const defaultPass = DEFAULT_ADMIN_PASSWORD;
   u.passwordHash = hashPassword(defaultPass);
   saveDB(db);
   logAudit(req, 'reset_password', 'user', u.id, `Reset password for ${u.username}`);
