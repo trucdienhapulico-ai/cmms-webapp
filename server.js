@@ -105,8 +105,11 @@ function loadDB() {
 
 function saveDB(db) {
   _dbCache = db;
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  const dir = path.dirname(DB_PATH);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmp = DB_PATH + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
+  fs.renameSync(tmp, DB_PATH);
   try { _dbMtime = fs.statSync(DB_PATH).mtimeMs; } catch {}
 }
 
@@ -1229,7 +1232,7 @@ app.post('/api/shifts/:id/check-in', requireAuth(), (req, res) => {
   const shift = (db.shifts || []).find(s => s.id === req.params.id);
   if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
   const session = getSession(req);
-  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  if (session.role === 'operator' && shift.userId !== session.userId) return res.json({ ok: 0, error: 'Không có quyền' });
   shift.checkInAt = now();
   shift.status = 'checked-in';
   saveDB(db);
@@ -1241,7 +1244,7 @@ app.post('/api/shifts/:id/check-out', requireAuth(), (req, res) => {
   const shift = (db.shifts || []).find(s => s.id === req.params.id);
   if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
   const session = getSession(req);
-  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  if (session.role === 'operator' && shift.userId !== session.userId) return res.json({ ok: 0, error: 'Không có quyền' });
   shift.checkOutAt = now();
   shift.status = 'checked-out';
   saveDB(db);
