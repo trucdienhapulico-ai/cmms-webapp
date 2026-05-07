@@ -1,0 +1,31 @@
+﻿# Task: Bypass Router Restrictions using Cloudflare Tunnel
+
+## Context
+The user cannot access the router configuration to set up Port Forwarding. The previously implemented DuckDNS solution (Issue 35) requires port forwarding to work. We need a solution that works behind NAT/Firewall.
+
+## Objective
+Implement a public access solution using **Cloudflare Tunnel (cloudflared)**, which creates a secure outbound connection to Cloudflare, bypassing the need for router configuration.
+
+## Requirements
+1. **Tool Installation**: Check if `cloudflared` is installed. If not, provide instructions or use `winget install Cloudflare.cloudflared`.
+2. **Quick Tunnel Setup**:
+   - Create a script `scripts/start-tunnel.ps1` that starts a "Quick Tunnel".
+   - This will provide a random `*.trycloudflare.com` URL. 
+   - Ensure the script captures this URL and displays it clearly to the user.
+3. **Permanent Solution Documentation**:
+   - Create `DOCS_TUNNEL_SETUP.md`.
+   - Explain how the user can set up a *free* Cloudflare account and link a domain (even a free one) to get a permanent URL (e.g., `cmms.montanagc.com.vn`).
+4. **Integration**:
+   - Update `server.js` or create a small utility that can auto-start the tunnel when the server starts (optional but recommended).
+   - Add `CLOUDFLARE_TUNNEL_TOKEN` placeholder to `.env.example`.
+
+## Files to modify/create
+- `scripts/start-tunnel.ps1` (New)
+- `DOCS_TUNNEL_SETUP.md` (New)
+- `.env.example` (Update)
+
+## Note for Claude
+- Do NOT rely on DuckDNS for this. DuckDNS is for DDNS, but we need a Tunnel.
+- Use `cloudflared tunnel --url http://localhost:3090` for the quick tunnel.
+- Make it easy for the user to copy-paste the public URL.
+

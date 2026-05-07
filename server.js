@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const QRCode = require('qrcode');
 const rateLimit = require('express-rate-limit');
+const prisma = require('./lib/db');
 
 const app = express();
 const PORT = 3090;
@@ -256,9 +257,14 @@ function nextId(db, type) {
 app.post('/api/login', loginLimiter, (req, res) => {
   const username = String(req.body?.username || '').trim();
   const password = String(req.body?.password || '');
+  const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+  const ua = (req.headers['user-agent'] || '').slice(0, 80);
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  console.log(`[LOGIN] attempt user="${username}" ip=${ip} proto=${proto} ua="${ua}"`);
   const db = loadDB();
   const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
   if (!user || !verifyPassword(password, user.passwordHash)) {
+    console.log(`[LOGIN] FAIL user="${username}" ip=${ip}`);
     logAudit(req, 'login_failed', 'user', user?.id || null, `Failed login attempt for username: "${username}"`, {
       userId: user?.id || null,
       username: username || 'unknown'
@@ -266,14 +272,15 @@ app.post('/api/login', loginLimiter, (req, res) => {
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
   }
   const sid = createSession(user);
-  const isHttps = req.headers['x-forwarded-proto'] === 'https';
+  const isHttps = proto === 'https';
   res.cookie('sid', sid, {
     httpOnly: true,
-    secure: IS_PROD && isHttps,
-    sameSite: 'strict',
+    secure: isHttps,
+    sameSite: isHttps ? 'none' : 'strict',
     maxAge: 8 * 60 * 60 * 1000,
     expires: new Date(Date.now() + 8 * 60 * 60 * 1000)
   });
+  console.log(`[LOGIN] OK user="${username}" role=${user.role} ip=${ip}`);
   logAudit(req, 'login', 'user', user.id, 'Login successful', {
     userId: user.id,
     username: user.username

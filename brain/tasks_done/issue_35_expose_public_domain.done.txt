@@ -1,0 +1,24 @@
+﻿# Task: Expose CMMS WebApp to Public Domain montanagc.duckdns.org
+
+## Objective
+Enable public access to the local CMMS WebApp (running on port 3090) via the DuckDNS domain `montanagc.duckdns.org`.
+
+## Requirements
+1. **DuckDNS Update Script**: Create a PowerShell script `scripts/duckdns-update.ps1` that uses the DuckDNS API to update the IP address for `montanagc`.
+2. **Environment Variable**: Add a placeholder for `DUCKDNS_TOKEN` in `.env.example` and `.env`.
+3. **Connectivity Check**: Create a small script or update `server.js` to log when the public IP changes or if the DuckDNS update fails.
+4. **Documentation**: Update `SETUP_PC.md` or a new `DEPLOY_PUBLIC.md` with instructions on:
+   - How to schedule the DuckDNS update script (e.g., Task Scheduler).
+   - How to configure Port Forwarding on the router (Mapping public port 80 or 3090 to local port 3090).
+   - Recommendation for using a reverse proxy (like Nginx) if HTTPS is needed in the future.
+
+## Files to modify/create
+- `scripts/duckdns-update.ps1` (New)
+- `.env.example` (Update)
+- `SETUP_PC.md` (Update)
+
+## Note for Claude
+- Use `Invoke-RestMethod` for the DuckDNS API call.
+- The DuckDNS API URL is: `https://www.duckdns.org/update?domains=montanagc&token=<TOKEN>&ip=`
+- If you can't find the token, leave it as a variable for the user to fill in.
+

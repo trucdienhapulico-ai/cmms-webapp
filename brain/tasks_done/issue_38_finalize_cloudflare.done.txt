@@ -1,0 +1,33 @@
+﻿# Task: Remove Localtunnel and Finalize Cloudflare Tunnel
+
+## Context
+The user has decided to abandon Localtunnel as it is unstable and not suitable for long-term use. We will now focus 100% on **Cloudflare Tunnel** as the professional solution for public access without router configuration.
+
+## Objective
+1. **Cleanup**: Remove all Localtunnel-related files and configurations.
+2. **Optimization**: Ensure the Cloudflare Tunnel (Quick Tunnel) is robust and easy to use.
+3. **Background Operation**: Provide a way to run the Cloudflare Tunnel in the background (as a service or persistent process).
+
+## Requirements
+1. **File Deletion**: Delete `scripts/start-lt.ps1`.
+2. **Cloudflare Tunnel (Quick Tunnel)**:
+   - Verify `scripts/start-tunnel.ps1` works flawlessly.
+   - Improve the script to automatically check if `cloudflared` is in the PATH and handle cases where it isn't (maybe search in common installation folders).
+3. **Background Service (NEW)**:
+   - Create a script `scripts/install-tunnel-service.ps1`.
+   - This script should guide the user or automate the creation of a Windows Service for `cloudflared` using a **Named Tunnel**.
+   - Since the user doesn't want a purchased domain, clarify that a **Named Tunnel** still needs a Cloudflare account but can use a free Cloudflare-managed domain if they have one, OR just keep the Quick Tunnel for now.
+   - *Alternative*: If they stay with Quick Tunnel, create a script `scripts/start-tunnel-bg.ps1` that uses `Start-Process -WindowStyle Hidden`.
+4. **Documentation**: Update `SETUP_PC.md` to remove Localtunnel and make Cloudflare Tunnel the standard.
+
+## Files to modify/delete
+- `scripts/start-lt.ps1` (Delete)
+- `scripts/start-tunnel.ps1` (Improve)
+- `scripts/install-tunnel-service.ps1` (New)
+- `SETUP_PC.md` (Update)
+
+## Note for Claude
+- Localtunnel is officially out. Do not suggest it anymore.
+- Focus on the "professional" feel of Cloudflare Tunnel.
+- Ensure the user can easily see their public URL even if running in the background (e.g., log to a file `tunnel-url.log`).
+

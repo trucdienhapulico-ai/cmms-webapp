@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String   @id
+  username           String   @unique
+  name               String?
+  role               String   @default("viewer")
+  passwordHash       String
+  mustChangePassword Boolean  @default(false)
+  importedFromOps    Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  workOrdersCreated  WorkOrder[] @relation("CreatedBy")
+  workOrdersAssigned WorkOrder[] @relation("AssignedTo")
+  maintenanceLogs    MaintenanceLog[]
+  auditLogs          AuditLog[]
+}
+
+model Asset {
+  id           String   @id
+  name         String
+  code         String   @unique
+  type         String   @default("equipment")
+  parentId     String?
+  parent       Asset?   @relation("AssetHierarchy", fields: [parentId], references: [id])
+  children     Asset[]  @relation("AssetHierarchy")
+  category     String?
+  location     String?
+  manufacturer String?
+  model        String?
+  serialNumber String?
+  installDate  String?
+  notes        String?
+  status       String   @default("active")
+  opsSourceId  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workOrders      WorkOrder[]
+  maintenanceLogs MaintenanceLog[]
+  pmSchedules     PmSchedule[]
+}
+
+model WorkOrder {
+  id          String   @id
+  title       String
+  description String?
+  priority    String   @default("medium")
+  type        String   @default("corrective")
+  status      String   @default("open")
+  dueDate     String?
+  opsSourceId String?
+  
+  assetId     String?
+  asset       Asset?   @relation(fields: [assetId], references: [id])
+
+  createdBy   String
+  creator     User     @relation("CreatedBy", fields: [createdBy], references: [id])
+
+  assignedTo  String?
+  assignee    User?    @relation("AssignedTo", fields: [assignedTo], references: [id])
+
+  pmScheduleId String?
+  pmSchedule   PmSchedule? @relation(fields: [pmScheduleId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  history     Json?
+  statusNote  String?
+}
+
+model ChecklistTemplate {
+  id        String   @id
+  name      String
+  category  String
+  items     Json
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pmSchedules PmSchedule[]
+}
+
+model Checklist {
+  id        String   @id
+  assetId   String?
+  assetName String?
+  templateId String?
+  date      String?
+  shift     String?
+  items     Json
+  savedBy   String?
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model MaintenanceLog {
+  id          String   @id
+  assetId     String
+  asset       Asset    @relation(fields: [assetId], references: [id])
+  type        String?
+  results     Json?
+  notes       String?
+  submittedBy String?
+  submittedById String?
+  user        User?    @relation(fields: [submittedById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model PmSchedule {
+  id                String   @id
+  name              String
+  assetId           String?
+  asset             Asset?   @relation(fields: [assetId], references: [id])
+  templateId        String?
+  template          ChecklistTemplate? @relation(fields: [templateId], references: [id])
+  frequency         String
+  startDate         String
+  endDate           String?
+  assignedTo        String?
+  priority          String   @default("medium")
+  notes             String?
+  status            String   @default("active")
+  nextDueDate       String?
+  lastGeneratedDate String?
+  generatedCount    Int      @default(0)
+  createdBy         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  workOrders        WorkOrder[]
+}
+
+model Inventory {
+  id          String   @id
+  name        String
+  code        String   @unique
+  category    String?
+  unit        String?
+  qty         Float    @default(0)
+  minQty      Float    @default(0)
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions InventoryTx[]
+}
+
+model InventoryTx {
+  id          String   @id
+  itemId      String
+  item        Inventory @relation(fields: [itemId], references: [id])
+  type        String
+  qty         Float
+  refId       String?
+  note        String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id
+  type      String
+  title     String
+  body      String?
+  read      Boolean  @default(false)
+  refId     String?
+  refType   String?
+  createdAt DateTime @default(now())
+}
+
+model TenantRequest {
+  id          String   @id
+  tenantName  String?
+  room        String?
+  phone       String?
+  title       String
+  description String?
+  status      String   @default("pending")
+  workOrderId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Shift {
+  id         String   @id
+  userId     String
+  date       String
+  shiftType  String?
+  checkIn    DateTime?
+  checkOut   DateTime?
+  notes      String?
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id
+  action    String
+  entity    String
+  entityId  String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  userName  String?
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+}
+
+model Vendor {
+  id        String   @id
+  name      String
+  contact   String?
+  phone     String?
+  email     String?
+  address   String?
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id          String   @id
+  vendorId    String?
+  title       String
+  items       Json
+  totalAmount Float    @default(0)
+  status      String   @default("draft")
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ApiKey {
+  id        String   @id
+  name      String
+  keyHash   String   @unique
+  role      String   @default("viewer")
+  createdAt DateTime @default(now())
+}
+
+model Webhook {
+  id        String   @id
+  name      String
+  url       String
+  events    Json
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+}

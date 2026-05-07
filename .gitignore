@@ -10,3 +10,5 @@ cmms-startup.log
 cookie.txt
 app.zip
 app.tar
+
+/generated/prisma
