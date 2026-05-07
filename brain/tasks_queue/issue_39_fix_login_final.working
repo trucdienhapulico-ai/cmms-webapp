@@ -1,0 +1,29 @@
+﻿# Task: Final Fix for Admin Login and Browser Verification
+
+## Context
+The user is still unable to log in as `admin` after multiple attempts. We need a definitive fix.
+
+## Objective
+1. **Reset Admin Password**: Explicitly reset the `admin` password in `data/db.json` to `admin123` using the application's hashing logic.
+2. **Review Auth Logic**:
+   - Verify `server.js` login endpoint.
+   - Check if `cookie-parser` or `express-session` (if used) has issues with the Cloudflare Tunnel proxy.
+   - Specifically check the `res.cookie` flags (`secure`, `sameSite`).
+3. **Verbose Logging**: Add temporary verbose logging for EVERY step of the `/api/login` process (parsing body, finding user, hashing password, comparing, setting cookie).
+4. **CORS/Proxy Check**: Ensure the server handles the `Host` and `X-Forwarded-Proto` headers from Cloudflare Tunnel correctly.
+
+## Requirements
+1. **Reset Script**: Create a one-time script `scripts/reset-admin.js` that sets the admin password to `admin123` and run it.
+2. **Server Update**:
+   - In `server.js`, ensure `app.set('trust proxy', 1)` is correctly placed (it seems it is).
+   - Double check the `verifyPassword` logic.
+3. **Reporting**: As per the new workflow, append a detailed report to this file, push to GitHub, and play the bell sound.
+
+## Note for Antigravity (Architect)
+- Once Claude finishes and the bell sounds, Antigravity will use the browser to attempt login at the public URL.
+
+## Files to modify
+- `server.js`
+- `data/db.json` (via script)
+- `scripts/reset-admin.js` (New)
+

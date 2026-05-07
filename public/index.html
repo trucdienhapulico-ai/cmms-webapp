@@ -945,7 +945,7 @@ async function doLogin() {
     }
     showApp();
   } else {
-    errorEl.textContent = t('login.error');
+    errorEl.textContent = r.error || t('login.error');
     errorEl.style.display = 'block';
   }
 }

@@ -259,28 +259,51 @@ app.post('/api/login', loginLimiter, (req, res) => {
   const password = String(req.body?.password || '');
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
   const ua = (req.headers['user-agent'] || '').slice(0, 80);
-  const proto = req.headers['x-forwarded-proto'] || 'http';
-  console.log(`[LOGIN] attempt user="${username}" ip=${ip} proto=${proto} ua="${ua}"`);
+  // Use req.protocol (respects trust proxy: 1) so multi-hop Cloudflare "https,http" is handled correctly
+  const proto = req.protocol;
+  const rawFwdProto = req.headers['x-forwarded-proto'] || 'none';
+  const host = req.headers['host'] || 'unknown';
+
+  console.log(`[LOGIN:1] BODY  user="${username}" pw_len=${password.length} ip=${ip}`);
+  console.log(`[LOGIN:2] HDR   proto=${proto} x-fwd-proto=${rawFwdProto} host=${host}`);
+  console.log(`[LOGIN:3] UA    "${ua}"`);
+
   const db = loadDB();
   const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if (!user || !verifyPassword(password, user.passwordHash)) {
-    console.log(`[LOGIN] FAIL user="${username}" ip=${ip}`);
-    logAudit(req, 'login_failed', 'user', user?.id || null, `Failed login attempt for username: "${username}"`, {
-      userId: user?.id || null,
-      username: username || 'unknown'
+  console.log(`[LOGIN:4] USER  found=${!!user}${user ? ` id=${user.id} role=${user.role}` : ''}`);
+
+  if (!user) {
+    console.log(`[LOGIN:5] FAIL  reason=user_not_found user="${username}" ip=${ip}`);
+    logAudit(req, 'login_failed', 'user', null, `Failed login attempt for username: "${username}"`, {
+      userId: null, username: username || 'unknown'
     });
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
   }
+
+  const pwOk = verifyPassword(password, user.passwordHash);
+  console.log(`[LOGIN:5] PWCHK ok=${pwOk} user="${username}"`);
+
+  if (!pwOk) {
+    console.log(`[LOGIN:6] FAIL  reason=wrong_password user="${username}" ip=${ip}`);
+    logAudit(req, 'login_failed', 'user', user.id, `Failed login attempt for username: "${username}"`, {
+      userId: user.id, username: username
+    });
+    return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
+  }
+
   const sid = createSession(user);
   const isHttps = proto === 'https';
-  res.cookie('sid', sid, {
+  const cookieOpts = {
     httpOnly: true,
     secure: isHttps,
-    sameSite: isHttps ? 'none' : 'strict',
+    sameSite: isHttps ? 'none' : 'lax',
     maxAge: 8 * 60 * 60 * 1000,
     expires: new Date(Date.now() + 8 * 60 * 60 * 1000)
-  });
-  console.log(`[LOGIN] OK user="${username}" role=${user.role} ip=${ip}`);
+  };
+  console.log(`[LOGIN:6] COOKIE secure=${cookieOpts.secure} sameSite=${cookieOpts.sameSite} isHttps=${isHttps}`);
+  res.cookie('sid', sid, cookieOpts);
+
+  console.log(`[LOGIN:7] OK    user="${username}" role=${user.role} ip=${ip}`);
   logAudit(req, 'login', 'user', user.id, 'Login successful', {
     userId: user.id,
     username: user.username
