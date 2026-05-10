@@ -16,18 +16,18 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 // ─── Trust proxy (Synology Reverse Proxy / Cloudflare Tunnel) ─
 app.set('trust proxy', 1);
 
-// ─── HTTPS redirect (khi chạy sau reverse proxy) ─────────────
-app.use((req, res, next) => {
-  if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') {
-    return res.redirect(301, `https://${req.headers.host}${req.url}`);
-  }
-  next();
-});
+// ─── HTTPS redirect (TAM TAT de debug) ─────────────
+// app.use((req, res, next) => {
+//   if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') {
+//     return res.redirect(301, `https://${req.headers.host}${req.url}`);
+//   }
+//   next();
+// });
 
-// ─── Security headers ─────────────────────────────────────────
+// ─── Security headers (HSTS TAM TAT) ─────────────────────────
 app.use((req, res, next) => {
-  // Bỏ includeSubDomains để không ảnh hưởng đến các cổng 8080, 8081
-  res.setHeader('Strict-Transport-Security', 'max-age=3600'); 
+  // HSTS tam tat de cho phep truy cap HTTP
+  // res.setHeader('Strict-Transport-Security', 'max-age=3600'); 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -213,6 +213,19 @@ function nextId(db, type) {
   return id;
 }
 
+// ─── Emergency Reset (XOA SAU KHI DANG NHAP DUOC) ────────────
+app.get('/api/emergency-reset', (req, res) => {
+  const db = loadDB();
+  const admin = db.users.find(u => u.username === 'admin');
+  if (admin) {
+    admin.passwordHash = hashPassword('admin123');
+    saveDB(db);
+    res.json({ ok: 1, message: 'Admin password reset to: admin123' });
+  } else {
+    res.json({ ok: 0, error: 'Admin user not found' });
+  }
+});
+
 // ─── Auth Routes ──────────────────────────────────────────────
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
@@ -221,11 +234,10 @@ app.post('/api/login', (req, res) => {
   if (!user || !verifyPassword(password, user.passwordHash))
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
   const sid = createSession(user);
-  const isHttps = req.headers['x-forwarded-proto'] === 'https';
   res.cookie('sid', sid, {
     httpOnly: true,
-    secure: IS_PROD && isHttps,
-    sameSite: 'strict',
+    secure: false,
+    sameSite: 'lax',
     maxAge: 8 * 60 * 60 * 1000
   });
   logAudit(req, 'login', 'user', user.id, 'Login successful');
