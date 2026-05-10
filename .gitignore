@@ -1,4 +1,14 @@
 node_modules/
 data/db.json
+data/db.backup-*.json
+data/*.backup.json
 backups/
 env/*.env
+.env
+cmms-startup.log
+*.log
+cookie.txt
+app.zip
+app.tar
+
+/generated/prisma

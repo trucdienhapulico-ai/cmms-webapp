@@ -73,15 +73,49 @@ services:
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
-      - TUNNEL_TOKEN=eyJhIjoiMDdhYjVhMjE5YTZjZDg2NDA3ZTQ1NWM0OTQxOWVmYWEiLCJ0IjoiYzEyOTgwNGEtOWU5ZS00MzQ0LTgwZWItMjgwNTczMTdjNDcwIiwicyI6Ik1HWmxaREF4TXpZdE0yUTVOQzAwWXpBekxUazVNekl0WTJKak1HWXdOVE5rTm1KaSJ9
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
     networks:
       - cmms-net
+
+  # ─── Database (PostgreSQL) ────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: cmms-postgres
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      - POSTGRES_DB=${DB_NAME:-cmms_prod}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - cmms-net
+
+  # ─── DB Management (Adminer) ──────────────────────────────────
+  adminer:
+    image: adminer
+    container_name: cmms-adminer
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    ports:
+      - "8082:8080"
+    networks:
+      - cmms-net
+    depends_on:
+      - postgres
 
 volumes:
   stable-data:
     name: cmms-stable-data
   test-data:
     name: cmms-test-data
+  postgres-data:
+    name: cmms-postgres-data
 
 networks:
   cmms-net:

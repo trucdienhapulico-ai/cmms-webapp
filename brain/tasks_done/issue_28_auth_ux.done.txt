@@ -24,10 +24,42 @@ Issue: #28
 - Reset the user's `passwordHash` using the system default password.
 - Log to Audit: `Admin reset password for user: [username]`.
 
-### 3. Password Reset (Frontend)
-- Update `renderUsers()` to add a "Reset" button (key icon) for each user.
-- When clicked, call the reset API.
+### 3. Dashboard UI Improvements [UI-Dash-Stats]
+- Make dashboard statistics cards clickable.
+- Clicking on a stat card should navigate to the relevant section or filtered view (e.g., Pending tasks, Completed tasks).
+
+### 4. User Password Change UI
+- Add a "Đổi mật khẩu" button or link in the user navigation/header or profile section.
+- Implement a modal or a dedicated view for the password change form (Mật khẩu cũ, Mật khẩu mới, Xác nhận).
+- Link this UI to the `PUT /api/users/me/password` endpoint.
+
+### 5. Verification
+- Test login with "Remember Me".
+- Test Admin resetting a user password.
 
 ### 4. Finish
 - Deployment: node deploy.js (Test environment only).
 - Commit, Push, Close Issue #28.
+
+
+--- MERGED FROM tasks_queue\issues.txt ---
+
+DANH SÁCH ISSUE CẦN XỬ LÝ
+===========================
+
+Issue #1: Sửa README.md
+-----------------------
+Mô tả: Cập nhật địa chỉ truy cập cũ thành http://localhost:3090
+File cần sửa: README.md
+Logic cần thực hiện: Tìm tất cả các URL/địa chỉ cũ trong README.md và thay thế bằng http://localhost:3090
+
+Issue #2: Thêm tính năng đổi mật khẩu
+---------------------------------------
+Mô tả: Cho phép người dùng tự đổi mật khẩu của mình
+File cần sửa:
+  - server.js (thêm API endpoint PUT /api/users/me/password)
+  - public/js/ (thêm UI form đổi mật khẩu)
+Logic cần thực hiện:
+  - Backend: Xác thực mật khẩu cũ, hash mật khẩu mới bằng PBKDF2+SHA256, lưu vào db.json
+  - Frontend: Form gồm 3 trường (mật khẩu cũ, mật khẩu mới, xác nhận mật khẩu mới)
+  - Validation: Mật khẩu mới tối thiểu 5 ký tự, 2 trường mới phải khớp nhau

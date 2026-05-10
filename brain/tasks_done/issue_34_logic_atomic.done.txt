@@ -1,0 +1,11 @@
+﻿ISSUE_34: CORE LOGIC - SHIFT PERMISSIONS & ATOMIC DB WRITES
+
+MÃ” Táº¢:
+1. Sá»­a lá»—i logic check-in/out ca lÃ m viá»‡c: Sá»­ dá»¥ng session.userId thay vÃ¬ session.id Ä‘á»ƒ so sÃ¡nh.
+2. Triá»ƒn khai cÆ¡ cháº¿ Atomic Write cho hÃ m saveDB(): Ghi vÃ o file táº¡m (.tmp) sau Ä‘Ã³ má»›i rename Ä‘Ã¨ lÃªn file chÃ­nh.
+3. Äáº£m báº£o dá»n dáº¹p cÃ¡c file táº¡m sau khi ghi thÃ nh cÃ´ng.
+
+YÃŠU Cáº¦U:
+- Ká»¹ thuáº­t viÃªn (Operator) pháº£i check-in Ä‘Æ°á»£c ca cá»§a mÃ¬nh.
+- File db.json khÃ´ng bá»‹ há»ng (corrupt) náº¿u server crash khi Ä‘ang ghi.
+

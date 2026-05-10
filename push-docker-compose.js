@@ -2,7 +2,7 @@ const { NodeSSH } = require('node-ssh');
 const fs = require('fs');
 
 const ssh = new NodeSSH();
-const password = '{9oF`xW~';
+const password = process.env.NAS_SSH_PASSWORD;
 const remoteDir = '/volume1/docker/cmms-webapp';
 
 async function run() {

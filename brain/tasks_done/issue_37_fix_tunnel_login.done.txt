@@ -1,0 +1,28 @@
+﻿# Task: Fix Localtunnel 503 error and Verify Admin Login
+
+## Context
+The Localtunnel at `https://montanagc.loca.lt` is returning a **503 - Tunnel Unavailable** error, even though the local server is running on port 3090. Additionally, the user wants to ensure they can log in successfully with the `admin` account.
+
+## Objective
+1. **Fix 503 Error**: Diagnose and resolve the connection issue between Localtunnel and the local server.
+2. **Verify Auth Logic**: Ensure the webapp handles proxy headers correctly so sessions/cookies work over the tunnel.
+3. **Login Test**: Verify that the `admin` account can log in.
+
+## Requirements
+1. **Server Health Check**: Verify `http://localhost:3090/api/health` (or equivalent) is working locally.
+2. **Tunnel Reliability**:
+   - Check if `npx localtunnel` needs a restart or if the port 3090 is blocked.
+   - Consider if the server needs `app.set('trust proxy', 1)` in `server.js` to handle HTTPS cookies from the tunnel.
+3. **Admin Account**:
+   - Check `data/db.json` for the `admin` user.
+   - If the password is lost, reset it to `admin123` (using the proper PBKDF2 hash logic in the app).
+4. **Logging**: Add more detailed logging in `server.js` for login attempts (including IP and headers) to help debug remote access issues.
+
+## Files to modify
+- `server.js` (Check proxy settings and add logging)
+- `scripts/start-lt.ps1` (Check for reliability improvements)
+
+## Note for Claude
+- A 503 in Localtunnel often means the local process is not responding to the tunnel's requests fast enough or at all.
+- Check if the server is bound to `127.0.0.1` or `0.0.0.0`. It should be `0.0.0.0` or `localhost`.
+

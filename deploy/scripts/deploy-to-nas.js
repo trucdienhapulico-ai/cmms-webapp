@@ -4,7 +4,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const ssh = new NodeSSH();
-const password = '{9oF`xW~';
+const password = process.env.NAS_SSH_PASSWORD;
 const remoteDir = '/volume1/docker/cmms-webapp';
 const dockerComposePath = '/usr/local/bin/docker-compose';
 

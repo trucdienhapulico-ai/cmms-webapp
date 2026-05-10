@@ -1,0 +1,107 @@
+﻿# Task: Final Fix for Admin Login and Browser Verification
+
+## Context
+The user is still unable to log in as `admin` after multiple attempts. We need a definitive fix.
+
+## Objective
+1. **Reset Admin Password**: Explicitly reset the `admin` password in `data/db.json` to `admin123` using the application's hashing logic.
+2. **Review Auth Logic**:
+   - Verify `server.js` login endpoint.
+   - Check if `cookie-parser` or `express-session` (if used) has issues with the Cloudflare Tunnel proxy.
+   - Specifically check the `res.cookie` flags (`secure`, `sameSite`).
+3. **Verbose Logging**: Add temporary verbose logging for EVERY step of the `/api/login` process (parsing body, finding user, hashing password, comparing, setting cookie).
+4. **CORS/Proxy Check**: Ensure the server handles the `Host` and `X-Forwarded-Proto` headers from Cloudflare Tunnel correctly.
+
+## Requirements
+1. **Reset Script**: Create a one-time script `scripts/reset-admin.js` that sets the admin password to `admin123` and run it.
+2. **Server Update**:
+   - In `server.js`, ensure `app.set('trust proxy', 1)` is correctly placed (it seems it is).
+   - Double check the `verifyPassword` logic.
+3. **Reporting**: As per the new workflow, append a detailed report to this file, push to GitHub, and play the bell sound.
+
+## Note for Antigravity (Architect)
+- Once Claude finishes and the bell sounds, Antigravity will use the browser to attempt login at the public URL.
+
+## Files to modify
+- `server.js`
+- `data/db.json` (via script)
+- `scripts/reset-admin.js` (New)
+
+---
+
+## COMPLETION REPORT — 2026-05-11
+
+### 1. Reset Admin Password
+- **Script**: `scripts/reset-admin.js` — đã tồn tại từ session trước với logic hashing PBKDF2+SHA256 đúng (khớp server.js).
+- **Chạy script**: `node scripts/reset-admin.js`
+  - Output: `Current hash matches "admin123": true` → password đã đúng từ trước
+  - New hash written + verified: `true`
+  - `mustChangePassword` set to `false` (quan trọng: tránh frontend redirect)
+- **Kết quả**: `data/db.json` — admin user `id=u1` có hash mới cho 'admin123', `mustChangePassword: false`.
+
+### 2. Server.js Auth Review
+
+**trust proxy** (`server.js:19`):
+```js
+app.set('trust proxy', 1);
+```
+✅ Đặt đúng vị trí — TRƯỚC mọi middleware. Express sẽ đọc `X-Forwarded-Proto` từ Cloudflare để xác định `req.protocol`.
+
+**verifyPassword** (`server.js:203–207`):
+```js
+function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  const attempt = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha256').toString('hex');
+  return attempt === hash;
+}
+```
+✅ Logic đúng — dùng đúng tham số (iterations=100000, keylen=64, digest=sha256), khớp với `hashPassword`.
+
+**Cookie flags** (`server.js:308–317`):
+```js
+const isHttps = proto === 'https';  // proto = req.protocol (dùng trust proxy)
+const cookieOpts = {
+  httpOnly: true,
+  secure: isHttps,           // true khi qua Cloudflare HTTPS
+  sameSite: isHttps ? 'none' : 'lax',  // 'none' cho cross-site qua Cloudflare
+  maxAge: 8 * 60 * 60 * 1000,
+};
+```
+✅ Cloudflare Tunnel gửi `X-Forwarded-Proto: https` → `req.protocol='https'` → cookie có `Secure; SameSite=None` — đúng tiêu chuẩn cho reverse proxy.
+
+**HTTPS redirect** (`server.js:22–27`):
+```js
+if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') { redirect... }
+```
+⚠️ Dùng raw header, không qua trust proxy. Nếu Cloudflare gửi `x-forwarded-proto: https`, không có redirect vòng lặp. OK trong thực tế nhưng nên dùng `req.protocol === 'http'` để nhất quán.
+
+### 3. Verbose Logging
+Đã có đầy đủ từ session trước (`server.js:280–324`):
+- `[LOGIN:1]` — body: username, password length, IP
+- `[LOGIN:2]` — headers: proto, x-fwd-proto, host
+- `[LOGIN:3]` — user-agent
+- `[LOGIN:4]` — user lookup result
+- `[LOGIN:5]` — password verification result
+- `[LOGIN:6]` — cookie flags (secure, sameSite, isHttps)
+- `[LOGIN:7]` — success confirmation
+
+### 4. Summary
+
+| Hạng mục | Trạng thái | Ghi chú |
+|---|---|---|
+| Reset script tạo | ✅ Done | Session trước |
+| Script chạy thành công | ✅ Done | 2026-05-11 |
+| Password = admin123 | ✅ Confirmed | Hash verified |
+| mustChangePassword = false | ✅ Fixed | |
+| trust proxy: 1 | ✅ OK | server.js:19 |
+| verifyPassword logic | ✅ OK | server.js:203 |
+| Cookie secure + sameSite | ✅ OK | server.js:308 |
+| Verbose logging | ✅ OK | server.js:280-324 |
+
+### Hướng debug nếu vẫn lỗi
+1. Xem server logs — tìm `[LOGIN:2]` để check `x-fwd-proto`. Nếu là `https`, cookie phải đúng.
+2. Xem `[LOGIN:4]` — nếu `found=false`, DB không có user 'admin'.
+3. Xem `[LOGIN:5]` — nếu `ok=false`, hash không khớp → chạy lại `node scripts/reset-admin.js`.
+4. Nếu `[LOGIN:7] OK` nhưng redirect thất bại → vấn đề ở frontend JS (public/js/auth.js hoặc tương đương).
+5. Test nhanh: `curl -c cookies.txt -X POST https://<domain>/api/login -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin123"}'`
+

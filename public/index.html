@@ -49,6 +49,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .btn-sm { padding: 5px 12px; font-size: 12px; }
 .btn-full { width: 100%; justify-content: center; }
 .error-msg { color: var(--red); font-size: 12px; margin-top: 8px; }
+.lang-switcher { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.lang-btn { min-width: 40px; padding: 6px 10px; border: none; border-radius: 999px; background: transparent; color: var(--text2); font-size: 12px; font-weight: 700; cursor: pointer; }
+.lang-btn.active { background: var(--blue); color: white; }
+.login-lang { display: flex; justify-content: flex-end; margin-bottom: 16px; }
 
 /* App layout */
 #app { display: none; min-height: 100vh; }
@@ -74,6 +78,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
 .topbar-title { font-size: 18px; font-weight: 700; }
 .topbar-actions { display: flex; gap: 8px; }
+.lang-switcher { display: inline-flex; align-items: center; gap: 4px; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-alt); }
+.lang-btn { border: none; background: transparent; color: var(--text2); padding: 4px 10px; border-radius: 999px; cursor: pointer; font-size: 11px; font-weight: 700; }
+.lang-btn.active { background: var(--blue); color: #fff; }
 .page-body { padding: 24px 28px; }
 
 /* Cards */
@@ -470,25 +477,31 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
+    <div class="login-lang">
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang-btn="en" data-i18n-title="header.languageToggle" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang-btn="vi" data-i18n-title="header.languageToggle" onclick="setLanguage('vi')">VI</button>
+      </div>
+    </div>
     <div class="login-logo">
       <h1>🔧 CMMS</h1>
-      <p>Hệ thống Quản lý Bảo trì Cơ điện</p>
+      <p data-i18n="login.title">Hệ thống Quản lý Bảo trì Cơ điện</p>
     </div>
     <div class="form-group">
-      <label>Tên đăng nhập</label>
-      <input type="text" id="login-username" placeholder="Nhập tài khoản" autocomplete="username">
+      <label data-i18n="login.username">Tên đăng nhập</label>
+      <input type="text" id="login-username" placeholder="Nhập tài khoản" data-i18n-ph="login.username.placeholder" autocomplete="username">
     </div>
     <div class="form-group">
-      <label>Mật khẩu</label>
+      <label data-i18n="login.password">Mật khẩu</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
     </div>
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px;">
       <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; cursor: pointer;">
-      <label for="login-remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
+      <label for="login-remember" data-i18n="login.remember" style="cursor: pointer; user-select: none;">Ghi nhớ mật khẩu</label>
     </div>
     <div id="login-error" class="error-msg" style="display:none; color: var(--red); font-size: 12px; margin-top: 12px; font-weight: 600;"></div>
     <br>
-    <button class="btn btn-primary btn-full" onclick="doLogin()">Đăng nhập</button>
+    <button class="btn btn-primary btn-full" data-i18n="login.btn" onclick="doLogin()">Đăng nhập</button>
   </div>
 </div>
 
@@ -497,7 +510,7 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
   <div class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>🔧 CMMS</h1>
-      <p>Bảo trì Cơ điện</p>
+      <p data-i18n="app.subtitle">Bảo trì Cơ điện</p>
     </div>
     <div class="sidebar-user" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
       <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -505,37 +518,40 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
           <div class="sidebar-user-name" id="sidebar-name" style="font-size: 13px; font-weight: 600;"></div>
           <div class="sidebar-user-role" id="sidebar-role" style="font-size: 10px; color: rgba(255,255,255,0.5);"></div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="showChangePassword()" title="Đổi mật khẩu" data-i18n-title="user.changePassword" style="padding: 4px 8px; font-size: 14px;">🔑</button>
+          <button class="btn btn-ghost btn-sm" onclick="doLogout()" title="Đăng xuất" data-i18n-title="user.logout" style="padding: 4px 8px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 14px;">🚪</button>
+        </div>
       </div>
     </div>
     
     <div style="flex: 1; overflow-y: auto;">
       <div class="nav-section">
-        <div class="nav-section-title">Vận hành</div>
-        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
-        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span>Lệnh Công việc</span></div>
-        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span>Bảo trì Định kỳ</span></div>
-        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span>Thiết bị</span></div>
-        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span>Kho Vật tư</span></div>
-        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span>Nhà cung cấp</span></div>
-        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span>Đơn mua hàng</span></div>
-        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span>Lịch trực</span></div>
-        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span>Nhật ký Bảo trì</span></div>
-        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span>Quét QR</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.ops">Vận hành</div>
+        <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span><span data-i18n="nav.dashboard">Dashboard</span></div>
+        <div class="nav-item" onclick="navigate('workorders')"><span class="icon">📋</span><span data-i18n="nav.workorders">Lệnh Công việc</span></div>
+        <div class="nav-item" onclick="navigate('pm')"><span class="icon">📅</span><span data-i18n="nav.pm">Bảo trì Định kỳ</span></div>
+        <div class="nav-item" onclick="navigate('assets')"><span class="icon">🏗️</span><span data-i18n="nav.assets">Thiết bị</span></div>
+        <div class="nav-item" onclick="navigate('inventory')"><span class="icon">📦</span><span data-i18n="nav.inventory">Kho Vật tư</span></div>
+        <div class="nav-item" onclick="navigate('vendors')"><span class="icon">🏢</span><span data-i18n="nav.vendors">Nhà cung cấp</span></div>
+        <div class="nav-item" onclick="navigate('purchaseorders')"><span class="icon">🛒</span><span data-i18n="nav.purchaseorders">Đơn mua hàng</span></div>
+        <div class="nav-item" onclick="navigate('shifts')"><span class="icon">📆</span><span data-i18n="nav.shifts">Lịch trực</span></div>
+        <div class="nav-item" onclick="navigate('mlogs')"><span class="icon">📝</span><span data-i18n="nav.mlogs">Nhật ký Bảo trì</span></div>
+        <div class="nav-item" onclick="navigate('scan')"><span class="icon">📷</span><span data-i18n="nav.scan">Quét QR</span></div>
       </div>
-      
+
       <div class="nav-section" id="admin-menu" style="display:none">
-        <div class="nav-section-title">Quản trị</div>
-        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span>Người dùng</span></div>
-        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span>Tenant Portal</span></div>
-        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span>Audit Log</span></div>
-        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span>Kết nối BMS/IoT</span></div>
-        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span>Phát hành (Staging)</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.admin">Quản trị</div>
+        <div class="nav-item" onclick="navigate('users')"><span class="icon">👥</span><span data-i18n="nav.users">Người dùng</span></div>
+        <div class="nav-item" onclick="navigate('tenantportal')"><span class="icon">🏠</span><span data-i18n="nav.tenantportal">Tenant Portal</span></div>
+        <div class="nav-item" onclick="navigate('auditlog')"><span class="icon">📜</span><span data-i18n="nav.auditlog">Audit Log</span></div>
+        <div class="nav-item" onclick="navigate('integration')"><span class="icon">🔌</span><span data-i18n="nav.integration">Kết nối BMS/IoT</span></div>
+        <div class="nav-item" onclick="navigate('release')"><span class="icon">🚀</span><span data-i18n="nav.release">Phát hành (Staging)</span></div>
       </div>
-      
+
       <div class="nav-section">
-        <div class="nav-section-title">Hỗ trợ</div>
-        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span>Sơ đồ UI / Góp ý</span></div>
+        <div class="nav-section-title" data-i18n="nav.section.support">Hỗ trợ</div>
+        <div class="nav-item" onclick="navigate('uimap')"><span class="icon">🗺️</span><span data-i18n="nav.uimap">Sơ đồ UI / Góp ý</span></div>
       </div>
     </div>
 
@@ -549,10 +565,14 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
     <div class="topbar">
       <div style="display:flex; align-items:center; gap:12px">
         <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none; padding:4px 8px; font-size:18px" onclick="toggleSidebar()">☰</button>
-        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-title" id="page-title" data-i18n="page.dashboard">Dashboard</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px">
-        <button id="theme-toggle-btn" class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Giao diện Tối / Sáng" style="padding:4px 8px; font-size:18px; line-height:1; border-radius:8px;">🌙</button>
+        <div class="lang-switcher">
+          <button class="lang-btn" data-lang-btn="en" data-i18n-title="header.languageToggle" onclick="setLanguage('en')">EN</button>
+          <button class="lang-btn" data-lang-btn="vi" data-i18n-title="header.languageToggle" onclick="setLanguage('vi')">VI</button>
+        </div>
+        <button id="theme-toggle-btn" class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Giao diện Tối / Sáng" data-i18n-title="header.themeToggle" style="padding:4px 8px; font-size:18px; line-height:1; border-radius:8px;">🌙</button>
         <div id="notif-bell" style="display:none; position:relative; cursor:pointer" onclick="toggleNotifPanel()">
           <span style="font-size:20px">🔔</span>
           <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">0</span>
@@ -564,11 +584,11 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
     <div class="page-body" id="page-body"></div>
   </div>
   <nav class="bottom-nav" id="bottom-nav">
-    <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span></div>
-    <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label">Công việc</span></div>
+    <div class="bnav-item active" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span><span class="bnav-label" data-i18n="bottom.dashboard">Dashboard</span></div>
+    <div class="bnav-item" onclick="navigate('workorders')"><span class="bnav-icon">📋</span><span class="bnav-label" data-i18n="bottom.workorders">Công việc</span></div>
     <div class="bnav-item" onclick="navigate('pm')"><span class="bnav-icon">📅</span><span class="bnav-label">PM</span></div>
-    <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label">Thiết bị</span></div>
-    <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label">Quét QR</span></div>
+    <div class="bnav-item" onclick="navigate('assets')"><span class="bnav-icon">🏗️</span><span class="bnav-label" data-i18n="bottom.assets">Thiết bị</span></div>
+    <div class="bnav-item bnav-scan-btn" onclick="navigate('scan')"><span class="bnav-icon">📷</span><span class="bnav-label" data-i18n="bottom.scan">Quét QR</span></div>
   </nav>
 </div>
 
@@ -591,6 +611,280 @@ body { transition: background-color 0.3s ease, color 0.3s ease; }
 (function() {
   const saved = localStorage.getItem('cmms-theme');
   if (saved === 'dark') document.documentElement.dataset.theme = 'dark';
+})();
+
+// ─── i18n ────────────────────────────────────────────────────
+const translations = {
+  vi: {
+    'document.title': 'CMMS - He thong Quan ly Bao tri Co dien',
+    'login.title': 'Hệ thống Quản lý Bảo trì Cơ điện',
+    'app.subtitle': 'Bảo trì Cơ điện',
+    'login.username': 'Tên đăng nhập',
+    'login.username.placeholder': 'Nhập tài khoản',
+    'login.password': 'Mật khẩu',
+    'login.remember': 'Ghi nhớ mật khẩu',
+    'login.btn': 'Đăng nhập',
+    'login.error': 'Sai tên đăng nhập hoặc mật khẩu',
+    'user.changePassword': 'Đổi mật khẩu',
+    'user.logout': 'Đăng xuất',
+    'header.languageToggle': 'Chuyển ngôn ngữ',
+    'header.themeToggle': 'Giao diện Tối / Sáng',
+    'nav.section.ops': 'Vận hành',
+    'nav.dashboard': 'Dashboard',
+    'nav.workorders': 'Lệnh Công việc',
+    'nav.pm': 'Bảo trì Định kỳ',
+    'nav.assets': 'Thiết bị',
+    'nav.inventory': 'Kho Vật tư',
+    'nav.vendors': 'Nhà cung cấp',
+    'nav.purchaseorders': 'Đơn mua hàng',
+    'nav.shifts': 'Lịch trực',
+    'nav.mlogs': 'Nhật ký Bảo trì',
+    'nav.scan': 'Quét QR',
+    'nav.section.admin': 'Quản trị',
+    'nav.users': 'Người dùng',
+    'nav.tenantportal': 'Tenant Portal',
+    'nav.auditlog': 'Audit Log',
+    'nav.integration': 'Kết nối BMS/IoT',
+    'nav.release': 'Phát hành (Staging)',
+    'nav.section.support': 'Hỗ trợ',
+    'nav.uimap': 'Sơ đồ UI / Góp ý',
+    'page.dashboard': 'Dashboard',
+    'page.workorders': 'Lệnh Công việc',
+    'page.assets': 'Thiết bị',
+    'page.users': 'Quản lý Người dùng',
+    'page.scan': 'Quét QR',
+    'page.assetDetail': 'Chi tiết Thiết bị',
+    'page.mlogs': 'Nhật ký Bảo trì',
+    'page.pm': 'Bảo trì Định kỳ (PM)',
+    'page.uimap': 'Sơ đồ UI / Góp ý',
+    'page.inventory': 'Kho Vật tư',
+    'page.tenantportal': 'Tenant Portal',
+    'page.shifts': 'Lịch trực & Workload',
+    'page.auditlog': 'Nhật ký Hệ thống (Audit Log)',
+    'page.vendors': 'Nhà cung cấp',
+    'page.purchaseorders': 'Đơn mua hàng (PO)',
+    'page.integration': 'Kết nối BMS/IoT',
+    'page.release': 'Quản lý Phát hành (Staging & Release)',
+    'action.create': '+ Tạo',
+    'action.add': '+ Thêm',
+    'action.addMaterial': '+ Nhập vật tư',
+    'action.addVendor': '+ Thêm NCC',
+    'action.createPO': '+ Tạo đơn mua',
+    'action.createShift': '+ Tạo ca',
+    'action.backAssets': '← Thiết bị',
+    'bottom.dashboard': 'Dashboard',
+    'bottom.workorders': 'Công việc',
+    'bottom.assets': 'Thiết bị',
+    'bottom.scan': 'Quét QR',
+    'role.admin': 'Quản trị viên',
+    'role.manager': 'Quản lý',
+    'role.operator': 'Kỹ thuật viên',
+    'role.viewer': 'Xem',
+    'dashboard.loadError': 'Không tải được dữ liệu dashboard.',
+    'dashboard.totalAssets': 'Tổng Thiết bị',
+    'dashboard.activeAssets': '{count} đang hoạt động',
+    'dashboard.openWorkOrders': 'Lệnh đang mở',
+    'dashboard.waitingProcess': 'Chờ xử lý',
+    'dashboard.inProgress': 'Đang thực hiện',
+    'dashboard.inProgressSub': 'In progress',
+    'dashboard.completed': 'Hoàn thành',
+    'dashboard.completedSub': 'Đã xong',
+    'dashboard.highPriority': 'Ưu tiên cao',
+    'dashboard.highPrioritySub': 'Cần xử lý ngay',
+    'dashboard.overdue': 'Quá hạn',
+    'dashboard.overdueSub': 'Cần chú ý',
+    'dashboard.activePm': 'PM hoạt động',
+    'dashboard.dueToday': '{count} đến hạn hôm nay',
+    'dashboard.overduePm': 'PM Quá hạn',
+    'dashboard.overduePmSub': 'Cần tạo WO',
+    'dashboard.kpiTitle': '📊 Chỉ số KPI Bảo trì',
+    'dashboard.mttrSub': 'TB thời gian sửa',
+    'dashboard.mtbfSub': 'TB giữa 2 lần hỏng',
+    'dashboard.pmComplianceSub': 'Tỷ lệ PM đúng hạn',
+    'dashboard.overdueRateSub': 'Tỷ lệ WO quá hạn',
+    'dashboard.lowStock': 'Vật tư sắp hết',
+    'dashboard.lowStockSub': 'Cần đặt hàng',
+    'dashboard.tenantRequests': 'Yêu cầu cư dân',
+    'dashboard.tenantRequestsSub': 'Chờ duyệt',
+    'dashboard.trendTitle': '📈 Xu hướng 6 tháng',
+    'dashboard.woCreated': 'WO Tạo',
+    'dashboard.woDone': 'WO Xong',
+    'dashboard.failures': 'Sự cố',
+    'dashboard.urgentTitle': '⚡ Lệnh công việc ưu tiên cao còn mở',
+    'dashboard.tableCode': 'Mã',
+    'dashboard.tableTitle': 'Tiêu đề',
+    'dashboard.tableAsset': 'Thiết bị',
+    'dashboard.tableDueDate': 'Ngày hạn',
+    'dashboard.view': 'Xem',
+    'dashboard.noUrgentOrders': 'Không có lệnh ưu tiên cao nào',
+  },
+  en: {
+    'document.title': 'CMMS - MEP Maintenance Management System',
+    'login.title': 'M&E Maintenance Management System',
+    'app.subtitle': 'MEP Maintenance',
+    'login.username': 'Username',
+    'login.username.placeholder': 'Enter username',
+    'login.password': 'Password',
+    'login.remember': 'Remember me',
+    'login.btn': 'Login',
+    'login.error': 'Incorrect username or password',
+    'user.changePassword': 'Change password',
+    'user.logout': 'Logout',
+    'header.languageToggle': 'Switch language',
+    'header.themeToggle': 'Toggle dark / light theme',
+    'nav.section.ops': 'Operations',
+    'nav.dashboard': 'Dashboard',
+    'nav.workorders': 'Work Orders',
+    'nav.pm': 'Preventive Maintenance',
+    'nav.assets': 'Assets',
+    'nav.inventory': 'Inventory',
+    'nav.vendors': 'Vendors',
+    'nav.purchaseorders': 'Purchase Orders',
+    'nav.shifts': 'Shift Schedule',
+    'nav.mlogs': 'Maintenance Logs',
+    'nav.scan': 'QR Scan',
+    'nav.section.admin': 'Administration',
+    'nav.users': 'Users',
+    'nav.tenantportal': 'Tenant Portal',
+    'nav.auditlog': 'Audit Log',
+    'nav.integration': 'BMS/IoT Integration',
+    'nav.release': 'Release (Staging)',
+    'nav.section.support': 'Support',
+    'nav.uimap': 'UI Map / Feedback',
+    'page.dashboard': 'Dashboard',
+    'page.workorders': 'Work Orders',
+    'page.assets': 'Assets',
+    'page.users': 'User Management',
+    'page.scan': 'QR Scan',
+    'page.assetDetail': 'Asset Detail',
+    'page.mlogs': 'Maintenance Logs',
+    'page.pm': 'Preventive Maintenance (PM)',
+    'page.uimap': 'UI Map / Feedback',
+    'page.inventory': 'Inventory',
+    'page.tenantportal': 'Tenant Portal',
+    'page.shifts': 'Shift Schedule & Workload',
+    'page.auditlog': 'System Audit Log',
+    'page.vendors': 'Vendors',
+    'page.purchaseorders': 'Purchase Orders (PO)',
+    'page.integration': 'BMS/IoT Integration',
+    'page.release': 'Release Management (Staging & Release)',
+    'action.create': '+ Create',
+    'action.add': '+ Add',
+    'action.addMaterial': '+ Add Material',
+    'action.addVendor': '+ Add Vendor',
+    'action.createPO': '+ Create PO',
+    'action.createShift': '+ Create Shift',
+    'action.backAssets': '← Assets',
+    'bottom.dashboard': 'Dashboard',
+    'bottom.workorders': 'Work',
+    'bottom.assets': 'Assets',
+    'bottom.scan': 'QR Scan',
+    'role.admin': 'Administrator',
+    'role.manager': 'Manager',
+    'role.operator': 'Technician',
+    'role.viewer': 'Viewer',
+    'dashboard.loadError': 'Unable to load dashboard data.',
+    'dashboard.totalAssets': 'Total Assets',
+    'dashboard.activeAssets': '{count} active',
+    'dashboard.openWorkOrders': 'Open Work Orders',
+    'dashboard.waitingProcess': 'Waiting for action',
+    'dashboard.inProgress': 'In Progress',
+    'dashboard.inProgressSub': 'Being processed',
+    'dashboard.completed': 'Completed',
+    'dashboard.completedSub': 'Finished',
+    'dashboard.highPriority': 'High Priority',
+    'dashboard.highPrioritySub': 'Needs immediate action',
+    'dashboard.overdue': 'Overdue',
+    'dashboard.overdueSub': 'Needs attention',
+    'dashboard.activePm': 'Active PM',
+    'dashboard.dueToday': '{count} due today',
+    'dashboard.overduePm': 'Overdue PM',
+    'dashboard.overduePmSub': 'Needs WO creation',
+    'dashboard.kpiTitle': '📊 Maintenance KPI',
+    'dashboard.mttrSub': 'Avg. repair time',
+    'dashboard.mtbfSub': 'Avg. time between failures',
+    'dashboard.pmComplianceSub': 'On-time PM rate',
+    'dashboard.overdueRateSub': 'Overdue WO rate',
+    'dashboard.lowStock': 'Low Stock',
+    'dashboard.lowStockSub': 'Needs reorder',
+    'dashboard.tenantRequests': 'Tenant Requests',
+    'dashboard.tenantRequestsSub': 'Pending approval',
+    'dashboard.trendTitle': '📈 6-Month Trend',
+    'dashboard.woCreated': 'WO Created',
+    'dashboard.woDone': 'WO Closed',
+    'dashboard.failures': 'Failures',
+    'dashboard.urgentTitle': '⚡ Open High-Priority Work Orders',
+    'dashboard.tableCode': 'Code',
+    'dashboard.tableTitle': 'Title',
+    'dashboard.tableAsset': 'Asset',
+    'dashboard.tableDueDate': 'Due Date',
+    'dashboard.view': 'View',
+    'dashboard.noUrgentOrders': 'No open high-priority orders',
+  }
+};
+
+let currentLang = localStorage.getItem('cmms-lang') || 'vi';
+
+function t(key) {
+  return (translations[currentLang] || {})[key] || (translations.vi || {})[key] || key;
+}
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('cmms-lang', lang);
+  document.documentElement.lang = lang;
+  document.title = t('document.title');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('[data-lang-btn]').forEach(el => {
+    el.classList.toggle('active', el.dataset.langBtn === lang);
+  });
+
+  if (typeof currentPage !== 'undefined' && currentPage) {
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.textContent = t('page.' + currentPage) || currentPage;
+
+    const actionsMap = {
+      workorders: `<button class="btn btn-primary btn-sm" onclick="showWOForm()">${t('action.create')}</button>`,
+      assets: `<button class="btn btn-primary btn-sm" onclick="showAssetForm()">${t('action.add')}</button>`,
+      users: `<button class="btn btn-primary btn-sm" onclick="showUserForm()">${t('action.add')}</button>`,
+      inventory: `<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">${t('action.addMaterial')}</button>`,
+      assetDetail: `<button class="btn btn-ghost btn-sm" onclick="navigate('assets')">${t('action.backAssets')}</button>`,
+      shifts: `<button class="btn btn-primary btn-sm" onclick="showShiftForm()">${t('action.createShift')}</button>`,
+      vendors: `<button class="btn btn-primary btn-sm" onclick="showVendorForm()">${t('action.addVendor')}</button>`,
+      purchaseorders: `<button class="btn btn-primary btn-sm" onclick="showPOForm()">${t('action.createPO')}</button>`
+    };
+    const actionsEl = document.getElementById('topbar-actions');
+    if (actionsEl) actionsEl.innerHTML = actionsMap[currentPage] || '';
+  }
+
+  if (typeof currentUser !== 'undefined' && currentUser) {
+    const roleEl = document.getElementById('sidebar-role');
+    if (roleEl) roleEl.textContent = t('role.' + currentUser.role) || currentUser.role;
+  }
+
+  if (typeof currentPage !== 'undefined' && currentPage === 'dashboard') {
+    renderDashboard();
+  }
+}
+
+// Initialize language
+(function() {
+  currentLang = localStorage.getItem('cmms-lang') || 'vi';
+  setLanguage(currentLang);
 })();
 
 function toggleTheme() {
@@ -651,7 +945,7 @@ async function doLogin() {
     }
     showApp();
   } else {
-    errorEl.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
+    errorEl.textContent = r.error || t('login.error');
     errorEl.style.display = 'block';
   }
 }
@@ -672,6 +966,60 @@ async function doLogout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
+
+function showChangePassword() {
+  document.getElementById('modal-title').textContent = '🔑 Đổi mật khẩu';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-group">
+      <label>Mật khẩu cũ *</label>
+      <input type="password" id="cp-old" placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu mới *</label>
+      <input type="password" id="cp-new" placeholder="Tối thiểu 5 ký tự" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label>Xác nhận mật khẩu mới *</label>
+      <input type="password" id="cp-confirm" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
+    </div>
+    <div id="cp-error" style="color:var(--red);font-size:13px;display:none"></div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+    <button class="btn btn-primary" onclick="submitChangePassword()">Lưu mật khẩu</button>`;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('cp-old').focus();
+}
+
+async function submitChangePassword() {
+  const oldPassword = document.getElementById('cp-old').value;
+  const newPassword = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const errEl = document.getElementById('cp-error');
+  errEl.style.display = 'none';
+  if (!oldPassword || !newPassword || !confirm) {
+    errEl.textContent = 'Vui lòng điền đầy đủ các trường.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (newPassword.length < 5) {
+    errEl.textContent = 'Mật khẩu mới phải ít nhất 5 ký tự.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (newPassword !== confirm) {
+    errEl.textContent = 'Mật khẩu xác nhận không khớp.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const r = await api('POST', '/api/me/change-password', { oldPassword, newPassword });
+  if (!r.ok) {
+    errEl.textContent = r.error || 'Đổi mật khẩu thất bại.';
+    errEl.style.display = 'block';
+    return;
+  }
+  closeModal();
+  toast('Đổi mật khẩu thành công!', 'success');
+}
 async function showApp() {
   const loginScreen = document.getElementById('login-screen');
   const appContainer = document.getElementById('app');
@@ -681,8 +1029,9 @@ async function showApp() {
   
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) btn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  setLanguage(currentLang);
   document.getElementById('sidebar-name').textContent = currentUser.name;
-  document.getElementById('sidebar-role').textContent = { admin: 'Quản trị viên', manager: 'Quản lý', operator: 'Kỹ thuật viên', viewer: 'Xem' }[currentUser.role] || currentUser.role;
+  document.getElementById('sidebar-role').textContent = t('role.' + currentUser.role) || currentUser.role;
   if (['admin', 'manager'].includes(currentUser.role)) {
     document.getElementById('admin-menu').style.display = 'block';
     // Show notification bell
@@ -719,26 +1068,16 @@ function navigate(page, param = null) {
   document.querySelectorAll('.bnav-item').forEach(el => {
     el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
   });
-  const titles = {
-    dashboard: 'Dashboard', workorders: 'Lệnh Công việc', assets: 'Thiết bị',
-    users: 'Quản lý Người dùng', scan: 'Quét QR',
-    assetDetail: 'Chi tiết Thiết bị', mlogs: 'Nhật ký Bảo trì',
-    pm: 'Bảo trì Định kỳ (PM)', uimap: 'Sơ đồ UI / Góp ý',
-    inventory: 'Kho Vật tư', tenantportal: 'Tenant Portal',
-    shifts: 'Lịch trực & Workload', auditlog: 'Nhật ký Hệ thống (Audit Log)',
-    vendors: 'Nhà cung cấp', purchaseorders: 'Đơn mua hàng (PO)',
-    integration: 'Kết nối BMS/IoT', release: 'Quản lý Phát hành (Staging & Release)'
-  };
-  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('page-title').textContent = t('page.' + page) || page;
   const actions = {
-    workorders: '<button class="btn btn-primary btn-sm" onclick="showWOForm()">+ Tạo</button>',
-    assets: '<button class="btn btn-primary btn-sm" onclick="showAssetForm()">+ Thêm</button>',
-    users: '<button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Thêm</button>',
-    inventory: '<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">+ Nhập vật tư</button>',
-    assetDetail: '<button class="btn btn-ghost btn-sm" onclick="navigate(\'assets\')">← Thiết bị</button>',
-    shifts: '<button class="btn btn-primary btn-sm" onclick="showShiftForm()">+ Tạo ca</button>',
-    vendors: '<button class="btn btn-primary btn-sm" onclick="showVendorForm()">+ Thêm NCC</button>',
-    purchaseorders: '<button class="btn btn-primary btn-sm" onclick="showPOForm()">+ Tạo đơn mua</button>'
+    workorders: `<button class="btn btn-primary btn-sm" onclick="showWOForm()">${t('action.create')}</button>`,
+    assets: `<button class="btn btn-primary btn-sm" onclick="showAssetForm()">${t('action.add')}</button>`,
+    users: `<button class="btn btn-primary btn-sm" onclick="showUserForm()">${t('action.add')}</button>`,
+    inventory: `<button class="btn btn-primary btn-sm" onclick="showInventoryForm()">${t('action.addMaterial')}</button>`,
+    assetDetail: `<button class="btn btn-ghost btn-sm" onclick="navigate('assets')">${t('action.backAssets')}</button>`,
+    shifts: `<button class="btn btn-primary btn-sm" onclick="showShiftForm()">${t('action.createShift')}</button>`,
+    vendors: `<button class="btn btn-primary btn-sm" onclick="showVendorForm()">${t('action.addVendor')}</button>`,
+    purchaseorders: `<button class="btn btn-primary btn-sm" onclick="showPOForm()">${t('action.createPO')}</button>`
   };
   document.getElementById('topbar-actions').innerHTML = actions[page] || '';
   const renders = {
@@ -761,6 +1100,12 @@ function navigate(page, param = null) {
 function toggleSidebar() {
   const isOpen = document.querySelector('.sidebar').classList.toggle('open');
   document.querySelector('.sidebar-overlay-bg').classList.toggle('show', isOpen);
+}
+
+let woPendingFilter = null;
+function navigateWO(filter) {
+  woPendingFilter = filter;
+  navigate('workorders');
 }
 
 // ─── Modal ───────────────────────────────────────────────────
@@ -1233,7 +1578,7 @@ function renderUIMap() {
 async function renderDashboard() {
   const r = await api('GET', '/api/stats');
   if (!r.ok || !r.data) {
-    document.getElementById('page-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Không tải được dữ liệu dashboard. ${r.error || ''}</p></div>`;
+    document.getElementById('page-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${t('dashboard.loadError')} ${r.error || ''}</p></div>`;
     return;
   }
   const s = r.data;
@@ -1251,49 +1596,48 @@ async function renderDashboard() {
   }).join('');
   document.getElementById('page-body').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card stat-blue"><div class="stat-icon">🏗️</div><div class="stat-label">Tổng Thiết bị</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${s.assets.active} đang hoạt động</div></div>
-      <div class="stat-card stat-blue"><div class="stat-icon">📋</div><div class="stat-label">Lệnh đang mở</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">Chờ xử lý</div></div>
-      <div class="stat-card stat-yellow"><div class="stat-icon">⚙️</div><div class="stat-label">Đang thực hiện</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">In progress</div></div>
-      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div class="stat-label">Hoàn thành</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">Đã xong</div></div>
-      <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div class="stat-label">Ưu tiên cao</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">Cần xử lý ngay</div></div>
-      <div class="stat-card stat-red"><div class="stat-icon">⏰</div><div class="stat-label">Quá hạn</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">Cần chú ý</div></div>
-      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM hoạt động</div><div class="stat-value">${pm.total||0}</div><div class="stat-sub">${pm.dueToday||0} đến hạn hôm nay</div></div>
-      <div class="stat-card ${(pm.overdue||0)>0?'stat-red':'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">PM Quá hạn</div><div class="stat-value">${pm.overdue||0}</div><div class="stat-sub">Cần tạo WO</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('assets')"><div class="stat-icon">🏗️</div><div class="stat-label">${t('dashboard.totalAssets')}</div><div class="stat-value">${s.assets.total}</div><div class="stat-sub">${t('dashboard.activeAssets', { count: s.assets.active })}</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigateWO({status:'open'})"><div class="stat-icon">📋</div><div class="stat-label">${t('dashboard.openWorkOrders')}</div><div class="stat-value">${s.workOrders.open}</div><div class="stat-sub">${t('dashboard.waitingProcess')}</div></div>
+      <div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigateWO({status:'in-progress'})"><div class="stat-icon">⚙️</div><div class="stat-label">${t('dashboard.inProgress')}</div><div class="stat-value">${s.workOrders.inProgress}</div><div class="stat-sub">${t('dashboard.inProgressSub')}</div></div>
+      <div class="stat-card stat-green" style="cursor:pointer" onclick="navigateWO({status:'done'})"><div class="stat-icon">✅</div><div class="stat-label">${t('dashboard.completed')}</div><div class="stat-value">${s.workOrders.done}</div><div class="stat-sub">${t('dashboard.completedSub')}</div></div>
+      <div class="stat-card stat-red" style="cursor:pointer" onclick="navigateWO({priority:'high'})"><div class="stat-icon">🔴</div><div class="stat-label">${t('dashboard.highPriority')}</div><div class="stat-value">${s.workOrders.highPriority}</div><div class="stat-sub">${t('dashboard.highPrioritySub')}</div></div>
+      <div class="stat-card stat-red" style="cursor:pointer" onclick="navigateWO({status:'open'})"><div class="stat-icon">⏰</div><div class="stat-label">${t('dashboard.overdue')}</div><div class="stat-value">${s.workOrders.overdue}</div><div class="stat-sub">${t('dashboard.overdueSub')}</div></div>
+      <div class="stat-card stat-blue" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">${t('dashboard.activePm')}</div><div class="stat-value">${pm.total||0}</div><div class="stat-sub">${t('dashboard.dueToday', { count: pm.dueToday || 0 })}</div></div>
+      <div class="stat-card ${(pm.overdue||0)>0?'stat-red':'stat-green'}" style="cursor:pointer" onclick="navigate('pm')"><div class="stat-icon">📅</div><div class="stat-label">${t('dashboard.overduePm')}</div><div class="stat-value">${pm.overdue||0}</div><div class="stat-sub">${t('dashboard.overduePmSub')}</div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">📊 Chỉ số KPI Bảo trì</div>
+      <div class="card-title">${t('dashboard.kpiTitle')}</div>
       <div class="stats-grid" style="margin-top:12px">
-        <div class="stat-card" style="border-left:4px solid ${mttrC}"><div class="stat-icon">⏱️</div><div class="stat-label">MTTR</div><div class="stat-value" style="color:${mttrC}">${kpi.mttr}h</div><div class="stat-sub">TB thời gian sửa</div></div>
-        <div class="stat-card" style="border-left:4px solid ${mtbfC}"><div class="stat-icon">🔧</div><div class="stat-label">MTBF</div><div class="stat-value" style="color:${mtbfC}">${kpi.mtbf}d</div><div class="stat-sub">TB giữa 2 lần hỏng</div></div>
-        <div class="stat-card" style="border-left:4px solid ${pmcC}"><div class="stat-icon">✅</div><div class="stat-label">PM Compliance</div><div class="stat-value" style="color:${pmcC}">${kpi.pmCompliance}%</div><div class="stat-sub">Tỷ lệ PM đúng hạn</div></div>
-        <div class="stat-card" style="border-left:4px solid ${odrC}"><div class="stat-icon">⚠️</div><div class="stat-label">Overdue Rate</div><div class="stat-value" style="color:${odrC}">${kpi.overdueRate}%</div><div class="stat-sub">Tỷ lệ WO quá hạn</div></div>
+        <div class="stat-card" style="border-left:4px solid ${mttrC}"><div class="stat-icon">⏱️</div><div class="stat-label">MTTR</div><div class="stat-value" style="color:${mttrC}">${kpi.mttr}h</div><div class="stat-sub">${t('dashboard.mttrSub')}</div></div>
+        <div class="stat-card" style="border-left:4px solid ${mtbfC}"><div class="stat-icon">🔧</div><div class="stat-label">MTBF</div><div class="stat-value" style="color:${mtbfC}">${kpi.mtbf}d</div><div class="stat-sub">${t('dashboard.mtbfSub')}</div></div>
+        <div class="stat-card" style="border-left:4px solid ${pmcC}"><div class="stat-icon">✅</div><div class="stat-label">PM Compliance</div><div class="stat-value" style="color:${pmcC}">${kpi.pmCompliance}%</div><div class="stat-sub">${t('dashboard.pmComplianceSub')}</div></div>
+        <div class="stat-card" style="border-left:4px solid ${odrC}"><div class="stat-icon">⚠️</div><div class="stat-label">Overdue Rate</div><div class="stat-value" style="color:${odrC}">${kpi.overdueRate}%</div><div class="stat-sub">${t('dashboard.overdueRateSub')}</div></div>
       </div>
     </div>
     ${(s.lowStockCount>0||s.pendingTenantReqs>0)?`<div class="stats-grid" style="margin-bottom:16px">
-      ${s.lowStockCount>0?`<div class="stat-card stat-red" style="cursor:pointer" onclick="navigate('inventory')"><div class="stat-icon">📦</div><div class="stat-label">Vật tư sắp hết</div><div class="stat-value">${s.lowStockCount}</div><div class="stat-sub">Cần đặt hàng</div></div>`:''}
-      ${s.pendingTenantReqs>0?`<div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigate('tenantportal')"><div class="stat-icon">🏠</div><div class="stat-label">Yêu cầu cư dân</div><div class="stat-value">${s.pendingTenantReqs}</div><div class="stat-sub">Chờ duyệt</div></div>`:''}
+      ${s.lowStockCount>0?`<div class="stat-card stat-red" style="cursor:pointer" onclick="navigate('inventory')"><div class="stat-icon">📦</div><div class="stat-label">${t('dashboard.lowStock')}</div><div class="stat-value">${s.lowStockCount}</div><div class="stat-sub">${t('dashboard.lowStockSub')}</div></div>`:''}
+      ${s.pendingTenantReqs>0?`<div class="stat-card stat-yellow" style="cursor:pointer" onclick="navigate('tenantportal')"><div class="stat-icon">🏠</div><div class="stat-label">${t('dashboard.tenantRequests')}</div><div class="stat-value">${s.pendingTenantReqs}</div><div class="stat-sub">${t('dashboard.tenantRequestsSub')}</div></div>`:''}
     </div>`:''}
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">📈 Xu hướng 6 tháng</div>
+      <div class="card-title">${t('dashboard.trendTitle')}</div>
       <div style="display:flex;gap:16px;margin:8px 0;font-size:12px">
-        <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Tạo</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:3px;vertical-align:middle;margin-right:4px"></span>WO Xong</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:3px;vertical-align:middle;margin-right:4px"></span>Sự cố</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px;vertical-align:middle;margin-right:4px"></span>${t('dashboard.woCreated')}</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:3px;vertical-align:middle;margin-right:4px"></span>${t('dashboard.woDone')}</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:3px;vertical-align:middle;margin-right:4px"></span>${t('dashboard.failures')}</span>
       </div>
       <div style="width:100%;overflow-x:auto"><svg viewBox="0 0 100 50" preserveAspectRatio="none" style="width:100%;height:160px;border-bottom:1px solid var(--border)">${bars}</svg></div>
     </div>
     <div class="card">
-      <div class="card-title">⚡ Lệnh công việc ưu tiên cao còn mở</div>
+      <div class="card-title">${t('dashboard.urgentTitle')}</div>
       <div id="dashboard-wo"></div>
     </div>`;
   const wr = await api('GET', '/api/work-orders?status=open&priority=high');
   const list = wr.data || [];
   document.getElementById('dashboard-wo').innerHTML = list.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị</th><th>Ngày hạn</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td data-label="Mã"><code>${w.id}</code></td><td data-label="Tiêu đề">${w.title}</td><td data-label="Thiết bị">${w.assetId || '—'}</td><td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td></tr>`).join('')}</tbody></table></div>`
-    : '<div class="empty-state"><div class="icon">✅</div><p>Không có lệnh ưu tiên cao nào</p></div>';
+    ? `<div class="table-wrap"><table><thead><tr><th>${t('dashboard.tableCode')}</th><th>${t('dashboard.tableTitle')}</th><th>${t('dashboard.tableAsset')}</th><th>${t('dashboard.tableDueDate')}</th><th></th></tr></thead><tbody>${list.map(w => `<tr><td data-label="${t('dashboard.tableCode')}"><code>${escapeHtml(w.id)}</code></td><td data-label="${t('dashboard.tableTitle')}">${escapeHtml(w.title)}</td><td data-label="${t('dashboard.tableAsset')}">${escapeHtml(w.assetId) || '—'}</td><td data-label="${t('dashboard.tableDueDate')}" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</td><td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${escapeHtml(w.id)}')">${t('dashboard.view')}</button></td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty-state"><div class="icon">✅</div><p>${t('dashboard.noUrgentOrders')}</p></div>`;
 }
 
-// ─── WORK ORDERS ─────────────────────────────────────────────
 async function renderWorkOrders() {
   document.getElementById('page-body').innerHTML = `
     <div class="filter-bar">
@@ -1307,6 +1651,11 @@ async function renderWorkOrders() {
         <tbody id="wo-tbody"></tbody>
       </table></div>
     </div>`;
+  if (woPendingFilter) {
+    if (woPendingFilter.status) document.getElementById('wo-status').value = woPendingFilter.status;
+    if (woPendingFilter.priority) document.getElementById('wo-priority').value = woPendingFilter.priority;
+    woPendingFilter = null;
+  }
   filterWO();
 }
 
@@ -1325,14 +1674,14 @@ async function filterWO() {
   const typeLabel = { corrective: 'Sửa chữa', preventive: 'Phòng ngừa', inspection: 'Kiểm tra', emergency: '🚨 Khẩn cấp' };
   tbody.innerHTML = list.length ? list.map(w => `
     <tr>
-      <td data-label="Mã"><code style="font-size:12px">${w.id}</code></td>
-      <td data-label="Tiêu đề" style="max-width:240px"><div style="font-weight:600">${w.title}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${w.assetId}</div>` : ''}</td>
-      <td data-label="Loại">${typeLabel[w.type] || w.type}</td>
-      <td data-label="Ưu tiên"><span class="badge badge-${w.priority}">${w.priority}</span></td>
-      <td data-label="Trạng thái"><span class="badge badge-${w.status.replace(' ','-')}">${w.status}</span></td>
+      <td data-label="Mã"><code style="font-size:12px">${escapeHtml(w.id)}</code></td>
+      <td data-label="Tiêu đề" style="max-width:240px"><div style="font-weight:600">${escapeHtml(w.title)}</div>${w.assetId ? `<div style="font-size:11px;color:var(--gray)">${escapeHtml(w.assetId)}</div>` : ''}</td>
+      <td data-label="Loại">${typeLabel[w.type] || escapeHtml(w.type)}</td>
+      <td data-label="Ưu tiên"><span class="badge badge-${escapeHtml(w.priority)}">${escapeHtml(w.priority)}</span></td>
+      <td data-label="Trạng thái"><span class="badge badge-${escapeHtml(w.status.replace(' ','-'))}">${escapeHtml(w.status)}</span></td>
       <td data-label="Ngày hạn" style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'};font-weight:${isOverdue(w.dueDate, w.status) ? '700' : 'normal'}">${fmtDateShort(w.dueDate)}</td>
-      <td data-label="Phụ trách">${w.assignedTo || '—'}</td>
-      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${w.id}')">Xem</button></td>
+      <td data-label="Phụ trách">${escapeHtml(w.assignedTo) || '—'}</td>
+      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="viewWO('${escapeHtml(w.id)}')">Xem</button></td>
     </tr>`).join('') : '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Chưa có lệnh công việc nào</p></div></td></tr>';
 }
 
@@ -1340,18 +1689,18 @@ async function viewWO(id) {
   const r = await api('GET', `/api/work-orders/${id}`);
   const w = r.data;
   const canEdit = ['admin', 'manager', 'operator'].includes(currentUser.role);
-  openModal(`${w.id} — ${w.title}`, `
+  openModal(`${escapeHtml(w.id)} — ${escapeHtml(w.title)}`, `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">TRẠNG THÁI</div><span class="badge badge-${w.status}">${w.status}</span></div>
-      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">ƯU TIÊN</div><span class="badge badge-${w.priority}">${w.priority}</span></div>
-      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">THIẾT BỊ</div>${w.assetId || '—'}</div>
-      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">NGƯỜI PHỤ TRÁCH</div>${w.assignedTo || '—'}</div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">TRẠNG THÁI</div><span class="badge badge-${escapeHtml(w.status)}">${escapeHtml(w.status)}</span></div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">ƯU TIÊN</div><span class="badge badge-${escapeHtml(w.priority)}">${escapeHtml(w.priority)}</span></div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">THIẾT BỊ</div>${escapeHtml(w.assetId) || '—'}</div>
+      <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">NGƯỜI PHỤ TRÁCH</div>${escapeHtml(w.assignedTo) || '—'}</div>
       <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">NGÀY HẠN</div><span style="color:${isOverdue(w.dueDate, w.status) ? 'var(--red)' : 'inherit'}">${fmtDateShort(w.dueDate)}</span></div>
       <div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">TẠO LÚC</div>${fmtDate(w.createdAt)}</div>
     </div>
-    ${w.description ? `<div style="font-size:12px;color:var(--text2);background:var(--gray-bg);padding:12px;border-radius:8px;margin-bottom:16px;white-space:pre-wrap">${w.description}</div>` : ''}
+    ${w.description ? `<div style="font-size:12px;color:var(--text2);background:var(--gray-bg);padding:12px;border-radius:8px;margin-bottom:16px;white-space:pre-wrap">${escapeHtml(w.description)}</div>` : ''}
     <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px">LỊCH SỬ</div>
-    <ul class="history-list">${(w.history || []).map(h => `<li class="history-item"><div class="history-dot"></div><div><span class="history-by">${h.by}</span> — ${h.action} ${h.note ? `<em>"${h.note}"</em>` : ''}<br><span class="history-at">${fmtDate(h.at)}</span></div></li>`).join('')}</ul>
+    <ul class="history-list">${(w.history || []).map(h => `<li class="history-item"><div class="history-dot"></div><div><span class="history-by">${escapeHtml(h.by)}</span> — ${escapeHtml(h.action)} ${h.note ? `<em>"${escapeHtml(h.note)}"</em>` : ''}<br><span class="history-at">${fmtDate(h.at)}</span></div></li>`).join('')}</ul>
     ${canEdit ? `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
       <div class="form-group"><label>Cập nhật trạng thái</label>
         <select id="wo-new-status"><option value="">— không đổi —</option><option>open</option><option>in-progress</option><option>done</option><option>cancelled</option></select></div>
@@ -1375,7 +1724,7 @@ async function updateWO(id) {
 
 function showWOForm(wo = {}) {
   openModal(wo.id ? 'Sửa lệnh công việc' : 'Tạo lệnh công việc mới', `
-    <div class="form-group"><label>Tiêu đề *</label><input id="wo-title" value="${wo.title || ''}" placeholder="Mô tả ngắn công việc cần làm"></div>
+    <div class="form-group"><label>Tiêu đề *</label><input id="wo-title" value="${escapeHtml(wo.title)}" placeholder="Mô tả ngắn công việc cần làm"></div>
     <div class="form-row">
       <div class="form-group"><label>Loại</label><select id="wo-type">
         <option value="corrective" ${wo.type === 'corrective' ? 'selected' : ''}>Sửa chữa</option>
@@ -1390,11 +1739,11 @@ function showWOForm(wo = {}) {
       </select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Mã thiết bị</label><input id="wo-assetId" value="${wo.assetId || ''}" placeholder="VD: A0001"></div>
-      <div class="form-group"><label>Người phụ trách</label><input id="wo-assigned" value="${wo.assignedTo || ''}" placeholder="Tên kỹ thuật viên"></div>
+      <div class="form-group"><label>Mã thiết bị</label><input id="wo-assetId" value="${escapeHtml(wo.assetId)}" placeholder="VD: A0001"></div>
+      <div class="form-group"><label>Người phụ trách</label><input id="wo-assigned" value="${escapeHtml(wo.assignedTo)}" placeholder="Tên kỹ thuật viên"></div>
     </div>
     <div class="form-group"><label>Ngày hạn</label><input type="date" id="wo-due" value="${wo.dueDate ? wo.dueDate.split('T')[0] : ''}"></div>
-    <div class="form-group"><label>Mô tả chi tiết</label><textarea id="wo-desc" placeholder="Triệu chứng, yêu cầu kỹ thuật...">${wo.description || ''}</textarea></div>`,
+    <div class="form-group"><label>Mô tả chi tiết</label><textarea id="wo-desc" placeholder="Triệu chứng, yêu cầu kỹ thuật...">${escapeHtml(wo.description)}</textarea></div>`,
     `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveWO('${wo.id || ''}')">Lưu</button>`
   );
 }
@@ -1497,16 +1846,16 @@ function renderAssetRow(a, level) {
   
   return `
     <tr>
-      <td data-label="Mã"><code style="font-size:12px">${a.id}</code></td>
-      <td data-label="Tên thiết bị" style="font-weight:600">${prefix}${a.name} <span style="font-size:10px;color:var(--gray);font-weight:normal;background:var(--gray-bg);padding:2px 4px;border-radius:4px;margin-left:4px">${typeLabel[a.type] || 'Thiết bị'}</span></td>
-      <td data-label="Danh mục">${a.category || '—'}</td>
-      <td data-label="Vị trí">${a.location || '—'}</td>
-      <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).join(' / ') || '—'}</td>
-      <td data-label="Trạng thái"><span class="badge badge-${a.status}">${a.status}</span></td>
+      <td data-label="Mã"><code style="font-size:12px">${escapeHtml(a.id)}</code></td>
+      <td data-label="Tên thiết bị" style="font-weight:600">${prefix}${escapeHtml(a.name)} <span style="font-size:10px;color:var(--gray);font-weight:normal;background:var(--gray-bg);padding:2px 4px;border-radius:4px;margin-left:4px">${typeLabel[a.type] || 'Thiết bị'}</span></td>
+      <td data-label="Danh mục">${escapeHtml(a.category) || '—'}</td>
+      <td data-label="Vị trí">${escapeHtml(a.location) || '—'}</td>
+      <td data-label="Hãng/Model" style="font-size:12px">${[a.manufacturer, a.model].filter(Boolean).map(escapeHtml).join(' / ') || '—'}</td>
+      <td data-label="Trạng thái"><span class="badge badge-${escapeHtml(a.status)}">${escapeHtml(a.status)}</span></td>
       <td data-label="" style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="viewAsset('${a.id}')">Xem</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewAsset('${escapeHtml(a.id)}')">Xem</button>
         ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick='showAssetForm(${JSON.stringify(a).replace(/'/g, "&#39;").replace(/"/g,"&quot;")})'>Sửa</button>` : ''}
-        ${currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteAsset('${a.id}')">Xóa</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteAsset('${escapeHtml(a.id)}')">Xóa</button>` : ''}
       </td>
     </tr>`;
 }
@@ -1524,11 +1873,11 @@ async function deleteAsset(id) {
 async function viewAsset(id) {
   const r = await api('GET', `/api/assets/${id}`);
   const a = r.data;
-  openModal(`${a.id} — ${a.name}`, `
+  openModal(`${escapeHtml(a.id)} — ${escapeHtml(a.name)}`, `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      ${[['Mã thiết bị', a.code || a.id], ['Danh mục', a.category], ['Vị trí', a.location], ['Trạng thái', `<span class="badge badge-${a.status}">${a.status}</span>`], ['Hãng SX', a.manufacturer || '—'], ['Model', a.model || '—'], ['Số series', a.serialNumber || '—'], ['Ngày lắp đặt', fmtDateShort(a.installDate)]].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
+      ${[['Mã thiết bị', escapeHtml(a.code || a.id)], ['Danh mục', escapeHtml(a.category)], ['Vị trí', escapeHtml(a.location)], ['Trạng thái', `<span class="badge badge-${escapeHtml(a.status)}">${escapeHtml(a.status)}</span>`], ['Hãng SX', escapeHtml(a.manufacturer) || '—'], ['Model', escapeHtml(a.model) || '—'], ['Số series', escapeHtml(a.serialNumber) || '—'], ['Ngày lắp đặt', fmtDateShort(a.installDate)]].map(([k, v]) => `<div><div style="font-size:11px;color:var(--gray);font-weight:700;margin-bottom:4px">${k}</div><div>${v}</div></div>`).join('')}
     </div>
-    ${a.notes ? `<div style="margin-top:16px;font-size:12px;background:var(--gray-bg);padding:12px;border-radius:8px">${a.notes}</div>` : ''}`,
+    ${a.notes ? `<div style="margin-top:16px;font-size:12px;background:var(--gray-bg);padding:12px;border-radius:8px">${escapeHtml(a.notes)}</div>` : ''}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
      <button class="btn btn-ghost btn-sm" onclick="closeModal();navigate('assetDetail','${a.id}')">📄 Chi tiết & QR</button>
      <button class="btn btn-success btn-sm" onclick="closeModal();showChecklistForm('${a.id}','${a.category}')">📝 Checklist</button>
@@ -1544,7 +1893,7 @@ async function showAssetForm(asset = {}) {
   const allAssets = ar.data || [];
   const parentOptions = allAssets
     .filter(a => a.id !== asset.id)
-    .map(a => `<option value="${a.id}" ${asset.parentId === a.id ? 'selected' : ''}>${a.name} (${a.id})</option>`)
+    .map(a => `<option value="${escapeHtml(a.id)}" ${asset.parentId === a.id ? 'selected' : ''}>${escapeHtml(a.name)} (${escapeHtml(a.id)})</option>`)
     .join('');
 
   const defaultCats = ['Hệ thống điện', 'Hệ thống nước', 'Hệ thống HVAC', 'Thang máy', 'PCCC', 'Camera / An ninh', 'Khác'];
@@ -1564,21 +1913,21 @@ async function showAssetForm(asset = {}) {
         ${parentOptions}
       </select></div>
     </div>
-    <div class="form-group"><label>Tên *</label><input id="a-name" value="${asset.name || ''}" placeholder="VD: Bơm 1, Hệ thống Nước, Tòa A"></div>
+    <div class="form-group"><label>Tên *</label><input id="a-name" value="${escapeHtml(asset.name)}" placeholder="VD: Bơm 1, Hệ thống Nước, Tòa A"></div>
     <div class="form-row">
-      <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${asset.code || ''}" placeholder="Tự động nếu bỏ trống"></div>
+      <div class="form-group"><label>Mã thiết bị</label><input id="a-code" value="${escapeHtml(asset.code)}" placeholder="Tự động nếu bỏ trống"></div>
       <div class="form-group"><label>Danh mục</label><select id="a-cat">
         <option value="">-- Chọn --</option>
         ${catOptions}
       </select></div>
     </div>
-    <div class="form-group"><label>Vị trí *</label><input id="a-loc" value="${asset.location || ''}" placeholder="VD: Tầng hầm B1, Phòng kỹ thuật"></div>
+    <div class="form-group"><label>Vị trí *</label><input id="a-loc" value="${escapeHtml(asset.location)}" placeholder="VD: Tầng hầm B1, Phòng kỹ thuật"></div>
     <div class="form-row">
-      <div class="form-group"><label>Hãng sản xuất</label><input id="a-brand" value="${asset.manufacturer || ''}"></div>
-      <div class="form-group"><label>Model</label><input id="a-model" value="${asset.model || ''}"></div>
+      <div class="form-group"><label>Hãng sản xuất</label><input id="a-brand" value="${escapeHtml(asset.manufacturer)}"></div>
+      <div class="form-group"><label>Model</label><input id="a-model" value="${escapeHtml(asset.model)}"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Số series</label><input id="a-serial" value="${asset.serialNumber || ''}"></div>
+      <div class="form-group"><label>Số series</label><input id="a-serial" value="${escapeHtml(asset.serialNumber)}"></div>
       <div class="form-group"><label>Ngày lắp đặt</label><input type="date" id="a-install" value="${asset.installDate ? asset.installDate.split('T')[0] : ''}"></div>
     </div>
     <div class="form-group"><label>Trạng thái</label><select id="a-status">
@@ -1586,7 +1935,7 @@ async function showAssetForm(asset = {}) {
       <option value="inactive" ${asset.status === 'inactive' ? 'selected' : ''}>Tạm dừng</option>
       <option value="maintenance" ${asset.status === 'maintenance' ? 'selected' : ''}>Đang bảo trì</option>
     </select></div>
-    <div class="form-group"><label>Ghi chú</label><textarea id="a-notes">${asset.notes || ''}</textarea></div>`,
+    <div class="form-group"><label>Ghi chú</label><textarea id="a-notes">${escapeHtml(asset.notes)}</textarea></div>`,
     `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button><button class="btn btn-primary" onclick="saveAsset('${asset.id || ''}')">Lưu</button>`
   );
 }
@@ -1628,14 +1977,14 @@ async function renderUsers() {
       <div class="table-wrap"><table>
         <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Ngày tạo</th><th></th></tr></thead>
         <tbody>${list.map(u => `<tr>
-          <td data-label="Tài khoản"><code>${u.username}</code></td><td data-label="Họ tên">${u.name}</td>
+          <td data-label="Tài khoản"><code>${escapeHtml(u.username)}</code></td><td data-label="Họ tên">${escapeHtml(u.name)}</td>
           <td data-label="Vai trò">${roleLabel[u.role] || u.role}</td>
           <td data-label="Ngày tạo">${fmtDateShort(u.createdAt)}</td>
           <td data-label="">
             ${u.username !== 'admin' && currentUser.role === 'admin' ? `
               <div style="display:flex;gap:5px;justify-content:flex-end">
-                <button class="btn btn-ghost btn-sm" onclick="resetPassword('${u.id}','${u.username}')" title="Reset mật khẩu">🔑</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Xóa</button>
+                <button class="btn btn-ghost btn-sm" onclick="resetPassword('${escapeHtml(u.id)}','${escapeHtml(u.username)}')" title="Reset mật khẩu">🔑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${escapeHtml(u.id)}','${escapeHtml(u.name)}')">Xóa</button>
               </div>
             ` : ''}
           </td>
@@ -1648,7 +1997,7 @@ function showUserForm() {
   openModal('Thêm người dùng', `
     <div class="form-group"><label>Tên đăng nhập *</label><input id="u-username" placeholder="khongdauvietkhongdau"></div>
     <div class="form-group"><label>Họ tên *</label><input id="u-name" placeholder="Nguyễn Văn A"></div>
-    <div class="form-group"><label>Mật khẩu *</label><input type="password" id="u-pass" placeholder="Tối thiểu 6 ký tự"></div>
+    <div class="form-group"><label>Mật khẩu *</label><input type="password" id="u-pass" placeholder="Tối thiểu 5 ký tự"></div>
     <div class="form-group"><label>Vai trò</label><select id="u-role">
       <option value="operator">Operator – Kỹ thuật viên</option>
       <option value="viewer">Viewer – Chỉ xem</option>
@@ -2038,10 +2387,10 @@ async function filterMLogs() {
     const ok = (l.results || []).filter(r => r.status === 'ok').length;
     const fail = (l.results || []).filter(r => r.status === 'fail').length;
     const caution = (l.results || []).filter(r => r.status === 'caution').length;
-    return `<div class="mlog-item" onclick="viewMLog('${l.id}')" style="cursor:pointer">
+    return `<div class="mlog-item" onclick="viewMLog('${escapeHtml(l.id)}')" style="cursor:pointer">
       <div class="mlog-header">
-        <div><div class="mlog-title">${l.templateName || 'Checklist'}</div>
-          <div class="mlog-meta" style="margin-top:2px">🏗️ ${l.assetId} · 👤 ${l.submittedBy}</div>
+        <div><div class="mlog-title">${escapeHtml(l.templateName) || 'Checklist'}</div>
+          <div class="mlog-meta" style="margin-top:2px">🏗️ ${escapeHtml(l.assetId)} · 👤 ${escapeHtml(l.submittedBy)}</div>
         </div>
         <div class="mlog-meta">${fmtDate(l.createdAt)}</div>
       </div>
@@ -2060,21 +2409,21 @@ async function viewMLog(id) {
   if (!log) return;
   const statusClass = { ok: 'ds-ok', caution: 'ds-caution', fail: 'ds-fail' };
   const statusLabel = { ok: '✓ Đạt', caution: '⚠ Cần lưu ý', fail: '✗ Không đạt' };
-  openModal(`${log.templateName} — ${log.assetId}`, `
+  openModal(`${escapeHtml(log.templateName)} — ${escapeHtml(log.assetId)}`, `
     <div style="font-size:12px;color:var(--gray);margin-bottom:16px">
-      👤 ${log.submittedBy} · 🕐 ${fmtDate(log.createdAt)}
+      👤 ${escapeHtml(log.submittedBy)} · 🕐 ${fmtDate(log.createdAt)}
     </div>
     ${(log.results || []).map(item => `
       <div class="detail-item">
-        <div class="di-label">${item.label}</div>
+        <div class="di-label">${escapeHtml(item.label)}</div>
         ${item.type === 'status' && item.status
-          ? `<span class="detail-status ${statusClass[item.status] || 'ds-na'}">${statusLabel[item.status] || item.status}</span>`
+          ? `<span class="detail-status ${statusClass[item.status] || 'ds-na'}">${statusLabel[item.status] || escapeHtml(item.status)}</span>`
           : item.type === 'number'
-            ? `<span style="font-weight:700">${item.value ?? '—'} ${item.unit || ''}</span>`
-            : `<span style="color:var(--text2)">${item.value || '—'}</span>`
+            ? `<span style="font-weight:700">${escapeHtml(item.value != null ? String(item.value) : null) || '—'} ${escapeHtml(item.unit) || ''}</span>`
+            : `<span style="color:var(--text2)">${escapeHtml(item.value) || '—'}</span>`
         }
       </div>`).join('')}
-    ${log.note ? `<div style="margin-top:12px;background:var(--gray-bg);padding:10px;border-radius:8px;font-size:12px"><b>Ghi chú:</b> ${log.note}</div>` : ''}`,
+    ${log.note ? `<div style="margin-top:12px;background:var(--gray-bg);padding:10px;border-radius:8px;font-size:12px"><b>Ghi chú:</b> ${escapeHtml(log.note)}</div>` : ''}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`
   );
 }
@@ -2557,14 +2906,14 @@ async function filterInventory() {
         <tbody>${list.map(item => {
           const low = item.qty <= (item.minQty || 0) && item.minQty > 0;
           return `<tr>
-            <td data-label="Tên vật tư" style="font-weight:600">${item.name}${low ? ' <span class="badge badge-high" style="font-size:10px">⚠ Sắp hết</span>' : ''}</td>
-            <td data-label="SKU"><code style="font-size:11px">${item.sku || '—'}</code></td>
-            <td data-label="Đơn vị">${item.unit}</td>
+            <td data-label="Tên vật tư" style="font-weight:600">${escapeHtml(item.name)}${low ? ' <span class="badge badge-high" style="font-size:10px">⚠ Sắp hết</span>' : ''}</td>
+            <td data-label="SKU"><code style="font-size:11px">${escapeHtml(item.sku) || '—'}</code></td>
+            <td data-label="Đơn vị">${escapeHtml(item.unit)}</td>
             <td data-label="Tồn kho" style="font-weight:700;color:${low?'var(--red)':'var(--green)'}">${item.qty}</td>
             <td data-label="Tối thiểu">${item.minQty || 0}</td>
-            <td data-label="Vị trí">${item.location || '—'}</td>
+            <td data-label="Vị trí">${escapeHtml(item.location) || '—'}</td>
             <td data-label="">
-              <button class="btn btn-ghost btn-sm" onclick="showInventoryTx('${item.id}','${item.name}')">Nhập/Xuất</button>
+              <button class="btn btn-ghost btn-sm" onclick="showInventoryTx('${escapeHtml(item.id)}','${escapeHtml(item.name)}')">Nhập/Xuất</button>
               ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showInventoryForm(${JSON.stringify(item).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
             </td>
           </tr>`;
@@ -2577,21 +2926,21 @@ async function filterInventory() {
 function showInventoryForm(data = {}) {
   openModal(data.id ? 'Sửa Vật tư' : 'Thêm Vật tư vào Kho', `
     <div class="form-row">
-      <div class="form-group"><label>Tên vật tư *</label><input id="inv-name" value="${data.name||''}" placeholder="VD: Bóng đèn LED 20W"></div>
-      <div class="form-group"><label>Mã SKU</label><input id="inv-sku" value="${data.sku||''}" placeholder="VD: LED-20W-001"></div>
+      <div class="form-group"><label>Tên vật tư *</label><input id="inv-name" value="${escapeHtml(data.name)}" placeholder="VD: Bóng đèn LED 20W"></div>
+      <div class="form-group"><label>Mã SKU</label><input id="inv-sku" value="${escapeHtml(data.sku)}" placeholder="VD: LED-20W-001"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Đơn vị tính</label><input id="inv-unit" value="${data.unit||'cái'}" placeholder="cái, lít, cuộn..."></div>
+      <div class="form-group"><label>Đơn vị tính</label><input id="inv-unit" value="${escapeHtml(data.unit) || 'cái'}" placeholder="cái, lít, cuộn..."></div>
       <div class="form-group"><label>Tồn kho hiện tại</label><input type="number" id="inv-qty" value="${data.qty||0}" min="0"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Mức tối thiểu (cảnh báo)</label><input type="number" id="inv-minqty" value="${data.minQty||0}" min="0"></div>
-      <div class="form-group"><label>Vị trí kho</label><input id="inv-loc" value="${data.location||''}" placeholder="VD: Kho B, kệ 3"></div>
+      <div class="form-group"><label>Vị trí kho</label><input id="inv-loc" value="${escapeHtml(data.location)}" placeholder="VD: Kho B, kệ 3"></div>
     </div>
-    <div class="form-group"><label>Ghi chú</label><textarea id="inv-notes">${data.notes||''}</textarea></div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="inv-notes">${escapeHtml(data.notes)}</textarea></div>
   `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
-      ${data.id ? `<button class="btn btn-danger" onclick="deleteInventory('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
-      <button class="btn btn-primary" onclick="saveInventory('${data.id||''}')">Lưu</button>`);
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteInventory('${escapeHtml(data.id)}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveInventory('${escapeHtml(data.id) || ''}')">Lưu</button>`);
 }
 
 async function saveInventory(id) {
@@ -2620,7 +2969,7 @@ async function deleteInventory(id) {
 async function showInventoryTx(id, name) {
   const r = await api('GET', `/api/inventory/${id}/transactions`);
   const txList = r.data || [];
-  openModal(`📦 Nhập/Xuất kho: ${name}`, `
+  openModal(`📦 Nhập/Xuất kho: ${escapeHtml(name)}`, `
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label>Loại giao dịch</label>
@@ -2667,11 +3016,11 @@ async function renderVendors() {
     : `<div class="card" style="padding:0"><div class="table-wrap"><table>
         <thead><tr><th>Tên NCC</th><th>Liên hệ</th><th>Điện thoại</th><th>Email</th><th>Địa chỉ</th><th></th></tr></thead>
         <tbody>${list.map(v => `<tr>
-          <td data-label="Tên NCC" style="font-weight:600">${v.name}</td>
-          <td data-label="Liên hệ">${v.contact || '—'}</td>
-          <td data-label="Điện thoại">${v.phone || '—'}</td>
-          <td data-label="Email">${v.email || '—'}</td>
-          <td data-label="Địa chỉ">${v.address || '—'}</td>
+          <td data-label="Tên NCC" style="font-weight:600">${escapeHtml(v.name)}</td>
+          <td data-label="Liên hệ">${escapeHtml(v.contact) || '—'}</td>
+          <td data-label="Điện thoại">${escapeHtml(v.phone) || '—'}</td>
+          <td data-label="Email">${escapeHtml(v.email) || '—'}</td>
+          <td data-label="Địa chỉ">${escapeHtml(v.address) || '—'}</td>
           <td data-label="">
             ${['admin','manager'].includes(currentUser.role) ? `<button class="btn btn-ghost btn-sm" onclick="showVendorForm(${JSON.stringify(v).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
           </td>
@@ -2682,18 +3031,18 @@ async function renderVendors() {
 function showVendorForm(data = {}) {
   openModal(data.id ? 'Sửa Nhà cung cấp' : 'Thêm Nhà cung cấp', `
     <div class="form-row">
-      <div class="form-group"><label>Tên NCC *</label><input id="vnd-name" value="${data.name||''}" placeholder="VD: Công ty TNHH ABC"></div>
-      <div class="form-group"><label>Người liên hệ</label><input id="vnd-contact" value="${data.contact||''}" placeholder="Tên người liên hệ"></div>
+      <div class="form-group"><label>Tên NCC *</label><input id="vnd-name" value="${escapeHtml(data.name)}" placeholder="VD: Công ty TNHH ABC"></div>
+      <div class="form-group"><label>Người liên hệ</label><input id="vnd-contact" value="${escapeHtml(data.contact)}" placeholder="Tên người liên hệ"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Điện thoại</label><input id="vnd-phone" value="${data.phone||''}" placeholder="0912..."></div>
-      <div class="form-group"><label>Email</label><input id="vnd-email" value="${data.email||''}" placeholder="abc@company.com"></div>
+      <div class="form-group"><label>Điện thoại</label><input id="vnd-phone" value="${escapeHtml(data.phone)}" placeholder="0912..."></div>
+      <div class="form-group"><label>Email</label><input id="vnd-email" value="${escapeHtml(data.email)}" placeholder="abc@company.com"></div>
     </div>
-    <div class="form-group"><label>Địa chỉ</label><input id="vnd-address" value="${data.address||''}" placeholder="Địa chỉ công ty"></div>
-    <div class="form-group"><label>Ghi chú</label><textarea id="vnd-notes">${data.notes||''}</textarea></div>
+    <div class="form-group"><label>Địa chỉ</label><input id="vnd-address" value="${escapeHtml(data.address)}" placeholder="Địa chỉ công ty"></div>
+    <div class="form-group"><label>Ghi chú</label><textarea id="vnd-notes">${escapeHtml(data.notes)}</textarea></div>
   `, `<button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
-      ${data.id ? `<button class="btn btn-danger" onclick="deleteVendor('${data.id}')" style="margin-right:auto">Xóa</button>` : ''}
-      <button class="btn btn-primary" onclick="saveVendor('${data.id||''}')">Lưu</button>`);
+      ${data.id ? `<button class="btn btn-danger" onclick="deleteVendor('${escapeHtml(data.id)}')" style="margin-right:auto">Xóa</button>` : ''}
+      <button class="btn btn-primary" onclick="saveVendor('${escapeHtml(data.id) || ''}')">Lưu</button>`);
 }
 
 async function saveVendor(id) {
@@ -2730,8 +3079,8 @@ async function renderPO() {
     : `<div class="card" style="padding:0"><div class="table-wrap"><table>
         <thead><tr><th>Mã PO</th><th>Nhà cung cấp</th><th>Số mặt hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th></th></tr></thead>
         <tbody>${list.map(po => `<tr>
-          <td data-label="Mã PO"><code style="font-size:11px">${po.id}</code></td>
-          <td data-label="Nhà cung cấp" style="font-weight:600">${po.vendorName}</td>
+          <td data-label="Mã PO"><code style="font-size:11px">${escapeHtml(po.id)}</code></td>
+          <td data-label="Nhà cung cấp" style="font-weight:600">${escapeHtml(po.vendorName)}</td>
           <td data-label="Số mặt hàng">${(po.items||[]).length} mặt hàng</td>
           <td data-label="Tổng tiền" style="font-weight:700">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td>
           <td data-label="Trạng thái"><span style="color:${PO_STATUS_COLOR[po.status]||'inherit'};font-weight:600">${PO_STATUS[po.status]||po.status}</span></td>
@@ -2746,11 +3095,11 @@ async function renderPO() {
 
 function showPODetail(po) {
   const itemRows = (po.items || []).map(i =>
-    `<tr><td>${i.name}</td><td><code style="font-size:11px">${i.sku||'—'}</code></td><td>${i.qty} ${i.unit}</td><td>${(i.unitPrice||0).toLocaleString('vi-VN')}đ</td><td style="font-weight:700">${((i.qty||0)*(i.unitPrice||0)).toLocaleString('vi-VN')}đ</td></tr>`
+    `<tr><td>${escapeHtml(i.name)}</td><td><code style="font-size:11px">${escapeHtml(i.sku) || '—'}</code></td><td>${i.qty} ${escapeHtml(i.unit)}</td><td>${(i.unitPrice||0).toLocaleString('vi-VN')}đ</td><td style="font-weight:700">${((i.qty||0)*(i.unitPrice||0)).toLocaleString('vi-VN')}đ</td></tr>`
   ).join('');
-  openModal(`📋 Chi tiết PO: ${po.id}`, `
+  openModal(`📋 Chi tiết PO: ${escapeHtml(po.id)}`, `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
-      <div><strong>Nhà cung cấp:</strong><br>${po.vendorName}</div>
+      <div><strong>Nhà cung cấp:</strong><br>${escapeHtml(po.vendorName)}</div>
       <div><strong>Trạng thái:</strong><br><span style="color:${PO_STATUS_COLOR[po.status]};font-weight:600">${PO_STATUS[po.status]||po.status}</span></div>
       <div><strong>Ngày tạo:</strong><br>${fmtDateShort(po.createdAt)}</div>
       <div><strong>Ngày nhận dự kiến:</strong><br>${po.expectedDate ? fmtDateShort(po.expectedDate) : '—'}</div>
@@ -2760,7 +3109,7 @@ function showPODetail(po) {
       <tbody>${itemRows}</tbody>
       <tfoot><tr><td colspan="4" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td><td style="font-weight:700;color:var(--blue)">${(po.totalAmount||0).toLocaleString('vi-VN')}đ</td></tr></tfoot>
     </table></div>
-    ${po.notes ? `<div style="margin-top:12px;font-size:13px"><strong>Ghi chú:</strong> ${po.notes}</div>` : ''}
+    ${po.notes ? `<div style="margin-top:12px;font-size:13px"><strong>Ghi chú:</strong> ${escapeHtml(po.notes)}</div>` : ''}
   `, `<button class="btn btn-ghost" onclick="closeModal()">Đóng</button>`);
 }
 
@@ -2875,13 +3224,13 @@ async function renderTenantPortal() {
       <div class="table-wrap"><table>
         <thead><tr><th>Mã</th><th>Cư dân</th><th>Căn hộ</th><th>Danh mục</th><th>Mô tả</th><th>Mức độ</th><th>Trạng thái</th><th>Ngày gửi</th><th></th></tr></thead>
         <tbody>${list.map(tr => `<tr>
-          <td data-label="Mã"><code style="font-size:11px">${tr.id}</code></td>
-          <td data-label="Cư dân"><strong>${tr.name}</strong><br><span style="font-size:11px;color:var(--gray)">${tr.phone||''}</span></td>
-          <td data-label="Căn hộ">${tr.unit||'—'}</td>
-          <td data-label="Danh mục">${tr.category}</td>
-          <td data-label="Mô tả" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tr.description}</td>
-          <td data-label="Mức độ">${urgLabel[tr.urgency]||tr.urgency}</td>
-          <td data-label="Trạng thái">${statusLabel[tr.status]||tr.status}${tr.workOrderId?`<br><code style="font-size:10px">${tr.workOrderId}</code>`:''}</td>
+          <td data-label="Mã"><code style="font-size:11px">${escapeHtml(tr.id)}</code></td>
+          <td data-label="Cư dân"><strong>${escapeHtml(tr.name)}</strong><br><span style="font-size:11px;color:var(--gray)">${escapeHtml(tr.phone) || ''}</span></td>
+          <td data-label="Căn hộ">${escapeHtml(tr.unit) || '—'}</td>
+          <td data-label="Danh mục">${escapeHtml(tr.category)}</td>
+          <td data-label="Mô tả" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(tr.description)}</td>
+          <td data-label="Mức độ">${urgLabel[tr.urgency] || escapeHtml(tr.urgency)}</td>
+          <td data-label="Trạng thái">${statusLabel[tr.status] || escapeHtml(tr.status)}${tr.workOrderId ? `<br><code style="font-size:10px">${escapeHtml(tr.workOrderId)}</code>` : ''}</td>
           <td data-label="Ngày gửi">${fmtDateShort(tr.createdAt)}</td>
           <td data-label="">
             ${tr.status === 'pending' ? `

@@ -7,27 +7,29 @@ const fs = require('fs');
 const path = require('path');
 const QRCode = require('qrcode');
 const rateLimit = require('express-rate-limit');
+const prisma = require('./lib/db');
 
 const app = express();
 const PORT = 3090;
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
 const IS_PROD = process.env.NODE_ENV === 'production';
+const DEFAULT_ADMIN_PASSWORD = process.env.INITIAL_ADMIN_PASSWORD || process.env.ADMIN_BOOTSTRAP_PASSWORD || process.env.ADMIN_RESET_PASSWORD || '123456';
 
 // ─── Trust proxy (Synology Reverse Proxy / Cloudflare Tunnel) ─
 app.set('trust proxy', 1);
 
-// ─── HTTPS redirect (TAM TAT de debug) ─────────────
-// app.use((req, res, next) => {
-//   if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') {
-//     return res.redirect(301, `https://${req.headers.host}${req.url}`);
-//   }
-//   next();
-// });
-
-// ─── Security headers (HSTS TAM TAT) ─────────────────────────
+// ─── HTTPS redirect (khi chạy sau reverse proxy) ─────────────
 app.use((req, res, next) => {
-  // HSTS tam tat de cho phep truy cap HTTP
-  // res.setHeader('Strict-Transport-Security', 'max-age=3600'); 
+  if (IS_PROD && req.headers['x-forwarded-proto'] === 'http') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// ─── Security headers ─────────────────────────────────────────
+app.use((req, res, next) => {
+  // Bỏ includeSubDomains để không ảnh hưởng đến các cổng 8080, 8081
+  res.setHeader('Strict-Transport-Security', 'max-age=3600'); 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -43,49 +45,86 @@ app.use('/api/', rateLimit({
   message: { ok: 0, error: 'Quá nhiều request, thử lại sau.' }
 }));
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: 0, error: 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau 15 phút.' }
+});
+
 // ─── Middleware ───────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── DB helpers ──────────────────────────────────────────────
+// ─── DB Cache ─────────────────────────────────────────────────
+let _dbCache = null;
+let _dbMtime = 0;
+
 function loadDB() {
-  if (!fs.existsSync(DB_PATH)) initDB();
+  if (_dbCache) {
+    // Cheap stat check — detects external file edits without reading content
+    try {
+      const mtime = fs.statSync(DB_PATH).mtimeMs;
+      if (mtime === _dbMtime) return _dbCache;
+    } catch {}
+    _dbCache = null;
+  }
+
+  if (!fs.existsSync(DB_PATH)) { initDB(); return _dbCache; }
+
   let db;
   try {
     db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
   } catch (e) {
     console.error('[CMMS] db.json corrupted, reinitializing:', e.message);
     initDB();
-    db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+    return _dbCache;
   }
-  if (!db.checklists) { db.checklists = []; saveDB(db); }
-  if (!db.checklistTemplates || db.checklistTemplates.length === 0) { db.checklistTemplates = getDefaultTemplates(); saveDB(db); }
-  if (!db.maintenanceLogs) { db.maintenanceLogs = []; saveDB(db); }
-  if (!db.pmSchedules) { db.pmSchedules = []; saveDB(db); }
-  if (!db.inventory) { db.inventory = []; saveDB(db); }
-  if (!db.inventoryTx) { db.inventoryTx = []; saveDB(db); }
-  if (!db.notifications) { db.notifications = []; saveDB(db); }
-  if (!db.tenantRequests) { db.tenantRequests = []; saveDB(db); }
-  if (!db.shifts) { db.shifts = []; saveDB(db); }
-  if (!db.auditLogs) { db.auditLogs = []; saveDB(db); }
-  if (!db.vendors) { db.vendors = []; saveDB(db); }
-  if (!db.purchaseOrders) { db.purchaseOrders = []; saveDB(db); }
-  if (!db.apiKeys) { db.apiKeys = []; saveDB(db); }
-  if (!db.webhooks) { db.webhooks = []; saveDB(db); }
+
+  // Migrate missing collections — single save pass instead of one per field
+  let dirty = false;
+  const defaults = {
+    checklists: [], maintenanceLogs: [], pmSchedules: [],
+    inventory: [], inventoryTx: [], notifications: [],
+    tenantRequests: [], shifts: [], auditLogs: [],
+    vendors: [], purchaseOrders: [], apiKeys: [], webhooks: []
+  };
+  for (const [key, val] of Object.entries(defaults)) {
+    if (!db[key]) { db[key] = val; dirty = true; }
+  }
+  if (!db.checklistTemplates || db.checklistTemplates.length === 0) {
+    db.checklistTemplates = getDefaultTemplates();
+    dirty = true;
+  }
+  _dbCache = db;
+  if (dirty) saveDB(db);
   return db;
 }
+
 function saveDB(db) {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  _dbCache = db;
+  const dir = path.dirname(DB_PATH);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmp = DB_PATH + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
+  fs.renameSync(tmp, DB_PATH);
+  try { _dbMtime = fs.statSync(DB_PATH).mtimeMs; } catch {}
 }
+
 function initDB() {
+  if (IS_PROD && !process.env.INITIAL_ADMIN_PASSWORD && !process.env.ADMIN_BOOTSTRAP_PASSWORD) {
+    console.error('[CMMS] FATAL: Set INITIAL_ADMIN_PASSWORD env var before initializing the database in production.');
+    process.exit(1);
+  }
   const db = {
     users: [{
       id: 'u1', username: 'admin', role: 'admin',
-      passwordHash: hashPassword('admin123'),
-      name: 'Administrator', createdAt: now()
+      passwordHash: hashPassword(DEFAULT_ADMIN_PASSWORD),
+      name: 'Administrator', createdAt: now(),
+      mustChangePassword: true
     }],
     assets: [],
     workOrders: [],
@@ -105,8 +144,7 @@ function initDB() {
     webhooks: [],
     nextId: { asset: 1, workOrder: 1 }
   };
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  saveDB(db);
 }
 
 function getDefaultTemplates() {
@@ -188,17 +226,19 @@ function requireAuth(roles = []) {
 
 function now() { return new Date().toISOString(); }
 
-function logAudit(req, action, entity, entityId, details = '') {
+function logAudit(req, action, entity, entityId, details = '', actor = null) {
   const db = loadDB();
   if (!db.auditLogs) db.auditLogs = [];
   const session = getSession(req);
+  const userId = actor?.userId || session?.userId || null;
+  const userName = actor?.username || session?.username || 'system';
   db.auditLogs.unshift({
     id: `AUDIT-${Date.now()}`,
     action,
     entity,
     entityId: entityId || null,
-    userId: session?.userId || null,
-    userName: session?.username || 'system',
+    userId,
+    userName,
     details,
     ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
     createdAt: now()
@@ -213,34 +253,61 @@ function nextId(db, type) {
   return id;
 }
 
-// ─── Emergency Reset (XOA SAU KHI DANG NHAP DUOC) ────────────
-app.get('/api/emergency-reset', (req, res) => {
-  const db = loadDB();
-  const admin = db.users.find(u => u.username === 'admin');
-  if (admin) {
-    admin.passwordHash = hashPassword('admin123');
-    saveDB(db);
-    res.json({ ok: 1, message: 'Admin password reset to: admin123' });
-  } else {
-    res.json({ ok: 0, error: 'Admin user not found' });
-  }
-});
-
 // ─── Auth Routes ──────────────────────────────────────────────
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
+app.post('/api/login', loginLimiter, (req, res) => {
+  const username = String(req.body?.username || '').trim();
+  const password = String(req.body?.password || '');
+  const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+  const ua = (req.headers['user-agent'] || '').slice(0, 80);
+  // Use req.protocol (respects trust proxy: 1) so multi-hop Cloudflare "https,http" is handled correctly
+  const proto = req.protocol;
+  const rawFwdProto = req.headers['x-forwarded-proto'] || 'none';
+  const host = req.headers['host'] || 'unknown';
+
+  console.log(`[LOGIN:1] BODY  user="${username}" pw_len=${password.length} ip=${ip}`);
+  console.log(`[LOGIN:2] HDR   proto=${proto} x-fwd-proto=${rawFwdProto} host=${host}`);
+  console.log(`[LOGIN:3] UA    "${ua}"`);
+
   const db = loadDB();
-  const user = db.users.find(u => u.username === username);
-  if (!user || !verifyPassword(password, user.passwordHash))
+  const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  console.log(`[LOGIN:4] USER  found=${!!user}${user ? ` id=${user.id} role=${user.role}` : ''}`);
+
+  if (!user) {
+    console.log(`[LOGIN:5] FAIL  reason=user_not_found user="${username}" ip=${ip}`);
+    logAudit(req, 'login_failed', 'user', null, `Failed login attempt for username: "${username}"`, {
+      userId: null, username: username || 'unknown'
+    });
     return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
+  }
+
+  const pwOk = verifyPassword(password, user.passwordHash);
+  console.log(`[LOGIN:5] PWCHK ok=${pwOk} user="${username}"`);
+
+  if (!pwOk) {
+    console.log(`[LOGIN:6] FAIL  reason=wrong_password user="${username}" ip=${ip}`);
+    logAudit(req, 'login_failed', 'user', user.id, `Failed login attempt for username: "${username}"`, {
+      userId: user.id, username: username
+    });
+    return res.json({ ok: 0, error: 'Sai tên đăng nhập hoặc mật khẩu' });
+  }
+
   const sid = createSession(user);
-  res.cookie('sid', sid, {
+  const isHttps = proto === 'https';
+  const cookieOpts = {
     httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 8 * 60 * 60 * 1000
+    secure: isHttps,
+    sameSite: isHttps ? 'none' : 'lax',
+    maxAge: 8 * 60 * 60 * 1000,
+    expires: new Date(Date.now() + 8 * 60 * 60 * 1000)
+  };
+  console.log(`[LOGIN:6] COOKIE secure=${cookieOpts.secure} sameSite=${cookieOpts.sameSite} isHttps=${isHttps}`);
+  res.cookie('sid', sid, cookieOpts);
+
+  console.log(`[LOGIN:7] OK    user="${username}" role=${user.role} ip=${ip}`);
+  logAudit(req, 'login', 'user', user.id, 'Login successful', {
+    userId: user.id,
+    username: user.username
   });
-  logAudit(req, 'login', 'user', user.id, 'Login successful');
   res.json({ ok: 1, data: { id: user.id, username: user.username, role: user.role, name: user.name } });
 });
 
@@ -259,8 +326,8 @@ app.get('/api/me', requireAuth(), (req, res) => {
 
 app.post('/api/me/change-password', requireAuth(), (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  if (!newPassword || newPassword.length < 6)
-    return res.json({ ok: 0, error: 'Mật khẩu mới phải ít nhất 6 ký tự' });
+  if (!newPassword || newPassword.length < 5)
+    return res.json({ ok: 0, error: 'Mật khẩu mới phải ít nhất 5 ký tự' });
   const db = loadDB();
   const user = db.users.find(u => u.id === req.session.userId);
   if (!verifyPassword(oldPassword, user.passwordHash))
@@ -309,7 +376,7 @@ app.post('/api/users/:id/reset-password', requireAuth(['admin']), (req, res) => 
   if (!u) return res.json({ ok: 0, error: 'Không tìm thấy người dùng' });
   
   // Mat khau mac dinh
-  const defaultPass = process.env.ADMIN_RESET_PASSWORD || 'DNH@Default2026!';
+  const defaultPass = DEFAULT_ADMIN_PASSWORD;
   u.passwordHash = hashPassword(defaultPass);
   saveDB(db);
   logAudit(req, 'reset_password', 'user', u.id, `Reset password for ${u.username}`);
@@ -1195,7 +1262,7 @@ app.post('/api/shifts/:id/check-in', requireAuth(), (req, res) => {
   const shift = (db.shifts || []).find(s => s.id === req.params.id);
   if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
   const session = getSession(req);
-  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  if (session.role === 'operator' && shift.userId !== session.userId) return res.json({ ok: 0, error: 'Không có quyền' });
   shift.checkInAt = now();
   shift.status = 'checked-in';
   saveDB(db);
@@ -1207,7 +1274,7 @@ app.post('/api/shifts/:id/check-out', requireAuth(), (req, res) => {
   const shift = (db.shifts || []).find(s => s.id === req.params.id);
   if (!shift) return res.json({ ok: 0, error: 'Không tìm thấy ca' });
   const session = getSession(req);
-  if (session.role === 'operator' && shift.userId !== session.id) return res.json({ ok: 0, error: 'Không có quyền' });
+  if (session.role === 'operator' && shift.userId !== session.userId) return res.json({ ok: 0, error: 'Không có quyền' });
   shift.checkOutAt = now();
   shift.status = 'checked-out';
   saveDB(db);

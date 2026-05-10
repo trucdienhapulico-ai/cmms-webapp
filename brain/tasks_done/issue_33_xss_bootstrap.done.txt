@@ -1,0 +1,11 @@
+ISSUE_33: SECURITY HARDENING - XSS PREVENTION & SECURITY BOOTSTRAP
+
+MÔ TẢ:
+1. Triển khai helper escapeHtml trong public/index.html.
+2. Rà soát và thay thế các vị trí sử dụng innerHTML cho dữ liệu người dùng nhập bằng cơ chế escape hoặc textContent.
+3. Chỉnh sửa initDB trong server.js: Yêu cầu INITIAL_ADMIN_PASSWORD khi khởi tạo database mới trong môi trường production.
+4. Thêm cờ mustChangePassword cho tài khoản Admin mới.
+
+YÊU CẦU:
+- Các trường tiêu đề, mô tả Work Order phải được escape.
+- Không thể khởi tạo DB trống nếu thiếu biến môi trường mật khẩu trong prod.
