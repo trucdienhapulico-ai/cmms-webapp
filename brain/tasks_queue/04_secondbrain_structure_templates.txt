@@ -1,0 +1,22 @@
+# Task: Second Brain - Structure & Templates
+**Objective**: Tái cấu trúc thư mục Vault trên NAS theo chuẩn P.A.R.A và tạo các Template cơ bản.
+
+## Instructions:
+1. **Kết nối NAS và tạo cấu trúc P.A.R.A**:
+   - Chạy lệnh ssh vào NAS (`ssh -p 2242 synologybot@100.99.71.11`).
+   - Chạy các lệnh mkdir để tạo: `1_Projects`, `2_Areas`, `3_Resources`, `4_Archives`, `Templates` bên trong `/volume1/Claude/`.
+2. **Quy hoạch thư mục cũ**:
+   - Di chuyển `01_CMMS_Webapp` và `02_Smarthome` vào `1_Projects`.
+   - Di chuyển `03_BaoTri_CoDien` vào `2_Areas`.
+   - Di chuyển `00_QuyChuanNoiBo` và `04_KienThuc` vào `3_Resources`.
+3. **Tạo Template Báo cáo sự cố M&E**:
+   - Tạo file `/volume1/Claude/Templates/Tpl_Incident_Report.md`.
+   - Nội dung file chứa YAML frontmatter: `date`, `device`, `status`, `tags: [su_co, m_and_e]`, và cấu trúc heading (Mô tả, Xử lý, Đề xuất).
+4. **Tạo Template Meeting Note**:
+   - Tạo file `/volume1/Claude/Templates/Tpl_Meeting.md`.
+   - Nội dung gồm YAML frontmatter: `date`, `attendees`, `tags: [meeting]` và nội dung (Agenda, Minutes, Action Items).
+
+## Acceptance Criteria:
+- Cấu trúc P.A.R.A hiển thị đúng khi chạy lệnh `ls /volume1/Claude/`.
+- Không có lỗi khi `mv` các thư mục cũ.
+- Các file template (.md) tồn tại với nội dung chuẩn.

@@ -1,0 +1,17 @@
+# Task: Final Migration Review and Report
+**Objective**: Kiểm tra tổng thể cấu trúc và dữ liệu trên NAS, cập nhật trạng thái handover.
+
+## Instructions:
+1. **Kiểm tra tổng thể**:
+   - SSH vào NAS và chạy script kiểm tra: cấu trúc thư mục (`find`), dung lượng (`du`), số lượng file `.md`, và file của Node.js webapp (`package.json`, `server.js`, `data/db.json`).
+2. **Cập nhật báo cáo trạng thái**:
+   - Cập nhật file `.claude/handoff.md` (tạo mới trong `01_CMMS_Webapp` nếu chưa có) hoặc update trạng thái dự án.
+   - Nội dung ghi nhận:
+     - Vault đã migrate lên NAS: /volume1/Claude/
+     - CMMS webapp: /volume1/Claude/01_CMMS_Webapp/cmms_webapp/
+     - Obsidian config: /volume1/Claude/.obsidian/
+   - Bổ sung các bước tiếp theo (Cài Obsidian trên Windows, Cài plugin Smart Connections, Build Auth module).
+
+## Acceptance Criteria:
+- Quá trình kiểm tra hiển thị đúng cấu trúc và không có lỗi (không chứa `node_modules`).
+- File `.claude/handoff.md` (hoặc file báo cáo tương đương) được cập nhật nội dung thành công.

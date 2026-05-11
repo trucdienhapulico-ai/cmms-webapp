@@ -1,0 +1,18 @@
+# Task: Second Brain - Community Plugins Setup
+**Objective**: Tải và kích hoạt các plugin Dataview và Templater trực tiếp trên NAS thông qua CLI.
+
+## Instructions:
+1. **Tạo thư mục Plugins**:
+   - SSH vào NAS. Tạo thư mục `/volume1/Claude/.obsidian/plugins/dataview` và `/volume1/Claude/.obsidian/plugins/templater-obsidian`.
+2. **Tải Plugin Dataview**:
+   - Dùng `curl -L` tải 3 file (main.js, manifest.json, styles.css) từ GitHub Releases của `blacksmithgu/obsidian-dataview` (nhánh `latest/download/`) vào thư mục `dataview` vừa tạo.
+3. **Tải Plugin Templater**:
+   - Tương tự, tải 2 file (main.js, manifest.json) từ GitHub Releases của `SilentVoid13/Templater` vào thư mục `templater-obsidian`.
+4. **Kích hoạt Plugins**:
+   - Tạo hoặc ghi đè file `/volume1/Claude/.obsidian/community-plugins.json` với nội dung JSON array chứa ID của 2 plugin: `["dataview", "templater-obsidian"]`.
+5. **Cấu hình Templater (Tùy chọn)**:
+   - Tạo file `/volume1/Claude/.obsidian/plugins/templater-obsidian/data.json` trỏ "template_folder" về "Templates".
+
+## Acceptance Criteria:
+- File `main.js` của cả 2 plugin tồn tại và có dung lượng > 0 (không phải lỗi 404).
+- File `community-plugins.json` là định dạng JSON hợp lệ.

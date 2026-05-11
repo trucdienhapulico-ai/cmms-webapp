@@ -1,0 +1,18 @@
+# Task: Second Brain - Dashboards Integration
+**Objective**: Tạo trung tâm điều khiển (Dashboard) sử dụng Dataview để quản lý hệ thống cơ điện CMMS.
+
+## Instructions:
+1. **Tạo M&E Dashboard**:
+   - SSH vào NAS.
+   - Tạo file `/volume1/Claude/00_Dashboard_M&E.md` tại thư mục gốc của Vault.
+2. **Viết nội dung Dashboard**:
+   - Thêm tiêu đề: `# 🛠️ Trung Tâm Điều Hành Cơ Điện (M&E)`.
+   - **Mục 1: Sự cố đang mở**: Thêm một block mã Dataview (dùng 3 dấu backticks và từ khóa `dataview`). Viết query dạng: `TABLE device, status, date FROM #su_co WHERE status != "Closed" SORT date desc`.
+   - **Mục 2: Nhật ký ca trực hôm nay**: Thêm block Dataview query các file trong thư mục `Daily_Notes` của ngày hiện tại (hoặc 3 ngày gần nhất).
+   - **Mục 3: Checklist bảo trì**: Thêm block Task Dataview (`TASK FROM "2_Areas/03_BaoTri_CoDien"`).
+3. **Kiểm tra file**:
+   - Chạy lệnh `cat` để đảm bảo nội dung Markdown và Dataview queries được ghi chính xác (đặc biệt chú ý thoát ký tự backticks trong bash script).
+
+## Acceptance Criteria:
+- File `00_Dashboard_M&E.md` được tạo thành công trên NAS.
+- Nội dung file chứa ít nhất 2 khối lệnh `dataview` hợp lệ.

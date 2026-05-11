@@ -1,0 +1,19 @@
+# Task: NAS Setup and Data Migration
+**Objective**: Connect to NAS, create vault structure, and copy files from D:\Claude.
+
+## Instructions:
+1. **Kiểm tra kết nối NAS**:
+   Chạy lệnh ssh để kiểm tra kết nối: `ssh -p 2242 synologybot@100.99.71.11 "echo 'NAS OK' && ls /volume1/"`. (Dừng lại hỏi mật khẩu nếu cần).
+2. **Tạo cấu trúc thư mục trên NAS**:
+   Chạy SSH script để tạo các thư mục (00_QuyChuanNoiBo, 01_CMMS_Webapp, 02_Smarthome, 03_BaoTri_CoDien, 04_KienThuc, Daily_Notes, .obsidian) trong `/volume1/Claude/`.
+3. **Copy file lên NAS (Ưu tiên 1 - md và config)**:
+   Dùng SCP hoặc rsync để copy từ `D:\Claude\` sang NAS `/volume1/Claude/` (bỏ qua `node_modules`, `.git`, `Backup/*.zip`, `*.log`).
+   - Copy thư mục tài liệu và Daily_Notes.
+   - Copy root `CLAUDE.md`.
+   - Copy thư mục `01_CMMS_Webapp` (chỉ file html, md, và source của cmms_webapp, không copy node_modules).
+
+## Acceptance Criteria:
+- Thư mục trên NAS được tạo đúng cấu trúc.
+- `/volume1/Claude/CLAUDE.md` và `/volume1/Claude/01_CMMS_Webapp/cmms_webapp/server.js` tồn tại trên NAS.
+- `/volume1/Claude/01_CMMS_Webapp/cmms_webapp/data/db.json` tồn tại trên NAS.
+- Không có thư mục `node_modules` trên NAS.

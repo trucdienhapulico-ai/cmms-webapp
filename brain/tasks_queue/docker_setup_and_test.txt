@@ -1,0 +1,31 @@
+# Task: End-to-End Docker Setup and Admin Login Verification
+
+## Context
+The user wants to fully automate the process until a successful Admin login is verified.
+Architect (Antigravity) has already:
+1. Created a simplified `docker-compose.yml` in the root.
+2. Verified `server.js` has a health check at `/api/health`.
+3. Identified `test-ui.js` as the script for UI and login verification.
+
+## Instructions for Builder (Claude Code):
+1. **Prepare Tools:** Ensure `docker`, `node`, and `npm` are working.
+2. **Setup App:** 
+   - Run `npm install` (to get puppeteer and other dependencies for testing).
+   - Run `docker compose build`.
+   - Run `docker compose up -d`.
+3. **Verify Startup:** 
+   - Wait for the app to be healthy at `http://localhost:3090/api/health`.
+4. **Verify Admin Login:**
+   - Run `node test-ui.js`.
+   - This script will attempt to login as `admin` and take screenshots of the dashboard, work orders, and assets.
+5. **Success Criteria:** 
+   - `test-ui.js` exits with code 0 (All viewports passed).
+   - The app is running inside the Docker container.
+6. **Reporting:** 
+   - If successful, report: "✅ Docker setup complete and Admin login verified successfully."
+   - List any screenshots generated in the `screenshots/` directory.
+   - DO NOT stop the container yet so the user can check it.
+
+## Target Files:
+- `docker-compose.yml` (Root)
+- `test-ui.js` (Root)

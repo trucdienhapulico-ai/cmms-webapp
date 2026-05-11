@@ -1,0 +1,20 @@
+# Task: WebApp Initialization and Obsidian Config
+**Objective**: Cài đặt môi trường Node.js trên NAS, khởi chạy CMMS webapp, và cấu hình Obsidian Vault.
+
+## Instructions:
+1. **Cài Node.js và khởi động webapp**:
+   - SSH vào NAS, kiểm tra Node.js bằng `node --version`.
+   - Nếu chưa có, cài Node.js v18 (LTS) qua nvm.
+   - cd vào `/volume1/Claude/01_CMMS_Webapp/cmms_webapp` và chạy `npm install`.
+   - Khởi động `node server.js &`, chờ 2s và test thử bằng `curl -s http://localhost:3090/api/health`. Sau đó tắt process.
+2. **Tạo cấu hình Obsidian cho vault**:
+   - SSH vào NAS và tạo nội dung cho file `app.json` và `workspace.json` trong `/volume1/Claude/.obsidian/`.
+3. **Tạo template Daily Note**:
+   - Tạo file `Template_DailyNote_KTV_v1.md` trong `/volume1/Claude/04_KienThuc/Templates/` với nội dung chuẩn (bao gồm YAML frontmatter và cấu trúc ca làm việc).
+
+## Acceptance Criteria:
+- `node --version` trả về >= v18 trên NAS.
+- `npm install` thành công không báo lỗi.
+- `/api/health` trả về JSON hợp lệ.
+- File config `.obsidian/app.json` và `workspace.json` được tạo thành công.
+- Template nhật ký ca được lưu thành công trên NAS.
